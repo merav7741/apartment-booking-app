@@ -11,7 +11,11 @@ connectDB()
 
 const User = require('./models/User')
 const Apartment = require('./models/Apartment')
+const apartmentRoutes = require('./routes/apartmentRoutes')
+const authRoutes = require('./routes/authRouter')
 
+app.use('/api/auth', authRoutes)
+app.use('/api/apartments', apartmentRoutes)
 
 
 app.listen(PORT,()=>{
