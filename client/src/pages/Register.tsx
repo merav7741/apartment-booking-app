@@ -1,4 +1,10 @@
+import { useState } from "react"
+
 export default function Register() {
+  const [fullName, setFullName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   return (
     <div >
       <h1>הרשמה</h1>
@@ -22,6 +28,11 @@ export default function Register() {
         <div>
           <label>אשר סיסמה:</label>
           <input type="password" placeholder="אשר סיסמה" />
+        </div>
+
+        <div>
+          <label> פלאפון:</label>
+          <input type="number" placeholder="פלאפון" />
         </div>
 
         <button type="submit">הירשם</button>
