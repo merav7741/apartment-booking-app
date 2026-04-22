@@ -83,4 +83,4 @@ const Apartment = new Schema(
     }
 )
 const apartment = model('Apartment', Apartment)
-module.exports = appartment
+module.exports = apartment

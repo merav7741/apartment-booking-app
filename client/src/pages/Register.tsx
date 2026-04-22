@@ -7,11 +7,51 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [phone, setPhone] = useState('')
 
+  const handleSubmit = async (e :any) => {
+
+    e.preventDefault()
+    if (password !== confirmPassword) {
+      alert('הסיסמאות לא תואמות')
+      return
+    }
+
+    try {
+      const response = await fetch('http://localhost:5500/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: fullName,
+          email: email,
+          phone: phone,
+          password: password,
+          role: 'Guest'
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        // הצלחה!
+        console.log('נרשמת בהצלחה!', data)
+        localStorage.setItem('token', data.token)
+        alert('נרשמת בהצלחה!')
+      } else {
+        // שגיאה מהשרת
+        alert(data.message || 'שגיאה ברישום')
+      }
+    } catch (error) {
+      alert('שגיאה בחיבור לשרת')
+    }
+  }
+
   return (
     <div >
       <h1>הרשמה</h1>
 
-      <form>
+      <form onSubmit={handleSubmit}>
+
         <div>
           <label>שם מלא:</label>
           <input
@@ -50,8 +90,8 @@ export default function Register() {
         <div>
           <label> פלאפון:</label>
           <input
-            type="number"
-            placeholder="פלאפון"
+            type="text"
+            placeholder="05xxxxxxxx"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
