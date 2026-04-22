@@ -94,16 +94,20 @@ export default function Register() {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
-
-          <label>סוג מנוי</label>
-          <input
-            type="text"
-            placeholder="Guest או Host  (לא ניתן לשנות)"
-            value={'Guest'}
-            onChange={(e) => setRole(e.target.value)}
-            disabled
-          />
         </div>
+        <div>
+          <label>סוג מנוי:</label>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            style={{ width: '100%', padding: '8px' }}
+          >
+            <option value="Guest">אורח (Guest)</option>
+            <option value="Subscriber">מנוי (Subscriber)</option>
+            <option value="Admin">מנהל (Admin)</option>
+          </select>
+        </div>
+
 
         <button type="submit">הירשם</button>
       </form>

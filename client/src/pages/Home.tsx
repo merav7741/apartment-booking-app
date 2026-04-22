@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from 'react-router-dom'
-import ApartmentCard from '../pages/ApartmentCard'
+import ApartmentCard from "../components/ApartmentCard"
 
 export default function Home() {
   const [apartments, setApartments] = useState([])
