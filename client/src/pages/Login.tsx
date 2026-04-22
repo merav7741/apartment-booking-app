@@ -23,6 +23,7 @@ export default function Login() {
       if (response.ok) {
         console.log('התחברת בהצלחה!', data)
         localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify(data.user))
         alert('התחברת בהצלחה!')
       } else {
         alert(data.message || 'שגיאה בהתחברות')
