@@ -20,15 +20,21 @@ const getById = async (req, res) => {
     }   
 }
  
+
 const create = async (req, res) => {
     try {
-        const newApartment = await createApartment(req.body);
-        if (!newApartment) return res.status(400).json({ message: 'Failed to create apartment' });
-        res.status(201).json(newApartment);
+        const apartmentData = {
+            ...req.body,
+            ownerId: req.user.userId  // ← מוסיף את ה-ID של המשתמש המחובר
+        }
+        const newApartment = await createApartment(apartmentData)
+        if (!newApartment) return res.status(400).json({ message: 'Failed to create apartment' })
+        res.status(201).json(newApartment)
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        res.status(500).json({ message: err.message })
     }
 }
+
 
 const update = async (req, res) => {
     try {

@@ -6,8 +6,9 @@ export default function Register() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [phone, setPhone] = useState('')
+  const [role, setRole] = useState('Guest')
 
-  const handleSubmit = async (e :any) => {
+  const handleSubmit = async (e: any) => {
 
     e.preventDefault()
     if (password !== confirmPassword) {
@@ -26,7 +27,7 @@ export default function Register() {
           email: email,
           phone: phone,
           password: password,
-          role: 'Guest'
+          role: role
         })
       })
 
@@ -92,6 +93,15 @@ export default function Register() {
             placeholder="05xxxxxxxx"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
+          />
+
+          <label>סוג מנוי</label>
+          <input
+            type="text"
+            placeholder="Guest או Host  (לא ניתן לשנות)"
+            value={'Guest'}
+            onChange={(e) => setRole(e.target.value)}
+            disabled
           />
         </div>
 
