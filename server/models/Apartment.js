@@ -82,5 +82,5 @@ const Apartment = new Schema(
         timestamps: true
     }
 )
-const appartment = model('Apartment', Apartment)
+const apartment = model('Apartment', Apartment)
 module.exports = appartment

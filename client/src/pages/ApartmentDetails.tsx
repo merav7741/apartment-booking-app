@@ -1,13 +1,13 @@
 import { useParams } from 'react-router-dom'
 
-export default function PropertyDetails() {
+export default function apartmentDetails() {
   const { id } = useParams()
 
   return (
-    <div className="property-details">
+    <div className="apartment-details">
       <h1>פרטי דירה #{id}</h1>
 
-      <div className="property-info">
+      <div className="apartment-info">
         <h2>דירה יפה בתל אביב</h2>
         <p>מחיר: ₪5,000</p>
         <p>מיקום: תל אביב, ישראל</p>
@@ -15,7 +15,7 @@ export default function PropertyDetails() {
         <p>שטח: 85 מ"ר</p>
       </div>
 
-      <div className="property-images">
+      <div className="apartment-images">
         <p>כאן יופיעו תמונות הדירה...</p>
       </div>
 

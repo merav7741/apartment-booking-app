@@ -1,4 +1,4 @@
-export default function AddProperty() {
+export default function Addapartment() {
   return (
     <div >
       <h1>הוסף דירה חדשה</h1>
