@@ -1,13 +1,29 @@
+// ייבוא ספריות בסיסיות
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 
+// טיפוס לנתוני הדירה מהשרת
+type Apartment = {
+  name: string
+  price: number
+  location: string
+  rooms?: number
+  size?: number
+  floor?: number
+  description?: string
+  images?: string[]
+  characteristics?: string[]
+}
 export default function ApartmentDetails() {
+  // מושך את ה-id מה-URL - לדוגמה /apartments/abc123
   const { id } = useParams()
   const navigate = useNavigate()
-  const [apartment, setApartment] = useState<any>(null)
+
+  // state לנתוני הדירה, טעינה, ואינדקס התמונה הנוכחית
+  const [apartment, setApartment] = useState<Apartment | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-
+  // טעינת נתוני הדירה מהשרת לפי ה-id מה-URL
   useEffect(() => {
     const fetchApartment = async () => {
       try {
@@ -21,31 +37,35 @@ export default function ApartmentDetails() {
       }
     }
     fetchApartment()
-  }, [id])
-
+  }, [id]) // רץ מחדש כל פעם שה-id משתנה
+  // מעבר לתמונה הבאה - חוזר לתחילה אם הגענו לסוף
   const nextImage = () => {
     if (apartment?.images) {
-      setCurrentImageIndex((prev) => (prev + 1) % apartment.images.length)
+      setCurrentImageIndex((prev) => (prev + 1) % apartment.images!.length)
     }
   }
 
+  // מעבר לתמונה הקודמת - קופץ לסוף אם אנחנו בתחילה
   const prevImage = () => {
     if (apartment?.images) {
       setCurrentImageIndex((prev) =>
-        prev === 0 ? apartment.images.length - 1 : prev - 1
+        prev === 0 ? apartment.images!.length - 1 : prev - 1
       )
     }
   }
-
+  // מצבי טעינה ושגיאה
   if (loading) return <div style={{ padding: '20px' }}>טוען...</div>
   if (!apartment) return <div style={{ padding: '20px' }}>דירה לא נמצאה</div>
 
+  // אם אין תמונות - מציג תמונת placeholder
   const images = apartment.images && apartment.images.length > 0
     ? apartment.images
     : ['https://via.placeholder.com/800x500?text=No+Image']
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
+
+      {/* כפתור חזרה לדף הבית */}
       <button
         onClick={() => navigate('/')}
         style={{
@@ -61,7 +81,7 @@ export default function ApartmentDetails() {
       </button>
 
       {/* סליידר תמונות */}
-      <div style={{ position: 'relative', marginBottom: '30px' }}>
+      <div style={{color: 'pink', position: 'relative', marginBottom: '30px' }}>
         <img
           src={images[currentImageIndex]}
           alt={apartment.name}
@@ -73,6 +93,7 @@ export default function ApartmentDetails() {
           }}
         />
 
+        {/* כפתורי ניווט בין תמונות - מוצגים רק אם יש יותר מתמונה אחת */}
         {images.length > 1 && (
           <>
             <button
@@ -111,6 +132,8 @@ export default function ApartmentDetails() {
             >
               ❯
             </button>
+
+            {/* מונה תמונות - מציג את המיקום הנוכחי */}
             <div style={{
               position: 'absolute',
               bottom: '10px',
@@ -127,10 +150,11 @@ export default function ApartmentDetails() {
         )}
       </div>
 
-      {/* פרטי הדירה */}
+      {/* פרטי הדירה הבסיסיים */}
       <h1>{apartment.name}</h1>
       <p style={{ fontSize: '18px', color: '#666' }}>📍 {apartment.location}</p>
 
+      {/* גריד של מידע מספרי על הדירה */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -140,26 +164,13 @@ export default function ApartmentDetails() {
         backgroundColor: '#f5f5f5',
         borderRadius: '8px'
       }}>
-        <div>
-          <strong>מחיר:</strong> ₪{apartment.price?.toLocaleString()}
-        </div>
-        {apartment.rooms && (
-          <div>
-            <strong>חדרים:</strong> {apartment.rooms}
-          </div>
-        )}
-        {apartment.size && (
-          <div>
-            <strong>גודל:</strong> {apartment.size} מ"ר
-          </div>
-        )}
-        {apartment.floor && (
-          <div>
-            <strong>קומה:</strong> {apartment.floor}
-          </div>
-        )}
+        <div><strong>מחיר:</strong> ₪{apartment.price?.toLocaleString()}</div>
+        {apartment.rooms && <div><strong>חדרים:</strong> {apartment.rooms}</div>}
+        {apartment.size && <div><strong>גודל:</strong> {apartment.size} מ"ר</div>}
+        {apartment.floor && <div><strong>קומה:</strong> {apartment.floor}</div>}
       </div>
 
+      {/* תיאור הדירה - מוצג רק אם קיים */}
       {apartment.description && (
         <div style={{ marginTop: '30px' }}>
           <h2>תיאור</h2>
@@ -167,6 +178,7 @@ export default function ApartmentDetails() {
         </div>
       )}
 
+      {/* רשימת מאפיינים - מוצגת רק אם קיימת */}
       {apartment.characteristics && apartment.characteristics.length > 0 && (
         <div style={{ marginTop: '30px' }}>
           <h2>מאפיינים</h2>
@@ -177,7 +189,6 @@ export default function ApartmentDetails() {
           </ul>
         </div>
       )}
-
 
     </div>
   )

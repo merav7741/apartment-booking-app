@@ -12,7 +12,11 @@ const getAll=async(req, res) => {
 
 const getById = async (req, res) => {
     try {
-        const apartment = await getApartmentById(req.params.id);
+        const { id } = req.params
+        if (!id) {
+            return res.status(400).json({ error: 'Apartment id is required' })
+        }
+        const apartment = await getApartmentById(id);
         if (!apartment) return res.status(404).json({ message: 'Apartment not found' });
         res.json(apartment);
     } catch (err) {
@@ -20,12 +24,15 @@ const getById = async (req, res) => {
     }   
 }
  
-
 const create = async (req, res) => {
     try {
+        const { name, price, pricePerNight, address, bedrooms } = req.body
+        if (!name || !price || !pricePerNight || !address || !bedrooms) {
+            return res.status(400).json({ error: 'Missing required fields: name, price, pricePerNight, address, bedrooms' })
+        }
         const apartmentData = {
             ...req.body,
-            ownerId: req.user.userId  // ← מוסיף את ה-ID של המשתמש המחובר
+            ownerId: req.user.userId 
         }
         const newApartment = await createApartment(apartmentData)
         if (!newApartment) return res.status(400).json({ message: 'Failed to create apartment' })
@@ -35,12 +42,18 @@ const create = async (req, res) => {
     }
 }
 
-
 const update = async (req, res) => {
     try {
-        const updatedApartment = await updateApartment(req.params.id, req.body);
-        if (!updatedApartment) return res.status(404).json({ message: 'Apartment not found' });
-        res.json(updatedApartment);
+        const { id } = req.params
+        if (!id) {
+            return res.status(400).json({ error: 'Apartment id is required' })
+        }
+        if (!req.body || Object.keys(req.body).length === 0) {
+            return res.status(400).json({ error: 'Update data is required' })
+        }        
+        const updatedApartment = await updateApartment(id, req.body)
+        if (!updatedApartment) return res.status(404).json({ message: 'Apartment not found' })
+        res.json(updatedApartment)
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -48,7 +61,11 @@ const update = async (req, res) => {
 
 const remove = async (req, res) => {
     try {
-        const apartment = await deleteApartment(req.params.id)
+        const { id } = req.params
+        if (!id) {
+            return res.status(400).json({ error: 'Apartment id is required' })
+        }
+        const apartment = await deleteApartment(id)
         if (!apartment) return res.status(404).json({ message: 'Apartment not found' })
         res.json({ message: 'Apartment deleted' })
     } catch (err) {

@@ -6,8 +6,8 @@ const verifyToken = (req, res, next) => {
         if (!token) {
             return res.status(401).json({ message: 'אין הרשאה - נדרש token' })
         }
-        
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret')
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET )
         req.user = decoded // שומר את המידע של המשתמש ב-request
         next()
     } catch (err) {
@@ -19,7 +19,7 @@ const verifySubscriberOrAdmin = (req, res, next) => {
     if (req.user.role === 'Admin' || req.user.role === 'Subscriber') {
         next()
     } else {
-        return res.status(403).json({ message: 'אין לך הרשאה להוסיף דירות. נדרש מנוי.' })
+        return res.status(403).json({ message: 'אין לך הרשאה להוסיף דירות. נדרש מנוי. או מנהל' })
     }
 }
 

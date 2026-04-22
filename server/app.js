@@ -11,8 +11,6 @@ const {connectDB}=require('./config/db');
 connectDB()
 
 
-const User = require('./models/User')
-const Apartment = require('./models/Apartment')
 const apartmentRoutes = require('./routes/apartmentRoutes')
 const authRoutes = require('./routes/authRouter')
 
