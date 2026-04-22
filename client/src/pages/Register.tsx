@@ -33,12 +33,10 @@ export default function Register() {
       const data = await response.json()
 
       if (response.ok) {
-        // הצלחה!
         console.log('נרשמת בהצלחה!', data)
         localStorage.setItem('token', data.token)
         alert('נרשמת בהצלחה!')
       } else {
-        // שגיאה מהשרת
         alert(data.message || 'שגיאה ברישום')
       }
     } catch (error) {

@@ -21,12 +21,10 @@ export default function Login() {
       const data = await response.json()
 
       if (response.ok) {
-        // הצלחה!
         console.log('התחברת בהצלחה!', data)
         localStorage.setItem('token', data.token)
         alert('התחברת בהצלחה!')
       } else {
-        // שגיאה מהשרת
         alert(data.message || 'שגיאה בהתחברות')
       }
     } catch (error) {
