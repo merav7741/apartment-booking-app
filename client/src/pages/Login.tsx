@@ -40,6 +40,7 @@ export default function Login() {
         localStorage.setItem('token', resData.token)
         localStorage.setItem('user', JSON.stringify(resData.user))
         alert('התחברת בהצלחה!')
+        navigate('/')
       } else {
         alert(resData.message || 'שגיאה בהתחברות')
       }

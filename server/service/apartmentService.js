@@ -9,7 +9,7 @@ const getAllApartments = async (filters = {}) => {
 
 const getApartmentById = async (id) => {
   if (!id) throw new Error('Apartment id is required')
-  await Apartment.findById(id)
+  return await Apartment.findById(id)
 }
 
 const createApartment = async (data) => {
@@ -20,12 +20,11 @@ const createApartment = async (data) => {
 }
 
 const updateApartment = async (id, data) => {
-  await Apartment.findByIdAndUpdate(id, data, { new: true })
+  return await Apartment.findByIdAndUpdate(id, data, { new: true })
 }
 
 const deleteApartment = async (id) => {
-   await Apartment.findByIdAndDelete(id)
-
+  return await Apartment.findByIdAndDelete(id)
 }
 
 module.exports = { getAllApartments, getApartmentById, createApartment, updateApartment, deleteApartment }

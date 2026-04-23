@@ -59,6 +59,7 @@ export default function Register() {
         console.log('נרשמת בהצלחה!', resData)
         localStorage.setItem('token', resData.token)
         alert('נרשמת בהצלחה!')
+        navigate('/login')
       } else {
         alert(resData.message || 'שגיאה ברישום')
       }

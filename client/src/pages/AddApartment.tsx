@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom"
 // ייבוא React Hook Form - useForm לניהול הטופס, SubmitHandler לטיפוס של פונקציית השליחה
 import { useForm,type SubmitHandler } from "react-hook-form"
 
+import AmenitiesSelector from '../components/AmenitiesSelector'
+
 // הגדרת טיפוס לכל שדות הטופס
 type ApartmentFormData = {
   name: string
@@ -24,6 +26,8 @@ export default function AddApartment() {
   // useState רק למשתמש ולתמונות - אלה לא שדות טופס רגילים
   const [user, setUser] = useState<any>(null)
   const [images, setImages] = useState<string[]>([])
+const [amenities, setAmenities] = useState<Record<string, boolean>>({})
+
 
   // אתחול React Hook Form עם ערכי ברירת מחדל לכל השדות
   const { register,handleSubmit, formState: { errors }  // מכיל את שגיאות הולידציה
@@ -66,7 +70,11 @@ export default function AddApartment() {
           'Authorization': `Bearer ${token}`
         },
         // data מגיע ישירות מ-React Hook Form כבר מומר לטיפוסים הנכונים
-        body: JSON.stringify({ ...data, images })
+        body: JSON.stringify({
+           ...data,
+           image: images,
+           characteristics: Object.keys(amenities).filter(key => amenities[key])
+ })
       })
 
       const resData = await response.json()
@@ -241,6 +249,14 @@ export default function AddApartment() {
             </div>
           )}
         </div>
+<br></br>
+<br></br>
+
+        <AmenitiesSelector
+      selectedAmenities={amenities}
+      onChange={setAmenities}
+/>
+
 
         <button
           type="submit"
