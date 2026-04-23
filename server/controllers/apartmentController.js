@@ -1,6 +1,6 @@
-const { getAllApartments, getApartmentById ,createApartment,updateApartment ,deleteApartment} = require('../service/apartmentService');
+const { getAllApartments, getApartmentById, createApartment, updateApartment, deleteApartment } = require('../service/apartmentService');
 
-const getAll=async(req, res) => {
+const getAll = async (req, res) => {
     try {
         const apartments = await getAllApartments();
         if (apartments.length === 0) return res.status(404).json({ message: 'No apartments found' });
@@ -21,9 +21,9 @@ const getById = async (req, res) => {
         res.json(apartment);
     } catch (err) {
         res.status(500).json({ message: err.message });
-    }   
+    }
 }
- 
+
 const create = async (req, res) => {
     try {
         const { name, price, pricePerNight, address, bedrooms } = req.body
@@ -32,7 +32,7 @@ const create = async (req, res) => {
         }
         const apartmentData = {
             ...req.body,
-            ownerId: req.user.userId 
+            ownerId: req.user.userId
         }
         const newApartment = await createApartment(apartmentData)
         if (!newApartment) return res.status(400).json({ message: 'Failed to create apartment' })
@@ -50,7 +50,7 @@ const update = async (req, res) => {
         }
         if (!req.body || Object.keys(req.body).length === 0) {
             return res.status(400).json({ error: 'Update data is required' })
-        }        
+        }
         const updatedApartment = await updateApartment(id, req.body)
         if (!updatedApartment) return res.status(404).json({ message: 'Apartment not found' })
         res.json(updatedApartment)

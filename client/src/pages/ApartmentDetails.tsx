@@ -11,7 +11,7 @@ type Apartment = {
   size?: number
   floor?: number
   description?: string
-  images?: string[]
+  image?: string[]
   characteristics?: string[]
 }
 export default function ApartmentDetails() {
@@ -40,16 +40,16 @@ export default function ApartmentDetails() {
   }, [id]) // רץ מחדש כל פעם שה-id משתנה
   // מעבר לתמונה הבאה - חוזר לתחילה אם הגענו לסוף
   const nextImage = () => {
-    if (apartment?.images) {
-      setCurrentImageIndex((prev) => (prev + 1) % apartment.images!.length)
+    if (apartment?.image) {
+      setCurrentImageIndex((prev) => (prev + 1) % apartment.image!.length)
     }
   }
 
   // מעבר לתמונה הקודמת - קופץ לסוף אם אנחנו בתחילה
   const prevImage = () => {
-    if (apartment?.images) {
+    if (apartment?.image) {
       setCurrentImageIndex((prev) =>
-        prev === 0 ? apartment.images!.length - 1 : prev - 1
+        prev === 0 ? apartment.image!.length - 1 : prev - 1
       )
     }
   }
@@ -58,8 +58,8 @@ export default function ApartmentDetails() {
   if (!apartment) return <div style={{ padding: '20px' }}>דירה לא נמצאה</div>
 
   // אם אין תמונות - מציג תמונת placeholder
-  const images = apartment.images && apartment.images.length > 0
-    ? apartment.images
+  const images = apartment.image && apartment.image.length > 0
+    ? apartment.image
     : ['https://via.placeholder.com/800x500?text=No+Image']
 
   return (
