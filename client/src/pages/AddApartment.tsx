@@ -1,13 +1,12 @@
-// ייבוא ספריות בסיסיות
-import React, { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-
-// ייבוא React Hook Form - useForm לניהול הטופס, SubmitHandler לטיפוס של פונקציית השליחה
-import { useForm,type SubmitHandler } from "react-hook-form"
-
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useForm, type SubmitHandler } from 'react-hook-form'
+import { useAppSelector } from '../store/hooks'
+import type { User } from '../types/user.types'
 import AmenitiesSelector from '../components/AmenitiesSelector'
 
-// הגדרת טיפוס לכל שדות הטופס
+const API_URL = 'http://localhost:5500/api/apartments'
+
 type ApartmentFormData = {
   name: string
   price: number
@@ -19,69 +18,60 @@ type ApartmentFormData = {
   description: string
 }
 
-
 export default function AddApartment() {
   const navigate = useNavigate()
-
-  // useState רק למשתמש ולתמונות - אלה לא שדות טופס רגילים
-  const [user, setUser] = useState<any>(null)
+  const { user, token, isAuthenticated } = useAppSelector((state) => state.auth)
+  
   const [images, setImages] = useState<string[]>([])
-const [amenities, setAmenities] = useState<Record<string, boolean>>({})
+  const [amenities, setAmenities] = useState<Record<string, boolean>>({})
 
-
-  // אתחול React Hook Form עם ערכי ברירת מחדל לכל השדות
-  const { register,handleSubmit, formState: { errors }  // מכיל את שגיאות הולידציה
-   } = useForm<ApartmentFormData>({
+  const { register, handleSubmit, formState: { errors } } = useForm<ApartmentFormData>({
     defaultValues: {
-      location: 'Center',  // ברירת מחדל לאזור
+      location: 'Center',
       bedrooms: 1
     }
   })
 
-  // בדיקה שהמשתמש מחובר ומורשה בעת טעינת הדף
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    const userData = localStorage.getItem('user')
-
-    if (!token || !userData) {
+    if (!isAuthenticated || !token) {
       alert('עליך להתחבר כדי להוסיף דירה')
       navigate('/login')
       return
     }
-    const parsedUser = JSON.parse(userData)
 
-    if (parsedUser.role !== 'Admin' && parsedUser.role !== 'Subscriber') {
+    if (user?.role !== 'Admin' && user?.role !== 'Subscriber') {
       alert('רק מנויים ומנהלים יכולים להוסיף דירות')
       navigate('/')
       return
     }
-    setUser(parsedUser)
-  }, [navigate])
-  
+  }, [isAuthenticated, token, user, navigate])
 
-    // פונקציית שליחת הטופס - מקבלת את הנתונים ישירות מ-React Hook Form
   const onSubmit: SubmitHandler<ApartmentFormData> = async (data) => {
     try {
-      const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:5500/api/apartments', {
+      if (!token) {
+        alert('אין הרשאה - נדרש להתחבר מחדש')
+        navigate('/login')
+        return
+      }
+
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        // data מגיע ישירות מ-React Hook Form כבר מומר לטיפוסים הנכונים
         body: JSON.stringify({
-           ...data,
-           image: images,
-           characteristics: Object.keys(amenities).filter(key => amenities[key])
- })
+          ...data,
+          images: images,
+          amenities: Object.keys(amenities).filter(key => amenities[key])
+        })
       })
 
       const resData = await response.json()
 
       if (response.ok) {
         alert('הדירה נוספה בהצלחה!')
-        navigate('/')
+        navigate('/dashboard')
       } else {
         alert(resData.message || 'שגיאה ביצירת הדירה')
       }
@@ -90,7 +80,7 @@ const [amenities, setAmenities] = useState<Record<string, boolean>>({})
       alert('שגיאה בחיבור לשרת')
     }
   }
-  
+
   if (!user) return <div>טוען...</div>
 
   return (
@@ -98,10 +88,7 @@ const [amenities, setAmenities] = useState<Record<string, boolean>>({})
       <h1>הוסף דירה חדשה</h1>
       <p>שלום {user.name}, הוסף את הדירה שלך</p>
 
-      {/* handleSubmit של React Hook Form עוטף את onSubmit שלנו */}
       <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-
-        {/* שדה שם הדירה - חובה, מינימום 2 תווים */}
         <div>
           <label>שם הדירה:</label>
           <input
@@ -115,7 +102,6 @@ const [amenities, setAmenities] = useState<Record<string, boolean>>({})
           {errors.name && <span style={{ color: 'red' }}>{errors.name.message}</span>}
         </div>
 
-        {/* שדה מחיר לחודש - חובה, מספר חיובי */}
         <div>
           <label>מחיר לחודש (₪):</label>
           <input
@@ -123,14 +109,13 @@ const [amenities, setAmenities] = useState<Record<string, boolean>>({})
             {...register('price', {
               required: 'מחיר לחודש הוא שדה חובה',
               min: { value: 1, message: 'מחיר חייב להיות גדול מ-0' },
-              valueAsNumber: true  // ממיר אוטומטית ל-number
+              valueAsNumber: true
             })}
             style={{ width: '100%', padding: '8px' }}
           />
           {errors.price && <span style={{ color: 'red' }}>{errors.price.message}</span>}
         </div>
 
-        {/* שדה מחיר ללילה - חובה, מספר חיובי */}
         <div>
           <label>מחיר ללילה (₪):</label>
           <input
@@ -145,7 +130,6 @@ const [amenities, setAmenities] = useState<Record<string, boolean>>({})
           {errors.pricePerNight && <span style={{ color: 'red' }}>{errors.pricePerNight.message}</span>}
         </div>
 
-        {/* שדה עיר - חובה */}
         <div>
           <label>עיר:</label>
           <input
@@ -158,7 +142,6 @@ const [amenities, setAmenities] = useState<Record<string, boolean>>({})
           {errors.city && <span style={{ color: 'red' }}>{errors.city.message}</span>}
         </div>
 
-        {/* שדה כתובת - חובה */}
         <div>
           <label>כתובת:</label>
           <input
@@ -171,7 +154,6 @@ const [amenities, setAmenities] = useState<Record<string, boolean>>({})
           {errors.address && <span style={{ color: 'red' }}>{errors.address.message}</span>}
         </div>
 
-        {/* שדה אזור - select עם ברירת מחדל Center */}
         <div>
           <label>אזור:</label>
           <select
@@ -186,7 +168,6 @@ const [amenities, setAmenities] = useState<Record<string, boolean>>({})
           </select>
         </div>
 
-        {/* שדה חדרי שינה - חובה, מינימום 0 */}
         <div>
           <label>מספר חדרי שינה:</label>
           <input
@@ -201,7 +182,6 @@ const [amenities, setAmenities] = useState<Record<string, boolean>>({})
           {errors.bedrooms && <span style={{ color: 'red' }}>{errors.bedrooms.message}</span>}
         </div>
 
-        {/* שדה תיאור - לא חובה */}
         <div>
           <label>תיאור:</label>
           <textarea
@@ -211,7 +191,6 @@ const [amenities, setAmenities] = useState<Record<string, boolean>>({})
           />
         </div>
 
-        {/* שדה תמונות - מנוהל ידנית עם useState כי זה מערך דינמי */}
         <div>
           <label>תמונות (URLs):</label>
           <input
@@ -249,14 +228,11 @@ const [amenities, setAmenities] = useState<Record<string, boolean>>({})
             </div>
           )}
         </div>
-<br></br>
-<br></br>
 
         <AmenitiesSelector
-      selectedAmenities={amenities}
-      onChange={setAmenities}
-/>
-
+          selectedAmenities={amenities}
+          onChange={setAmenities}
+        />
 
         <button
           type="submit"

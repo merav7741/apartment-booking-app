@@ -1,8 +1,9 @@
-// ייבוא React Hook Form
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
+import { useAppDispatch, useAppSelector } from '../store/hooks'
+import { registerUser, clearError } from '../store/authSlice'
+import { useEffect } from 'react'
 
-// הגדרת טיפוס לכל שדות הטופס
 type RegisterFormData = {
   fullName: string
   email: string
@@ -14,12 +15,13 @@ type RegisterFormData = {
 
 export default function Register() {
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+  const { loading, error } = useAppSelector((state) => state.auth)
 
-  // אתחול React Hook Form עם ערכי ברירת מחדל לכל השדות
   const {
     register,
     handleSubmit,
-    watch,          // נצטרך אותו לבדיקת התאמת סיסמאות
+    watch,
     formState: { errors }
   } = useForm<RegisterFormData>({
     defaultValues: {
@@ -32,39 +34,26 @@ export default function Register() {
     }
   })
 
-  // watch עוקב אחרי ערך הסיסמה בזמן אמת - לצורך השוואה עם אישור הסיסמה
   const password = watch('password')
 
-  // פונקציית הרשמה - מקבלת את הנתונים ישירות מ-React Hook Form
+  useEffect(() => {
+    return () => {
+      dispatch(clearError())
+    }
+  }, [dispatch])
+
   const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
-    try {
-      const response = await fetch('http://localhost:5500/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        // שולחים רק את השדות הנדרשים, בלי confirmPassword
-        body: JSON.stringify({
-          name: data.fullName,
-          email: data.email,
-          phone: data.phone,
-          password: data.password,
-          role: data.role
-        })
-      })
-
-      const resData = await response.json()
-
-      if (response.ok) {
-        console.log('נרשמת בהצלחה!', resData)
-        localStorage.setItem('token', resData.token)
-        alert('נרשמת בהצלחה!')
-        navigate('/login')
-      } else {
-        alert(resData.message || 'שגיאה ברישום')
-      }
-    } catch (error) {
-      alert('שגיאה בחיבור לשרת')
+    const result = await dispatch(registerUser({
+      name: data.fullName,
+      email: data.email,
+      phone: data.phone,
+      password: data.password,
+      role: data.role
+    }))
+    
+    if (registerUser.fulfilled.match(result)) {
+      alert('נרשמת בהצלחה!')
+      navigate('/login')
     }
   }
 
@@ -72,10 +61,9 @@ export default function Register() {
     <div>
       <h1>הרשמה</h1>
 
-      {/* handleSubmit עוטף את onSubmit ומונע רענון דף אוטומטית */}
-      <form onSubmit={handleSubmit(onSubmit)}>
+      {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
 
-        {/* שדה שם מלא - חובה, מינימום 2 תווים */}
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div>
           <label>שם מלא:</label>
           <input
@@ -89,7 +77,6 @@ export default function Register() {
           {errors.fullName && <span style={{ color: 'red' }}>{errors.fullName.message}</span>}
         </div>
 
-        {/* שדה אימייל - חובה, פורמט תקין */}
         <div>
           <label>אימייל:</label>
           <input
@@ -106,7 +93,6 @@ export default function Register() {
           {errors.email && <span style={{ color: 'red' }}>{errors.email.message}</span>}
         </div>
 
-        {/* שדה סיסמה - חובה, מינימום 6 תווים */}
         <div>
           <label>סיסמה:</label>
           <input
@@ -120,7 +106,6 @@ export default function Register() {
           {errors.password && <span style={{ color: 'red' }}>{errors.password.message}</span>}
         </div>
 
-        {/* שדה אישור סיסמה - חובה, חייב להיות זהה לסיסמה */}
         <div>
           <label>אשר סיסמה:</label>
           <input
@@ -128,14 +113,12 @@ export default function Register() {
             placeholder="אשר סיסמה"
             {...register('confirmPassword', {
               required: 'אישור סיסמה הוא שדה חובה',
-              // validate משווה את הערך הנוכחי לסיסמה שעוקבים אחריה עם watch
               validate: (value) => value === password || 'הסיסמאות לא תואמות'
             })}
           />
           {errors.confirmPassword && <span style={{ color: 'red' }}>{errors.confirmPassword.message}</span>}
         </div>
 
-        {/* שדה טלפון - חובה, פורמט ישראלי */}
         <div>
           <label>פלאפון:</label>
           <input
@@ -152,7 +135,6 @@ export default function Register() {
           {errors.phone && <span style={{ color: 'red' }}>{errors.phone.message}</span>}
         </div>
 
-        {/* שדה סוג מנוי - ברירת מחדל Guest */}
         <div>
           <label>סוג מנוי:</label>
           <select
@@ -165,12 +147,13 @@ export default function Register() {
           </select>
         </div>
 
-        <button type="submit">הירשם</button>
+        <button type="submit" disabled={loading}>
+          {loading ? 'מרשם...' : 'הירשם'}
+        </button>
       </form>
 
       <a>כבר יש לך חשבון?</a>
       <button onClick={() => navigate(-1)}>התחבר כאן</button>
-
     </div>
   )
 }

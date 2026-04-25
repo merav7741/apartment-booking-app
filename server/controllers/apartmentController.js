@@ -73,6 +73,18 @@ const remove = async (req, res) => {
     }
 }
 
-module.exports = { getAll, getById, create, update, remove }
+const getMyApartments = async (req, res) => {
+    try {
+        const userId = req.user.userId
+        const apartments = await getAllApartments()
+        const myApartments = apartments.filter(apt => apt.ownerId.toString() === userId)
+        res.json(myApartments)
+    } catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+}
+
+
+module.exports = { getAll, getById, create, update, remove, getMyApartments }
 
 

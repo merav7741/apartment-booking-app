@@ -1,20 +1,14 @@
+import type { Apartment } from '../types/apartment.types'
+
 interface ApartmentCardProps {
-  apartment: {
-    _id: string
-    name: string
-    location: string
-    price: number
-    images?: string[]
-    rooms?: number
-    size?: number
-  }
+  apartment: Apartment
   onClick: (id: string) => void
 }
 
 export default function ApartmentCard({ apartment, onClick }: ApartmentCardProps) {
   const imageUrl = apartment.images && apartment.images.length > 0 
     ? apartment.images[0] 
-    : 'https://via.placeholder.com/300x200?text=No+Image'
+    : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="200"%3E%3Crect fill="%23ddd" width="300" height="200"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="18" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3ENo Image%3C/text%3E%3C/svg%3E'
 
   return (
     <div 
@@ -47,13 +41,13 @@ export default function ApartmentCard({ apartment, onClick }: ApartmentCardProps
       />
       <div style={{ padding: '16px' }}>
         <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>{apartment.name}</h3>
-        <p style={{ margin: '0 0 8px 0', color: '#666' }}>📍 {apartment.location}</p>
+        <p style={{ margin: '0 0 8px 0', color: '#666' }}>📍 {apartment.location || apartment.address}</p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#2563eb' }}>
-            ₪{apartment.price?.toLocaleString()}
+            ₪{apartment.pricePerNight?.toLocaleString()} / לילה
           </span>
-          {apartment.rooms && (
-            <span style={{ color: '#666' }}>🛏️ {apartment.rooms} חדרים</span>
+          {apartment.bedrooms && (
+            <span style={{ color: '#666' }}>🛏️ {apartment.bedrooms} חדרים</span>
           )}
         </div>
       </div>

@@ -1,16 +1,18 @@
-// ייבוא React Hook Form
+
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
-// הגדרת טיפוס לשדות הטופס
-type LoginFormData = {
-  email: string
-  password: string
-}
+import { useAppDispatch, useAppSelector } from '../store/hooks'
+import { loginUser, clearError } from '../store/authSlice'
+import type { LoginCredentials } from '../types/user.types'
+import { useEffect } from 'react'
+
+type LoginFormData = LoginCredentials
+
 export default function Login() {
-    const navigate = useNavigate()
+  const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+  const { loading, error, isAuthenticated } = useAppSelector((state) => state.auth)
 
-
-  // אתחול React Hook Form עם ערכי ברירת מחדל
   const {
     register,
     handleSubmit,
@@ -21,41 +23,33 @@ export default function Login() {
       password: ''
     }
   })
-  // פונקציית התחברות - מקבלת את הנתונים ישירות מ-React Hook Form
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/')
+    }
+  }, [isAuthenticated, navigate])
+
+  useEffect(() => {
+    return () => {
+      dispatch(clearError())
+    }
+  }, [dispatch])
+
   const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
-    try {
-      const response = await fetch('http://localhost:5500/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        // data מגיע ישירות מ-React Hook Form
-        body: JSON.stringify(data)
-      })
-
-      const resData = await response.json()
-
-      if (response.ok) {
-        console.log('התחברת בהצלחה!', resData)
-        localStorage.setItem('token', resData.token)
-        localStorage.setItem('user', JSON.stringify(resData.user))
-        alert('התחברת בהצלחה!')
-        navigate('/')
-      } else {
-        alert(resData.message || 'שגיאה בהתחברות')
-      }
-    } catch (error) {
-      alert('שגיאה בחיבור לשרת')
+    const result = await dispatch(loginUser(data))
+    if (loginUser.fulfilled.match(result)) {
+      navigate('/')
     }
   }
+
   return (
     <div className="login">
       <h1>התחברות</h1>
 
-      {/* handleSubmit עוטף את onSubmit ומונע רענון דף אוטומטית */}
-      <form onSubmit={handleSubmit(onSubmit)}>
+      {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
 
-        {/* שדה אימייל - חובה, חייב להיות פורמט אימייל תקין */}
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div>
           <label>אימייל:</label>
           <input
@@ -72,7 +66,6 @@ export default function Login() {
           {errors.email && <span style={{ color: 'red' }}>{errors.email.message}</span>}
         </div>
 
-        {/* שדה סיסמה - חובה, מינימום 6 תווים */}
         <div>
           <label>סיסמה:</label>
           <input
@@ -86,17 +79,14 @@ export default function Login() {
           {errors.password && <span style={{ color: 'red' }}>{errors.password.message}</span>}
         </div>
 
-        <button type="submit">התחבר</button>
+        <button type="submit" disabled={loading}>
+          {loading ? 'מתחבר...' : 'התחבר'}
+        </button>
       </form>
 
-      
-      
       <a>אין לך חשבון</a>
-      <br></br>
-    <button onClick={() => navigate('/register')}>להירשם לחץ כאן</button>
-
-
+      <br />
+      <button onClick={() => navigate('/register')}>להירשם לחץ כאן</button>
     </div>
   )
 }
-
