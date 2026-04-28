@@ -1,195 +1,223 @@
-// ייבוא ספריות בסיסיות
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import Calendar from 'react-calendar'
+import 'react-calendar/dist/Calendar.css'
+import { useAppSelector } from '../store/hooks' // הנחה שיש לך Redux לניהול משתמש
 
-// טיפוס לנתוני הדירה מהשרת
-type Apartment = {
-  name: string
-  price: number
-  location: string
-  rooms?: number
-  size?: number
-  floor?: number
-  description?: string
-  image?: string[]
-  characteristics?: string[]
-}
 export default function ApartmentDetails() {
-  // מושך את ה-id מה-URL - לדוגמה /apartments/abc123
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAppSelector((state) => state.auth) // המשתמש המחובר
 
-  // state לנתוני הדירה, טעינה, ואינדקס התמונה הנוכחית
-  const [apartment, setApartment] = useState<Apartment | null>(null)
+  // State לנתוני הדירה
+  const [apartment, setApartment] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  // טעינת נתוני הדירה מהשרת לפי ה-id מה-URL
+  
+  // State להזמנת תאריכים
+  const [showCalendar, setShowCalendar] = useState(false)
+  const [selectedRange, setSelectedRange] = useState<[Date, Date] | null>(null)
+  const [updatingDates, setUpdatingDates] = useState(false)
+
+  // State למערכת ביקורות
+  const [newRating, setNewRating] = useState(5)
+  const [newComment, setNewComment] = useState('')
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false)
+
   useEffect(() => {
-    const fetchApartment = async () => {
-      try {
-        const response = await fetch(`http://localhost:5500/api/apartments/${id}`)
-        const data = await response.json()
-        setApartment(data)
-      } catch (error) {
-        console.error('Error fetching apartment:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchApartment()
-  }, [id]) // רץ מחדש כל פעם שה-id משתנה
-  // מעבר לתמונה הבאה - חוזר לתחילה אם הגענו לסוף
-  const nextImage = () => {
-    if (apartment?.image) {
-      setCurrentImageIndex((prev) => (prev + 1) % apartment.image!.length)
+  }, [id])
+
+  const fetchApartment = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${id}`)
+      const data = await response.json()
+      setApartment(data)
+    } catch (error) {
+      console.error('Error fetching apartment:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  // מעבר לתמונה הקודמת - קופץ לסוף אם אנחנו בתחילה
-  const prevImage = () => {
-    if (apartment?.image) {
-      setCurrentImageIndex((prev) =>
-        prev === 0 ? apartment.image!.length - 1 : prev - 1
-      )
+  // --- פונקציה לעדכון תאריכים (הזמנה) ---
+  const handleBooking = async () => {
+    if (!selectedRange || !apartment) return
+    setUpdatingDates(true)
+
+    const newDates: string[] = []
+    let curr = new Date(selectedRange[0])
+    while (curr <= selectedRange[1]) {
+      newDates.push(new Date(curr).toISOString())
+      curr.setDate(curr.getDate() + 1)
+    }
+
+    const updatedNotAvailable = [...(apartment.notAvailableDates || []), ...newDates]
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...apartment, notAvailableDates: updatedNotAvailable })
+      })
+
+      if (response.ok) {
+        alert('ההזמנה בוצעה בהצלחה!')
+        setShowCalendar(false)
+        fetchApartment()
+      }
+    } catch (error) {
+      alert('שגיאה בעדכון התאריכים')
+    } finally {
+      setUpdatingDates(false)
     }
   }
-  // מצבי טעינה ושגיאה
-  if (loading) return <div style={{ padding: '20px' }}>טוען...</div>
-  if (!apartment) return <div style={{ padding: '20px' }}>דירה לא נמצאה</div>
 
-  // אם אין תמונות - מציג תמונת placeholder
-  const images = apartment.image && apartment.image.length > 0
-    ? apartment.image
-    : ['https://via.placeholder.com/800x500?text=No+Image']
+  // --- פונקציה להוספת ביקורת ---
+  const handleAddReview = async () => {
+    if (!newComment.trim()) return alert("אנא כתוב ביקורת")
+    setIsSubmittingReview(true)
+
+    const newReview = {
+      userName: user?.name || "אורח",
+      rating: newRating,
+      comment: newComment,
+      createdAt: new Date().toISOString()
+    }
+
+    const updatedReviews = [...(apartment.reviews || []), newReview]
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...apartment, reviews: updatedReviews })
+      })
+
+      if (response.ok) {
+        setNewComment('')
+        fetchApartment()
+        alert('תודה על הדירוג!')
+      }
+    } catch (error) {
+      console.error("Error adding review", error)
+    } finally {
+      setIsSubmittingReview(false)
+    }
+  }
+
+  // חישוב ממוצע כוכבים
+  const avgRating = apartment?.reviews?.length > 0
+    ? (apartment.reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / apartment.reviews.length).toFixed(1)
+    : "חדש"
+
+  if (loading) return <div style={{ textAlign: 'center', padding: '50px' }}>טוען...</div>
+  if (!apartment) return <div style={{ textAlign: 'center', padding: '50px' }}>דירה לא נמצאה</div>
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
+    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px', direction: 'rtl', textAlign: 'right' }}>
+      
+      <style>{`
+        .booked-day { background-color: #ff4d4f !important; color: white !important; border-radius: 4px; }
+        .react-calendar { width: 100%; border-radius: 10px; border: 1px solid #ddd; padding: 10px; }
+        .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; }
+        @media (max-width: 800px) { .main-grid { grid-template-columns: 1fr; } }
+      `}</style>
 
-      {/* כפתור חזרה לדף הבית */}
-      <button
-        onClick={() => navigate('/')}
-        style={{
-          marginBottom: '20px',
-          padding: '10px 20px',
-          cursor: 'pointer',
-          border: '1px solid #ddd',
-          borderRadius: '4px',
-          backgroundColor: 'white'
-        }}
-      >
-        ← חזרה לדף הבית
-      </button>
-
-      {/* סליידר תמונות */}
-      <div style={{color: 'pink', position: 'relative', marginBottom: '30px' }}>
-        <img
-          src={images[currentImageIndex]}
-          alt={apartment.name}
-          style={{
-            width: '100%',
-            height: '500px',
-            objectFit: 'cover',
-            borderRadius: '8px'
-          }}
-        />
-
-        {/* כפתורי ניווט בין תמונות - מוצגים רק אם יש יותר מתמונה אחת */}
-        {images.length > 1 && (
-          <>
-            <button
-              onClick={prevImage}
-              style={{
-                position: 'absolute',
-                left: '10px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                backgroundColor: 'rgba(255,255,255,0.8)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '40px',
-                height: '40px',
-                cursor: 'pointer',
-                fontSize: '20px'
-              }}
-            >
-              ❮
-            </button>
-            <button
-              onClick={nextImage}
-              style={{
-                position: 'absolute',
-                right: '10px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                backgroundColor: 'rgba(255,255,255,0.8)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '40px',
-                height: '40px',
-                cursor: 'pointer',
-                fontSize: '20px'
-              }}
-            >
-              ❯
-            </button>
-
-            {/* מונה תמונות - מציג את המיקום הנוכחי */}
-            <div style={{
-              position: 'absolute',
-              bottom: '10px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              backgroundColor: 'rgba(0,0,0,0.5)',
-              color: 'white',
-              padding: '5px 10px',
-              borderRadius: '4px'
-            }}>
-              {currentImageIndex + 1} / {images.length}
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* פרטי הדירה הבסיסיים */}
+      {/* כותרת ומיקום */}
       <h1>{apartment.name}</h1>
-      <p style={{ fontSize: '18px', color: '#666' }}>📍 {apartment.location}</p>
-
-      {/* גריד של מידע מספרי על הדירה */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '20px',
-        margin: '30px 0',
-        padding: '20px',
-        backgroundColor: '#f5f5f5',
-        borderRadius: '8px'
-      }}>
-        <div><strong>מחיר:</strong> ₪{apartment.price?.toLocaleString()}</div>
-        {apartment.rooms && <div><strong>חדרים:</strong> {apartment.rooms}</div>}
-        {apartment.size && <div><strong>גודל:</strong> {apartment.size} מ"ר</div>}
-        {apartment.floor && <div><strong>קומה:</strong> {apartment.floor}</div>}
+      <div style={{ display: 'flex', gap: '15px', color: '#666', marginBottom: '20px' }}>
+        <span>📍 {apartment.city}, {apartment.address}</span>
+        <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>★ {avgRating}</span>
       </div>
 
-      {/* תיאור הדירה - מוצג רק אם קיים */}
-      {apartment.description && (
-        <div style={{ marginTop: '30px' }}>
-          <h2>תיאור</h2>
-          <p style={{ lineHeight: '1.6' }}>{apartment.description}</p>
-        </div>
-      )}
+      <div className="main-grid">
+        
+        {/* צד ימין - פרטים ותמונות */}
+        <div>
+          <img 
+            src={apartment.image?.[0]?.startsWith('http') ? apartment.image[0] : `${import.meta.env.VITE_API_BASE_URL}/${apartment.image?.[0]}`} 
+            style={{ width: '100%', height: '400px', objectFit: 'cover', borderRadius: '15px', marginBottom: '20px' }} 
+          />
+          
+          <h3>תיאור</h3>
+          <p style={{ lineHeight: '1.7' }}>{apartment.description || "אין תיאור זמין לדירה זו."}</p>
 
-      {/* רשימת מאפיינים - מוצגת רק אם קיימת */}
-      {apartment.characteristics && apartment.characteristics.length > 0 && (
-        <div style={{ marginTop: '30px' }}>
-          <h2>מאפיינים</h2>
-          <ul>
-            {apartment.characteristics.map((char: string, index: number) => (
-              <li key={index}>{char}</li>
-            ))}
-          </ul>
+          <div style={{ display: 'flex', gap: '20px', background: '#f8f9fa', padding: '15px', borderRadius: '10px', margin: '20px 0' }}>
+            <div><strong>חדרי שינה:</strong> {apartment.bedrooms}</div>
+            <div><strong>אזור:</strong> {apartment.location}</div>
+          </div>
         </div>
-      )}
 
+        {/* צד שמאל - הזמנה (Sticky) */}
+        <div style={{ position: 'sticky', top: '20px', height: 'fit-content' }}>
+          <div style={{ border: '1px solid #ddd', padding: '25px', borderRadius: '15px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+            <h2 style={{ margin: '0 0 20px 0' }}>₪{apartment.price} <span style={{ fontSize: '16px', fontWeight: 'normal' }}>/ לילה</span></h2>
+            
+            {!showCalendar ? (
+              <button 
+                onClick={() => setShowCalendar(true)}
+                style={{ width: '100%', padding: '15px', backgroundColor: '#ff385c', color: 'white', border: 'none', borderRadius: '8px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                הזמן תאריכים
+              </button>
+            ) : (
+              <div>
+                <Calendar 
+                  onChange={(val: any) => setSelectedRange(val)}
+                  selectRange={true}
+                  minDate={new Date()}
+                  tileClassName={({ date }) => 
+                    apartment.notAvailableDates?.some((d: any) => new Date(d).toDateString() === date.toDateString()) ? 'booked-day' : ''
+                  }
+                />
+                <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                  <button onClick={handleBooking} disabled={!selectedRange || updatingDates} style={{ flex: 2, padding: '12px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
+                    {updatingDates ? 'מעדכן...' : 'אשר הזמנה'}
+                  </button>
+                  <button onClick={() => setShowCalendar(false)} style={{ flex: 1, padding: '12px', backgroundColor: '#eee', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>ביטול</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* --- מערכת ביקורות --- */}
+      <div style={{ marginTop: '50px', borderTop: '1px solid #eee', paddingTop: '30px' }}>
+        <h2>ביקורות ({apartment.reviews?.length || 0})</h2>
+        
+        {/* טופס הוספה */}
+        <div style={{ background: '#f9fafb', padding: '20px', borderRadius: '12px', margin: '20px 0' }}>
+          <h4>הוסף חוות דעת</h4>
+          <div style={{ marginBottom: '10px' }}>
+            <label>דירוג: </label>
+            <select value={newRating} onChange={(e) => setNewRating(Number(e.target.value))}>
+              {[5,4,3,2,1].map(n => <option key={n} value={n}>{n} כוכבים</option>)}
+            </select>
+          </div>
+          <textarea 
+            value={newComment} 
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="איך הייתה השהייה שלכם?"
+            style={{ width: '100%', height: '80px', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', marginBottom: '10px' }}
+          />
+          <button onClick={handleAddReview} disabled={isSubmittingReview} style={{ padding: '10px 20px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
+            {isSubmittingReview ? 'שולח...' : 'שלח ביקורת'}
+          </button>
+        </div>
+
+        {/* רשימת ביקורות */}
+        {apartment.reviews?.map((rev: any, i: number) => (
+          <div key={i} style={{ borderBottom: '1px solid #eee', padding: '15px 0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <strong>{rev.userName}</strong>
+              <span style={{ color: '#f59e0b' }}>{'★'.repeat(rev.rating)}</span>
+            </div>
+            <p style={{ margin: '5px 0', color: '#444' }}>{rev.comment}</p>
+            <small style={{ color: '#999' }}>{new Date(rev.createdAt).toLocaleDateString()}</small>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

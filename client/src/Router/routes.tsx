@@ -7,6 +7,7 @@ import UserDashboard from '../pages/UserDashboard'
 import Login from '../pages/Login'
 import Register from '../pages/Register'
 import AddApartment from '../pages/AddApartment'
+import EditApartment from '../pages/EditApartment'
 import ProtectedRoute from '../components/ProtectedRoute'
 
 const router = createBrowserRouter([
@@ -16,10 +17,9 @@ const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
-      {
-        path: "apartment/:id",
-        element: <ApartmentDetails />
-      },
+      { path: "apartment/:id", element: <ApartmentDetails /> },
+      { path: "search", element: <SearchResults /> },
+      
       {
         path: "dashboard",
         element: (
@@ -28,17 +28,9 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
-          {
-            path: "addApartment",
-            element: <AddApartment />
-          }
-        ]
-      },
-      {
-        path: "search",
-        element: <SearchResults />,
-        children: [
-          { path: ":id", element: <ApartmentDetails /> }
+          // שים לב: כאן לא מוסיפים /dashboard/ בהתחלה כי זה בתוך children
+          { path: "addApartment", element: <AddApartment /> },
+          { path: "edit/:id", element: <EditApartment /> }
         ]
       }
     ]

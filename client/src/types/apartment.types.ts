@@ -8,7 +8,7 @@ export interface Apartment {
   description?: string
   location?: string
   ownerId: string
-  images?: string[]
+  image?: string[]
   amenities?: string[]
   createdAt?: string
   updatedAt?: string

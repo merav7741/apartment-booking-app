@@ -1,9 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import type { AuthState, LoginCredentials, RegisterData, AuthResponse } from '../types/user.types'
 
-const API_URL = 'http://localhost:5500/api/auth'
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/auth`
 
-// טעינת נתונים מ-localStorage בעת אתחול
 const loadAuthFromStorage = (): Pick<AuthState, 'user' | 'token' | 'isAuthenticated'> => {
   const token = localStorage.getItem('token')
   const userStr = localStorage.getItem('user')

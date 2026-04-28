@@ -1,8 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import type { Apartment, ApartmentState } from '../types/apartment.types'
 import type { RootState } from './store'
-
-const API_URL = 'http://localhost:5500/api/apartments'
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/apartments`
 
 export const fetchAllApartments = createAsyncThunk<Apartment[]>(
   'apartments/fetchAll',

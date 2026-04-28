@@ -18,7 +18,8 @@ const Apartment = new Schema(
             min: 0
         },
         image: {
-            type: [String]
+          type: [String], 
+            default: []
         },
         city: {
             type: String

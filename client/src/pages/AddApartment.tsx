@@ -5,7 +5,7 @@ import { useAppSelector } from '../store/hooks'
 import type { User } from '../types/user.types'
 import AmenitiesSelector from '../components/AmenitiesSelector'
 
-const API_URL = 'http://localhost:5500/api/apartments'
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/apartments`
 
 type ApartmentFormData = {
   name: string

@@ -4,12 +4,12 @@ const getAllApartments = async (filters = {}) => {
   if (!filters || typeof filters !== 'object') {
     throw new Error('Filters must be an object')
   }
-  return await Apartment.find(filters)
+  return await Apartment.find(filters).populate('ownerId', 'fullName name');
 }
 
 const getApartmentById = async (id) => {
   if (!id) throw new Error('Apartment id is required')
-  return await Apartment.findById(id)
+  return await Apartment.findById(id).populate('ownerId', 'fullName name');
 }
 
 const createApartment = async (data) => {
@@ -20,7 +20,7 @@ const createApartment = async (data) => {
 }
 
 const updateApartment = async (id, data) => {
-  return await Apartment.findByIdAndUpdate(id, data, { new: true })
+  return await Apartment.findByIdAndUpdate(id, data, { new: true }).populate('ownerId', 'fullName name');
 }
 
 const deleteApartment = async (id) => {

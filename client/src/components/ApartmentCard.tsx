@@ -6,48 +6,84 @@ interface ApartmentCardProps {
 }
 
 export default function ApartmentCard({ apartment, onClick }: ApartmentCardProps) {
-  const imageUrl = apartment.images && apartment.images.length > 0 
-    ? apartment.images[0] 
-    : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="200"%3E%3Crect fill="%23ddd" width="300" height="200"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="18" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3ENo Image%3C/text%3E%3C/svg%3E'
+  
+  const getDisplayImage = () => {
+    // שלב 1: איסוף כל מקורות המידע האפשריים לתמונה
+    const possibleImages = apartment.image;
+    
+    // שלב 2: בדיקה אם המערך קיים ויש בו איברים
+    if (possibleImages && Array.isArray(possibleImages) && possibleImages.length > 0) {
+      const firstImg = possibleImages[0];
+
+      if (firstImg.startsWith('http')) {
+        return firstImg;
+      }
+
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5500';
+      return `${baseUrl}/${firstImg.replace(/\\/g, '/')}`;
+    }
+
+    // שלב 3: בדיקת גיבוי אם קיים שדה imageUrl ישיר (כמחרוזת)
+    const directUrl = (apartment as any).imageUrl;
+    if (typeof directUrl === 'string') return directUrl;
+
+    return null;
+  };
+
+  const finalImageUrl = getDisplayImage();
 
   return (
     <div 
       onClick={() => onClick(apartment._id)}
       style={{
         border: '1px solid #ddd',
-        borderRadius: '8px',
+        borderRadius: '12px',
         overflow: 'hidden',
         cursor: 'pointer',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        backgroundColor: 'white'
+        transition: 'all 0.3s ease',
+        backgroundColor: 'white',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-4px)'
-        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
+        e.currentTarget.style.transform = 'translateY(-5px)';
+        e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)'
-        e.currentTarget.style.boxShadow = 'none'
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)';
       }}
     >
-      <img 
-        src={imageUrl} 
-        alt={apartment.name}
-        style={{
-          width: '100%',
-          height: '200px',
-          objectFit: 'cover'
-        }}
-      />
+      <div style={{ width: '100%', height: '200px', backgroundColor: '#f3f4f6', position: 'relative' }}>
+        {finalImageUrl ? (
+          <img 
+            src={finalImageUrl} 
+            alt={apartment.name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'https://placehold.co/300x200?text=Image+Not+Found';
+            }}
+          />
+        ) : (
+          <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
+            <span style={{ fontSize: '40px' }}>🖼️</span>
+            <span>אין תמונה</span>
+          </div>
+        )}
+      </div>
+
       <div style={{ padding: '16px' }}>
-        <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>{apartment.name}</h3>
-        <p style={{ margin: '0 0 8px 0', color: '#666' }}>📍 {apartment.location || apartment.address}</p>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#2563eb' }}>
-            ₪{apartment.pricePerNight?.toLocaleString()} / לילה
+        <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 'bold' }}>{apartment.name}</h3>
+        <p style={{ margin: '0 0 12px 0', color: '#666', fontSize: '14px' }}>
+          📍 {apartment.address || apartment.location || apartment.address}
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #eee', paddingTop: '12px' }}>
+          <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#2563eb' }}>
+            ₪{apartment.price?.toLocaleString()}
           </span>
-          {apartment.bedrooms && (
-            <span style={{ color: '#666' }}>🛏️ {apartment.bedrooms} חדרים</span>
+          {apartment.bedrooms !== undefined && (
+            <span style={{ color: '#4b5563', fontSize: '13px' }}>
+              🛏️ {apartment.bedrooms} חדרים
+            </span>
           )}
         </div>
       </div>
