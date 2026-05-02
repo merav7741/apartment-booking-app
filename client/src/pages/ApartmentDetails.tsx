@@ -56,7 +56,10 @@ export default function ApartmentDetails() {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify({ ...apartment, notAvailableDates: updatedNotAvailable })
       })
 
@@ -89,7 +92,10 @@ export default function ApartmentDetails() {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify({ ...apartment, reviews: updatedReviews })
       })
 
@@ -132,7 +138,6 @@ export default function ApartmentDetails() {
 
       <div className="main-grid">
         
-        {/* צד ימין - פרטים ותמונות */}
         <div>
           <img 
             src={apartment.image?.[0]?.startsWith('http') ? apartment.image[0] : `${import.meta.env.VITE_API_BASE_URL}/${apartment.image?.[0]}`} 
@@ -148,7 +153,6 @@ export default function ApartmentDetails() {
           </div>
         </div>
 
-        {/* צד שמאל - הזמנה (Sticky) */}
         <div style={{ position: 'sticky', top: '20px', height: 'fit-content' }}>
           <div style={{ border: '1px solid #ddd', padding: '25px', borderRadius: '15px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
             <h2 style={{ margin: '0 0 20px 0' }}>₪{apartment.price} <span style={{ fontSize: '16px', fontWeight: 'normal' }}>/ לילה</span></h2>
@@ -182,11 +186,9 @@ export default function ApartmentDetails() {
         </div>
       </div>
 
-      {/* --- מערכת ביקורות --- */}
       <div style={{ marginTop: '50px', borderTop: '1px solid #eee', paddingTop: '30px' }}>
         <h2>ביקורות ({apartment.reviews?.length || 0})</h2>
         
-        {/* טופס הוספה */}
         <div style={{ background: '#f9fafb', padding: '20px', borderRadius: '12px', margin: '20px 0' }}>
           <h4>הוסף חוות דעת</h4>
           <div style={{ marginBottom: '10px' }}>
@@ -206,7 +208,6 @@ export default function ApartmentDetails() {
           </button>
         </div>
 
-        {/* רשימת ביקורות */}
         {apartment.reviews?.map((rev: any, i: number) => (
           <div key={i} style={{ borderBottom: '1px solid #eee', padding: '15px 0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
