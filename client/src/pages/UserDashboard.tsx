@@ -3,6 +3,7 @@ import { useNavigate, Outlet, useLocation } from 'react-router-dom'
 import ApartmentCard from '../components/ApartmentCard'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { fetchMyApartments } from '../store/apartmentSlice'
+import { upgradeUser } from '../store/authSlice' 
 import type { Apartment } from '../types/apartment.types'
 
 export default function UserDashboard() {
@@ -13,14 +14,16 @@ export default function UserDashboard() {
   const { myApartments, loading } = useAppSelector((state) => state.apartments)
   const { user, isAuthenticated } = useAppSelector((state) => state.auth)
 
-  const [allSystemApartments, setAllSystemApartments] = useState<any[]>([])
+  const [allSystemApartments, setAllSystemApartments] = useState<Apartment[]>([])
   const [adminLoading, setAdminLoading] = useState(false)
 
   useEffect(() => {
     if (isAuthenticated) {
-      dispatch(fetchMyApartments())
+      if (user?.role !== 'Guest') {
+        dispatch(fetchMyApartments())
+      }
     }
-  }, [dispatch, isAuthenticated])
+  }, [dispatch, isAuthenticated, user])
 
   useEffect(() => {
     if (isAuthenticated && user?.role === 'Admin') {
@@ -66,11 +69,32 @@ export default function UserDashboard() {
   const isEditingOrAdding = location.pathname.includes('/edit/') || location.pathname.includes('/addApartment')
   if (isEditingOrAdding) return <Outlet />
 
+  // תצוגה לאורחת - חייב לבוא לפני ה-return הראשי
+  if (user?.role === 'Guest') {
+    return (
+      <div style={{ padding: '50px', textAlign: 'center', direction: 'rtl' }}>
+        <h1>ברוכה הבאה, {user.name} 👋</h1>
+        <div style={{ background: '#f8fafc', padding: '40px', borderRadius: '20px', border: '1px solid #e2e8f0', maxWidth: '600px', margin: '0 auto' }}>
+          <h2>את רשומה כ"אורחת"</h2>
+          <p style={{ fontSize: '18px', color: '#64748b', margin: '20px 0' }}>
+            כדי לפרסם דירות משלך, לערוך ולנהל נכסים, עלייך להיות רשומה כמנויה.
+          </p>
+          <button
+            onClick={() => dispatch(upgradeUser())}
+            style={{ padding: '12px 24px', backgroundColor: '#6366f1', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            שדרגי למנויה עכשיו ✨
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto', direction: 'rtl', textAlign: 'right' }}>
 
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <h1>לוח בקרה - { user?.name}</h1>
+        <h1>לוח בקרה - {user?.name}</h1>
         <button onClick={() => navigate('/dashboard/addApartment')} style={addBtnStyle}>+ הוסף דירה חדשה</button>
       </header>
 
@@ -79,7 +103,7 @@ export default function UserDashboard() {
         <h2 style={sectionTitleStyle}>הדירות שפרסמתי</h2>
         {loading ? <p>טוען...</p> : (
           <div style={gridStyle}>
-            {myApartments.map(apt => (
+            {myApartments.length > 0 ? myApartments.map(apt => (
               <div key={apt._id} style={{ position: 'relative' }}>
                 <div style={adminActionsStyle}>
                   <button onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/edit/${apt._id}`) }} style={editBtnStyle}>ערוך ✏️</button>
@@ -87,7 +111,7 @@ export default function UserDashboard() {
                 </div>
                 <ApartmentCard apartment={apt} onClick={() => navigate(`/apartment/${apt._id}`)} />
               </div>
-            ))}
+            )) : <p>אין דירות להצגה.</p>}
           </div>
         )}
       </section>
@@ -101,13 +125,9 @@ export default function UserDashboard() {
             {adminLoading ? <p>טוען נתונים...</p> : (
               <div style={gridStyle}>
                 {allSystemApartments.map(apt => {
-                  // 1. חילוץ ה-ID של בעל הדירה (תמיכה במחרוזת או באובייקט populate)
                   const apartmentOwnerId = typeof apt.ownerId === 'object' ? apt.ownerId._id : apt.ownerId;
+                  const isMine = String(apartmentOwnerId) === String(user?._id || '');
 
-                  // 2. השוואה ל-ID של המשתמש המחובר
-                  const isMine = String(apartmentOwnerId) === String(user?._id);
-
-                  // 3. חילוץ שם הבעלים להצגה
                   let ownerDisplayName = "משתמש אחר";
                   if (isMine) {
                     ownerDisplayName = "אני";

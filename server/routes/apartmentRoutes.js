@@ -7,7 +7,7 @@ router.get('/', getAll)
 router.get('/my-apartments', verifyToken, getMyApartments)
 router.get('/:id', getById)
 router.post('/', verifyToken, verifySubscriberOrAdmin, create)
-router.put('/:id', update)
-router.delete('/:id', remove)
+router.put('/:id', verifyToken, update)
+router.delete('/:id', verifyToken, remove)
 
 module.exports = router

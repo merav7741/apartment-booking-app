@@ -1,3 +1,9 @@
+export interface ApartmentOwner {
+  _id: string
+  name?: string
+  fullName?: string
+}
+
 export interface Apartment {
   _id: string
   name: string
@@ -5,11 +11,13 @@ export interface Apartment {
   pricePerNight: number
   address: string
   bedrooms: number
+  city?: string
+  location?: 'Center' | 'North' | 'South' | 'East' | 'West'
   description?: string
-  location?: string
-  ownerId: string
   image?: string[]
-  amenities?: string[]
+  characteristics?: string[]
+  ownerId: string | ApartmentOwner
+  notAvailableDates?: Date[]
   createdAt?: string
   updatedAt?: string
 }

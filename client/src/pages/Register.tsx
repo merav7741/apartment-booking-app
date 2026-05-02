@@ -11,6 +11,7 @@ type RegisterFormData = {
   confirmPassword: string
   phone: string
   role: string
+  adminCode?: string
 }
 
 export default function Register() {
@@ -30,11 +31,13 @@ export default function Register() {
       password: '',
       confirmPassword: '',
       phone: '',
-      role: 'Guest'
+      role: 'Guest',
+      adminCode: ''
     }
   })
 
   const password = watch('password')
+  const role = watch('role')
 
   useEffect(() => {
     return () => {
@@ -48,7 +51,8 @@ export default function Register() {
       email: data.email,
       phone: data.phone,
       password: data.password,
-      role: data.role
+      role: data.role,
+      adminCode: data.adminCode
     }))
     
     if (registerUser.fulfilled.match(result)) {
@@ -58,29 +62,31 @@ export default function Register() {
   }
 
   return (
-    <div>
+    <div style={{ maxWidth: '400px', margin: '40px auto', padding: '20px', direction: 'rtl' }}>
       <h1>הרשמה</h1>
 
       {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div>
-          <label>שם מלא:</label>
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block' }}>שם מלא:</label>
           <input
             type="text"
+            style={{ width: '100%', padding: '8px' }}
             placeholder="הכנס שם מלא"
             {...register('fullName', {
               required: 'שם מלא הוא שדה חובה',
               minLength: { value: 2, message: 'שם חייב להכיל לפחות 2 תווים' }
             })}
           />
-          {errors.fullName && <span style={{ color: 'red' }}>{errors.fullName.message}</span>}
+          {errors.fullName && <span style={{ color: 'red', fontSize: '12px' }}>{errors.fullName.message}</span>}
         </div>
 
-        <div>
-          <label>אימייל:</label>
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block' }}>אימייל:</label>
           <input
             type="email"
+            style={{ width: '100%', padding: '8px' }}
             placeholder="your@email.com"
             {...register('email', {
               required: 'אימייל הוא שדה חובה',
@@ -90,39 +96,42 @@ export default function Register() {
               }
             })}
           />
-          {errors.email && <span style={{ color: 'red' }}>{errors.email.message}</span>}
+          {errors.email && <span style={{ color: 'red', fontSize: '12px' }}>{errors.email.message}</span>}
         </div>
 
-        <div>
-          <label>סיסמה:</label>
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block' }}>סיסמה:</label>
           <input
             type="password"
+            style={{ width: '100%', padding: '8px' }}
             placeholder="הכנס סיסמה"
             {...register('password', {
               required: 'סיסמה היא שדה חובה',
               minLength: { value: 6, message: 'סיסמה חייבת להכיל לפחות 6 תווים' }
             })}
           />
-          {errors.password && <span style={{ color: 'red' }}>{errors.password.message}</span>}
+          {errors.password && <span style={{ color: 'red', fontSize: '12px' }}>{errors.password.message}</span>}
         </div>
 
-        <div>
-          <label>אשר סיסמה:</label>
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block' }}>אשר סיסמה:</label>
           <input
             type="password"
+            style={{ width: '100%', padding: '8px' }}
             placeholder="אשר סיסמה"
             {...register('confirmPassword', {
               required: 'אישור סיסמה הוא שדה חובה',
               validate: (value) => value === password || 'הסיסמאות לא תואמות'
             })}
           />
-          {errors.confirmPassword && <span style={{ color: 'red' }}>{errors.confirmPassword.message}</span>}
+          {errors.confirmPassword && <span style={{ color: 'red', fontSize: '12px' }}>{errors.confirmPassword.message}</span>}
         </div>
 
-        <div>
-          <label>פלאפון:</label>
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block' }}>פלאפון:</label>
           <input
             type="text"
+            style={{ width: '100%', padding: '8px' }}
             placeholder="05xxxxxxxx"
             {...register('phone', {
               required: 'טלפון הוא שדה חובה',
@@ -132,11 +141,11 @@ export default function Register() {
               }
             })}
           />
-          {errors.phone && <span style={{ color: 'red' }}>{errors.phone.message}</span>}
+          {errors.phone && <span style={{ color: 'red', fontSize: '12px' }}>{errors.phone.message}</span>}
         </div>
 
-        <div>
-          <label>סוג מנוי:</label>
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block' }}>סוג מנוי:</label>
           <select
             {...register('role')}
             style={{ width: '100%', padding: '8px' }}
@@ -147,13 +156,35 @@ export default function Register() {
           </select>
         </div>
 
-        <button type="submit" disabled={loading}>
-          {loading ? 'מרשם...' : 'הירשם'}
+        {role === 'Admin' && (
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block' }}>קוד מנהל:</label>
+            <input
+              type="password"
+              style={{ width: '100%', padding: '8px' }}
+              placeholder="הכנס קוד מנהל"
+              {...register('adminCode', {
+                required: 'קוד מנהל הוא שדה חובה'
+              })}
+            />
+            {errors.adminCode && <span style={{ color: 'red', fontSize: '12px' }}>{errors.adminCode.message}</span>}
+          </div>
+        )}
+
+        <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: 'white', border: 'none', cursor: 'pointer' }}>
+          {loading ? 'נרשם...' : 'הירשם'}
         </button>
       </form>
 
-      <a>כבר יש לך חשבון?</a>
-      <button onClick={() => navigate(-1)}>התחבר כאן</button>
+      <div style={{ marginTop: '20px', textAlign: 'center' }}>
+        <span>כבר יש לך חשבון? </span>
+        <button 
+          onClick={() => navigate('/login')} 
+          style={{ background: 'none', border: 'none', color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
+        >
+          התחבר כאן
+        </button>
+      </div>
     </div>
   )
 }

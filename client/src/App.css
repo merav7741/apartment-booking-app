@@ -284,11 +284,11 @@ button[type="submit"] {
 }
 
 /* סגנונות לדפים */
-.home, .search-results, .apartment-details, .user-dashboard, .login, .register, .add-apartment {
+.home,  .apartment-details, .user-dashboard, .login, .register, .add-apartment {
   padding: 2rem 0;
 }
 
-.home h1, .search-results h1, .apartment-details h1, .user-dashboard h1, .login h1, .register h1, .add-apartment h1 {
+.home h1,  .apartment-details h1, .user-dashboard h1, .login h1, .register h1, .add-apartment h1 {
   color: #111827;
   margin-bottom: 1rem;
 }

@@ -20,7 +20,7 @@ const loadAuthFromStorage = (): Pick<AuthState, 'user' | 'token' | 'isAuthentica
   return { user: null, token: null, isAuthenticated: false }
 }
 
-// Login Thunk
+
 export const loginUser = createAsyncThunk<AuthResponse, LoginCredentials>(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
@@ -32,14 +32,10 @@ export const loginUser = createAsyncThunk<AuthResponse, LoginCredentials>(
       })
 
       const data = await response.json()
-
-      if (!response.ok) {
-        return rejectWithValue(data.message || 'שגיאה בהתחברות')
-      }
+      if (!response.ok) return rejectWithValue(data.message || 'שגיאה בהתחברות')
 
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
-      
       return data
     } catch (error) {
       return rejectWithValue('שגיאה בחיבור לשרת')
@@ -47,7 +43,6 @@ export const loginUser = createAsyncThunk<AuthResponse, LoginCredentials>(
   }
 )
 
-// Register Thunk
 export const registerUser = createAsyncThunk<AuthResponse, RegisterData>(
   'auth/register',
   async (userData, { rejectWithValue }) => {
@@ -59,10 +54,31 @@ export const registerUser = createAsyncThunk<AuthResponse, RegisterData>(
       })
 
       const data = await response.json()
+      if (!response.ok) return rejectWithValue(data.message || 'שגיאה ברישום')
 
-      if (!response.ok) {
-        return rejectWithValue(data.message || 'שגיאה ברישום')
-      }
+      localStorage.setItem('token', data.token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+      return data
+    } catch (error) {
+      return rejectWithValue('שגיאה בחיבור לשרת')
+    }
+  }
+)
+
+export const upgradeUser = createAsyncThunk<AuthResponse, void>(
+  'auth/upgrade',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_URL}/upgrade`, {
+        method: 'PUT', // חשוב: PUT כי זה עדכון נתונים
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
+
+      const data = await response.json()
+      if (!response.ok) return rejectWithValue(data.message || 'שגיאה בשדרוג')
 
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
@@ -97,7 +113,6 @@ const authSlice = createSlice({
     }
   },
   extraReducers: (builder) => {
-    // Login
     builder.addCase(loginUser.pending, (state) => {
       state.loading = true
       state.error = null
@@ -107,14 +122,13 @@ const authSlice = createSlice({
       state.user = action.payload.user
       state.token = action.payload.token
       state.isAuthenticated = true
-      state.error = null
     })
     builder.addCase(loginUser.rejected, (state, action) => {
       state.loading = false
       state.error = action.payload as string
     })
 
-    // Register
+    
     builder.addCase(registerUser.pending, (state) => {
       state.loading = true
       state.error = null
@@ -124,9 +138,24 @@ const authSlice = createSlice({
       state.user = action.payload.user
       state.token = action.payload.token
       state.isAuthenticated = true
-      state.error = null
     })
     builder.addCase(registerUser.rejected, (state, action) => {
+      state.loading = false
+      state.error = action.payload as string
+    })
+
+
+    builder.addCase(upgradeUser.pending, (state) => {
+      state.loading = true
+    })
+    builder.addCase(upgradeUser.fulfilled, (state, action) => {
+      state.loading = false
+      state.user = action.payload.user
+      state.token = action.payload.token
+      state.isAuthenticated = true
+      state.error = null
+    })
+    builder.addCase(upgradeUser.rejected, (state, action) => {
       state.loading = false
       state.error = action.payload as string
     })

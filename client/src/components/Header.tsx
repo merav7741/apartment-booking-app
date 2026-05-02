@@ -28,12 +28,6 @@ const Header = () => {
           fontWeight: isActive ? 'bold' : 'normal'
         })}>דף הבית</NavLink>
 
-        <NavLink to='/search' style={({ isActive }) => ({
-          color: isActive ? 'blue' : 'black',
-          textDecoration: 'none',
-          fontWeight: isActive ? 'bold' : 'normal'
-        })}>חיפוש</NavLink>
-
         {isAuthenticated && (
           <NavLink to='/dashboard' style={({ isActive }) => ({
             color: isActive ? 'blue' : 'black',

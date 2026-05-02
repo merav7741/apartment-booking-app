@@ -25,6 +25,7 @@ export interface RegisterData {
   phone: string
   password: string
   role: string
+  adminCode?: string
 }
 
 export interface AuthResponse {

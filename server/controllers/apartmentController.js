@@ -65,8 +65,15 @@ const remove = async (req, res) => {
         if (!id) {
             return res.status(400).json({ error: 'Apartment id is required' })
         }
-        const apartment = await deleteApartment(id)
+        const apartment = await getApartmentById(id)
         if (!apartment) return res.status(404).json({ message: 'Apartment not found' })
+
+        const ownerId = typeof apartment.ownerId === 'object' ? apartment.ownerId._id.toString() : apartment.ownerId.toString()
+        if (ownerId !== req.user.userId && req.user.role !== 'Admin') {
+            return res.status(403).json({ message: 'אין הרשאה למחוק דירה זו' })
+        }
+
+        await deleteApartment(id)
         res.json({ message: 'Apartment deleted' })
     } catch (err) {
         res.status(500).json({ message: err.message })
@@ -76,9 +83,8 @@ const remove = async (req, res) => {
 const getMyApartments = async (req, res) => {
     try {
         const userId = req.user.userId
-        const apartments = await getAllApartments()
-        const myApartments = apartments.filter(apt => apt.ownerId.toString() === userId)
-        res.json(myApartments)
+        const apartments = await getAllApartments({ ownerId: userId })
+        res.json(apartments)
     } catch (err) {
         res.status(500).json({ message: err.message })
     }

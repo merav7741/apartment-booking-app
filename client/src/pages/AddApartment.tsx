@@ -62,7 +62,7 @@ export default function AddApartment() {
         },
         body: JSON.stringify({
           ...data,
-          images: images,
+          image: images,
           amenities: Object.keys(amenities).filter(key => amenities[key])
         })
       })
