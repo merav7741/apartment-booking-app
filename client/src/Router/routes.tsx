@@ -17,7 +17,6 @@ const router = createBrowserRouter([
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
       { path: "apartment/:id", element: <ApartmentDetails /> },
-      
       {
         path: "dashboard",
         element: (
@@ -26,7 +25,6 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
-          // שים לב: כאן לא מוסיפים /dashboard/ בהתחלה כי זה בתוך children
           { path: "addApartment", element: <AddApartment /> },
           { path: "edit/:id", element: <EditApartment /> }
         ]

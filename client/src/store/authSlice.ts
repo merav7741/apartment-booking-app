@@ -65,31 +65,6 @@ export const registerUser = createAsyncThunk<AuthResponse, RegisterData>(
   }
 )
 
-export const upgradeUser = createAsyncThunk<AuthResponse, void>(
-  'auth/upgrade',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await fetch(`${API_URL}/upgrade`, {
-        method: 'PUT', // חשוב: PUT כי זה עדכון נתונים
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      })
-
-      const data = await response.json()
-      if (!response.ok) return rejectWithValue(data.message || 'שגיאה בשדרוג')
-
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('user', JSON.stringify(data.user))
-      
-      return data
-    } catch (error) {
-      return rejectWithValue('שגיאה בחיבור לשרת')
-    }
-  }
-)
-
 const initialState: AuthState = {
   ...loadAuthFromStorage(),
   loading: false,
@@ -140,22 +115,6 @@ const authSlice = createSlice({
       state.isAuthenticated = true
     })
     builder.addCase(registerUser.rejected, (state, action) => {
-      state.loading = false
-      state.error = action.payload as string
-    })
-
-
-    builder.addCase(upgradeUser.pending, (state) => {
-      state.loading = true
-    })
-    builder.addCase(upgradeUser.fulfilled, (state, action) => {
-      state.loading = false
-      state.user = action.payload.user
-      state.token = action.payload.token
-      state.isAuthenticated = true
-      state.error = null
-    })
-    builder.addCase(upgradeUser.rejected, (state, action) => {
       state.loading = false
       state.error = action.payload as string
     })

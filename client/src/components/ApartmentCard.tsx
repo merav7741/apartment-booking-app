@@ -8,10 +8,8 @@ interface ApartmentCardProps {
 export default function ApartmentCard({ apartment, onClick }: ApartmentCardProps) {
   
   const getDisplayImage = () => {
-    // שלב 1: איסוף כל מקורות המידע האפשריים לתמונה
     const possibleImages = apartment.image;
     
-    // שלב 2: בדיקה אם המערך קיים ויש בו איברים
     if (possibleImages && Array.isArray(possibleImages) && possibleImages.length > 0) {
       const firstImg = possibleImages[0];
 
@@ -23,7 +21,6 @@ export default function ApartmentCard({ apartment, onClick }: ApartmentCardProps
       return `${baseUrl}/${firstImg.replace(/\\/g, '/')}`;
     }
 
-    // שלב 3: בדיקת גיבוי אם קיים שדה imageUrl ישיר (כמחרוזת)
     const directUrl = (apartment as any).imageUrl;
     if (typeof directUrl === 'string') return directUrl;
 

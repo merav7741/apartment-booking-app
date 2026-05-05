@@ -2,23 +2,20 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Calendar from 'react-calendar'
 import 'react-calendar/dist/Calendar.css'
-import { useAppSelector } from '../store/hooks' // הנחה שיש לך Redux לניהול משתמש
+import { useAppSelector } from '../store/hooks'
 
 export default function ApartmentDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user } = useAppSelector((state) => state.auth) // המשתמש המחובר
+  const { user, token, isAuthenticated } = useAppSelector((state) => state.auth)
 
-  // State לנתוני הדירה
   const [apartment, setApartment] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
-  
-  // State להזמנת תאריכים
+
   const [showCalendar, setShowCalendar] = useState(false)
   const [selectedRange, setSelectedRange] = useState<[Date, Date] | null>(null)
   const [updatingDates, setUpdatingDates] = useState(false)
 
-  // State למערכת ביקורות
   const [newRating, setNewRating] = useState(5)
   const [newComment, setNewComment] = useState('')
   const [isSubmittingReview, setIsSubmittingReview] = useState(false)
@@ -39,11 +36,9 @@ export default function ApartmentDetails() {
     }
   }
 
-  // --- פונקציה לעדכון תאריכים (הזמנה) ---
   const handleBooking = async () => {
     if (!selectedRange || !apartment) return
     setUpdatingDates(true)
-
     const newDates: string[] = []
     let curr = new Date(selectedRange[0])
     while (curr <= selectedRange[1]) {
@@ -56,9 +51,9 @@ export default function ApartmentDetails() {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${id}`, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ ...apartment, notAvailableDates: updatedNotAvailable })
       })
@@ -75,7 +70,6 @@ export default function ApartmentDetails() {
     }
   }
 
-  // --- פונקציה להוספת ביקורת ---
   const handleAddReview = async () => {
     if (!newComment.trim()) return alert("אנא כתוב ביקורת")
     setIsSubmittingReview(true)
@@ -92,9 +86,9 @@ export default function ApartmentDetails() {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${id}`, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ ...apartment, reviews: updatedReviews })
       })
@@ -111,7 +105,6 @@ export default function ApartmentDetails() {
     }
   }
 
-  // חישוב ממוצע כוכבים
   const avgRating = apartment?.reviews?.length > 0
     ? (apartment.reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / apartment.reviews.length).toFixed(1)
     : "חדש"
@@ -121,7 +114,7 @@ export default function ApartmentDetails() {
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px', direction: 'rtl', textAlign: 'right' }}>
-      
+
       <style>{`
         .booked-day { background-color: #ff4d4f !important; color: white !important; border-radius: 4px; }
         .react-calendar { width: 100%; border-radius: 10px; border: 1px solid #ddd; padding: 10px; }
@@ -129,7 +122,6 @@ export default function ApartmentDetails() {
         @media (max-width: 800px) { .main-grid { grid-template-columns: 1fr; } }
       `}</style>
 
-      {/* כותרת ומיקום */}
       <h1>{apartment.name}</h1>
       <div style={{ display: 'flex', gap: '15px', color: '#666', marginBottom: '20px' }}>
         <span>📍 {apartment.city}, {apartment.address}</span>
@@ -137,13 +129,13 @@ export default function ApartmentDetails() {
       </div>
 
       <div className="main-grid">
-        
+
         <div>
-          <img 
-            src={apartment.image?.[0]?.startsWith('http') ? apartment.image[0] : `${import.meta.env.VITE_API_BASE_URL}/${apartment.image?.[0]}`} 
-            style={{ width: '100%', height: '400px', objectFit: 'cover', borderRadius: '15px', marginBottom: '20px' }} 
+          <img
+            src={apartment.image?.[0]?.startsWith('http') ? apartment.image[0] : `${import.meta.env.VITE_API_BASE_URL}/${apartment.image?.[0]}`}
+            style={{ width: '100%', height: '400px', objectFit: 'cover', borderRadius: '15px', marginBottom: '20px' }}
           />
-          
+
           <h3>תיאור</h3>
           <p style={{ lineHeight: '1.7' }}>{apartment.description || "אין תיאור זמין לדירה זו."}</p>
 
@@ -156,9 +148,19 @@ export default function ApartmentDetails() {
         <div style={{ position: 'sticky', top: '20px', height: 'fit-content' }}>
           <div style={{ border: '1px solid #ddd', padding: '25px', borderRadius: '15px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
             <h2 style={{ margin: '0 0 20px 0' }}>₪{apartment.price} <span style={{ fontSize: '16px', fontWeight: 'normal' }}>/ לילה</span></h2>
-            
-            {!showCalendar ? (
-              <button 
+
+            {!isAuthenticated ? (
+              <div style={{ textAlign: 'center' }}>
+                <p style={{ color: '#666', marginBottom: '10px' }}>כדי להזמין עליך להתחבר</p>
+                <button
+                  onClick={() => navigate('/login')}
+                  style={{ width: '100%', padding: '15px', backgroundColor: '#ff385c', color: 'white', border: 'none', borderRadius: '8px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  התחבר להזמנה
+                </button>
+              </div>
+            ) : !showCalendar ? (
+              <button
                 onClick={() => setShowCalendar(true)}
                 style={{ width: '100%', padding: '15px', backgroundColor: '#ff385c', color: 'white', border: 'none', borderRadius: '8px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }}
               >
@@ -166,11 +168,10 @@ export default function ApartmentDetails() {
               </button>
             ) : (
               <div>
-                <Calendar 
-                  onChange={(val: any) => setSelectedRange(val)}
+                <Calendar
                   selectRange={true}
                   minDate={new Date()}
-                  tileClassName={({ date }) => 
+                  tileClassName={({ date }) =>
                     apartment.notAvailableDates?.some((d: any) => new Date(d).toDateString() === date.toDateString()) ? 'booked-day' : ''
                   }
                 />
@@ -188,25 +189,32 @@ export default function ApartmentDetails() {
 
       <div style={{ marginTop: '50px', borderTop: '1px solid #eee', paddingTop: '30px' }}>
         <h2>ביקורות ({apartment.reviews?.length || 0})</h2>
-        
-        <div style={{ background: '#f9fafb', padding: '20px', borderRadius: '12px', margin: '20px 0' }}>
-          <h4>הוסף חוות דעת</h4>
-          <div style={{ marginBottom: '10px' }}>
-            <label>דירוג: </label>
-            <select value={newRating} onChange={(e) => setNewRating(Number(e.target.value))}>
-              {[5,4,3,2,1].map(n => <option key={n} value={n}>{n} כוכבים</option>)}
-            </select>
+
+        {isAuthenticated ? (
+          <div style={{ background: '#f9fafb', padding: '20px', borderRadius: '12px', margin: '20px 0' }}>
+            <h4>הוסף חוות דעת</h4>
+            <div style={{ marginBottom: '10px' }}>
+              <label>דירוג: </label>
+              <select value={newRating} onChange={(e) => setNewRating(Number(e.target.value))}>
+                {[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n} כוכבים</option>)}
+              </select>
+            </div>
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="איך הייתה השהייה שלכם?"
+              style={{ width: '100%', height: '80px', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', marginBottom: '10px' }}
+            />
+            <button onClick={handleAddReview} disabled={isSubmittingReview} style={{ padding: '10px 20px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
+              {isSubmittingReview ? 'שולח...' : 'שלח ביקורת'}
+            </button>
           </div>
-          <textarea 
-            value={newComment} 
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder="איך הייתה השהייה שלכם?"
-            style={{ width: '100%', height: '80px', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', marginBottom: '10px' }}
-          />
-          <button onClick={handleAddReview} disabled={isSubmittingReview} style={{ padding: '10px 20px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
-            {isSubmittingReview ? 'שולח...' : 'שלח ביקורת'}
-          </button>
-        </div>
+        ) : (
+          <div style={{ background: '#f9fafb', padding: '20px', borderRadius: '12px', margin: '20px 0', textAlign: 'center' }}>
+            <p style={{ color: '#666' }}>כדי לכתוב ביקורת עליך להתחבר</p>
+            <button onClick={() => navigate('/login')} style={{ padding: '10px 20px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>התחבר</button>
+          </div>
+        )}
 
         {apartment.reviews?.map((rev: any, i: number) => (
           <div key={i} style={{ borderBottom: '1px solid #eee', padding: '15px 0' }}>

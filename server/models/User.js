@@ -33,8 +33,8 @@ const UserScema = new Schema(
         role: {
             type: String,
             required: true,
-            enum: ['Admin', 'Subscriber', 'Guest'],
-            default: 'Guest'
+            enum: ['Admin', 'Subscriber'], //לבדוק אם להוסיף Guest 
+            default: 'Subscriber'
         }
     }
 )

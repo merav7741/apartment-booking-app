@@ -25,12 +25,6 @@ export default function Login() {
   })
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/')
-    }
-  }, [isAuthenticated, navigate])
-
-  useEffect(() => {
     return () => {
       dispatch(clearError())
     }

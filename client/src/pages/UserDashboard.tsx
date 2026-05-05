@@ -3,27 +3,23 @@ import { useNavigate, Outlet, useLocation } from 'react-router-dom'
 import ApartmentCard from '../components/ApartmentCard'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { fetchMyApartments } from '../store/apartmentSlice'
-import { upgradeUser } from '../store/authSlice' 
 import type { Apartment } from '../types/apartment.types'
 
 export default function UserDashboard() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const location = useLocation()
-
   const { myApartments, loading } = useAppSelector((state) => state.apartments)
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth)
+  const { user, isAuthenticated, token } = useAppSelector((state) => state.auth)
 
   const [allSystemApartments, setAllSystemApartments] = useState<Apartment[]>([])
   const [adminLoading, setAdminLoading] = useState(false)
 
   useEffect(() => {
     if (isAuthenticated) {
-      if (user?.role !== 'Guest') {
-        dispatch(fetchMyApartments())
-      }
+      dispatch(fetchMyApartments())
     }
-  }, [dispatch, isAuthenticated, user])
+  }, [dispatch, isAuthenticated])
 
   useEffect(() => {
     if (isAuthenticated && user?.role === 'Admin') {
@@ -31,11 +27,13 @@ export default function UserDashboard() {
     }
   }, [isAuthenticated, user])
 
+
+
   const fetchAllApartmentsForAdmin = async () => {
     setAdminLoading(true)
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       })
       if (response.ok) {
         const data = await response.json()
@@ -54,7 +52,7 @@ export default function UserDashboard() {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       })
       if (response.ok) {
         alert("הדירה נמחקה")
@@ -68,27 +66,6 @@ export default function UserDashboard() {
 
   const isEditingOrAdding = location.pathname.includes('/edit/') || location.pathname.includes('/addApartment')
   if (isEditingOrAdding) return <Outlet />
-
-  // תצוגה לאורחת - חייב לבוא לפני ה-return הראשי
-  if (user?.role === 'Guest') {
-    return (
-      <div style={{ padding: '50px', textAlign: 'center', direction: 'rtl' }}>
-        <h1>ברוכה הבאה, {user.name} 👋</h1>
-        <div style={{ background: '#f8fafc', padding: '40px', borderRadius: '20px', border: '1px solid #e2e8f0', maxWidth: '600px', margin: '0 auto' }}>
-          <h2>את רשומה כ"אורחת"</h2>
-          <p style={{ fontSize: '18px', color: '#64748b', margin: '20px 0' }}>
-            כדי לפרסם דירות משלך, לערוך ולנהל נכסים, עלייך להיות רשומה כמנויה.
-          </p>
-          <button
-            onClick={() => dispatch(upgradeUser())}
-            style={{ padding: '12px 24px', backgroundColor: '#6366f1', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
-          >
-            שדרגי למנויה עכשיו ✨
-          </button>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto', direction: 'rtl', textAlign: 'right' }}>
@@ -114,6 +91,9 @@ export default function UserDashboard() {
             )) : <p>אין דירות להצגה.</p>}
           </div>
         )}
+        <div>
+
+        </div>
       </section>
 
       {/* חלק 2: ניהול מערכתי (ADMIN ONLY) */}
@@ -121,7 +101,9 @@ export default function UserDashboard() {
         <section style={{ marginTop: '50px', paddingTop: '30px', borderTop: '4px double #eee' }}>
           <div style={{ backgroundColor: '#f9fafb', padding: '25px', borderRadius: '15px', border: '1px solid #e5e7eb' }}>
             <h2 style={{ ...sectionTitleStyle, color: '#b91c1c' }}>ניהול כלל הדירות במערכת (מצב מנהלת)</h2>
+            <div>
 
+            </div>
             {adminLoading ? <p>טוען נתונים...</p> : (
               <div style={gridStyle}>
                 {allSystemApartments.map(apt => {
@@ -136,21 +118,24 @@ export default function UserDashboard() {
                   }
 
                   return (
-                    <div key={apt._id} style={{ position: 'relative' }}>
-                      <div style={adminActionsStyle}>
-                        <button onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/edit/${apt._id}`) }} style={editBtnStyle}>ערוך ✏️</button>
-                        <button onClick={(e) => handleDelete(e, apt._id)} style={deleteBtnStyle}>מחק 🗑️</button>
-                      </div>
+                    <>
+                      <div key={apt._id} style={{ position: 'relative' }}>
 
-                      <div style={{
-                        ...ownerTagStyle,
-                        backgroundColor: isMine ? '#10b981' : '#4b5563'
-                      }}>
-                        בעלים: {ownerDisplayName}
-                      </div>
+                        <div style={adminActionsStyle}>
+                          <button onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/edit/${apt._id}`) }} style={editBtnStyle}>ערוך ✏️</button>
+                          <button onClick={(e) => handleDelete(e, apt._id)} style={deleteBtnStyle}>מחק 🗑️</button>
+                        </div>
 
-                      <ApartmentCard apartment={apt} onClick={() => navigate(`/apartment/${apt._id}`)} />
-                    </div>
+                        <div style={{
+                          ...ownerTagStyle,
+                          backgroundColor: isMine ? '#10b981' : '#4b5563'
+                        }}>
+                          בעלים: {ownerDisplayName}
+                        </div>
+
+                        <ApartmentCard apartment={apt} onClick={() => navigate(`/apartment/${apt._id}`)} />
+                      </div>
+                    </>
                   );
                 })}
               </div>
@@ -162,7 +147,6 @@ export default function UserDashboard() {
   )
 }
 
-// עיצובים (Styles)
 const gridStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '25px' };
 const sectionTitleStyle = { marginBottom: '20px', paddingBottom: '10px', borderBottom: '2px solid #eee', fontWeight: 'bold' as const };
 const adminActionsStyle: React.CSSProperties = { position: 'absolute', top: '10px', left: '10px', zIndex: 30, display: 'flex', gap: '8px' };
