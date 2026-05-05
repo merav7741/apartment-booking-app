@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import Calendar from 'react-calendar'
 import 'react-calendar/dist/Calendar.css'
-import { useAppSelector } from '../store/hooks' 
+import { useAppSelector } from '../store/hooks'
 import type { Apartment } from '../types/apartment.types'
 import ReviewsSection from '../components/ReviewsSection'
 
 
 export default function ApartmentDetails() {
   const { id } = useParams()
-  const { user } = useAppSelector((state) => state.auth) // המשתמש המחובר
+  const { user, isAuthenticated, token } = useAppSelector((state) => state.auth)
+  const navigate = useNavigate()
 
   // State לנתוני הדירה
   const [apartment, setApartment] = useState<Apartment | null>(null)
@@ -54,7 +55,7 @@ export default function ApartmentDetails() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token || localStorage.getItem('token')}`
         },
         body: JSON.stringify({ ...apartment, notAvailableDates: updatedNotAvailable })
       })
@@ -127,6 +128,7 @@ export default function ApartmentDetails() {
             ) : (
               <div>
                 <Calendar
+                  onChange={(val: any) => setSelectedRange(val)}
                   selectRange={true}
                   minDate={new Date()}
                   tileClassName={({ date }) =>
