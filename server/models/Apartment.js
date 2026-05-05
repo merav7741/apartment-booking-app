@@ -49,7 +49,7 @@ const Apartment = new Schema(
         description: {
             type: String
         },
-        characteristics: {
+        amenities: {
             type: [String],
             enum: [
                 // נוחות בסיסית

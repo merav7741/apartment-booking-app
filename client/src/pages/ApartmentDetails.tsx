@@ -14,8 +14,7 @@ export default function ApartmentDetails() {
   // State לנתוני הדירה
   const [apartment, setApartment] = useState<Apartment | null>(null)
   const [loading, setLoading] = useState(true)
-  
-  // State להזמנת תאריכים
+
   const [showCalendar, setShowCalendar] = useState(false)
   const [selectedRange, setSelectedRange] = useState<[Date, Date] | null>(null)
   const [updatingDates, setUpdatingDates] = useState(false)
@@ -38,11 +37,9 @@ export default function ApartmentDetails() {
     }
   }
 
-  // --- פונקציה לעדכון תאריכים (הזמנה) ---
   const handleBooking = async () => {
     if (!selectedRange || !apartment) return
     setUpdatingDates(true)
-
     const newDates: string[] = []
     let curr = new Date(selectedRange[0])
     while (curr <= selectedRange[1]) {
@@ -55,9 +52,9 @@ export default function ApartmentDetails() {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${id}`, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ ...apartment, notAvailableDates: updatedNotAvailable })
       })
@@ -81,7 +78,7 @@ export default function ApartmentDetails() {
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px', direction: 'rtl', textAlign: 'right' }}>
-      
+
       <style>{`
         .booked-day { background-color: #ff4d4f !important; color: white !important; border-radius: 4px; }
         .react-calendar { width: 100%; border-radius: 10px; border: 1px solid #ddd; padding: 10px; }
@@ -90,13 +87,13 @@ export default function ApartmentDetails() {
       `}</style>
 
       <div className="main-grid">
-        
+
         <div>
-          <img 
-            src={apartment.image?.[0]?.startsWith('http') ? apartment.image[0] : `${import.meta.env.VITE_API_BASE_URL}/${apartment.image?.[0]}`} 
-            style={{ width: '100%', height: '400px', objectFit: 'cover', borderRadius: '15px', marginBottom: '20px' }} 
+          <img
+            src={apartment.image?.[0]?.startsWith('http') ? apartment.image[0] : `${import.meta.env.VITE_API_BASE_URL}/${apartment.image?.[0]}`}
+            style={{ width: '100%', height: '400px', objectFit: 'cover', borderRadius: '15px', marginBottom: '20px' }}
           />
-          
+
           <h3>תיאור</h3>
           <p style={{ lineHeight: '1.7' }}>{apartment.description || "אין תיאור זמין לדירה זו."}</p>
 
@@ -109,9 +106,19 @@ export default function ApartmentDetails() {
         <div style={{ position: 'sticky', top: '20px', height: 'fit-content' }}>
           <div style={{ border: '1px solid #ddd', padding: '25px', borderRadius: '15px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
             <h2 style={{ margin: '0 0 20px 0' }}>₪{apartment.price} <span style={{ fontSize: '16px', fontWeight: 'normal' }}>/ לילה</span></h2>
-            
-            {!showCalendar ? (
-              <button 
+
+            {!isAuthenticated ? (
+              <div style={{ textAlign: 'center' }}>
+                <p style={{ color: '#666', marginBottom: '10px' }}>כדי להזמין עליך להתחבר</p>
+                <button
+                  onClick={() => navigate('/login')}
+                  style={{ width: '100%', padding: '15px', backgroundColor: '#ff385c', color: 'white', border: 'none', borderRadius: '8px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  התחבר להזמנה
+                </button>
+              </div>
+            ) : !showCalendar ? (
+              <button
                 onClick={() => setShowCalendar(true)}
                 style={{ width: '100%', padding: '15px', backgroundColor: '#ff385c', color: 'white', border: 'none', borderRadius: '8px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }}
               >
@@ -119,11 +126,10 @@ export default function ApartmentDetails() {
               </button>
             ) : (
               <div>
-                <Calendar 
-                  onChange={(val: any) => setSelectedRange(val)}
+                <Calendar
                   selectRange={true}
                   minDate={new Date()}
-                  tileClassName={({ date }) => 
+                  tileClassName={({ date }) =>
                     apartment.notAvailableDates?.some((d: any) => new Date(d).toDateString() === date.toDateString()) ? 'booked-day' : ''
                   }
                 />

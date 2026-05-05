@@ -31,19 +31,15 @@ export default function AddApartment() {
     }
   })
 
-  useEffect(() => {
-    if (!isAuthenticated || !token) {
-      alert('עליך להתחבר כדי להוסיף דירה')
-      navigate('/login')
-      return
-    }
+  if (!isAuthenticated || !token) {
+    navigate('/login')
+    return null
+  }
 
-    if (user?.role !== 'Admin' && user?.role !== 'Subscriber') {
-      alert('רק מנויים ומנהלים יכולים להוסיף דירות')
-      navigate('/')
-      return
-    }
-  }, [isAuthenticated, token, user, navigate])
+  if (user?.role !== 'Admin' && user?.role !== 'Subscriber') {
+    navigate('/')
+    return null
+  }
 
   const onSubmit: SubmitHandler<ApartmentFormData> = async (data) => {
     try {

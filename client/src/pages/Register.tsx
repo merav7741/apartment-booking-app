@@ -31,7 +31,7 @@ export default function Register() {
       password: '',
       confirmPassword: '',
       phone: '',
-      role: 'Guest',
+      role: 'Subscriber',
       adminCode: ''
     }
   })
@@ -150,7 +150,6 @@ export default function Register() {
             {...register('role')}
             style={{ width: '100%', padding: '8px' }}
           >
-            <option value="Guest">אורח (Guest)</option>
             <option value="Subscriber">מנוי (Subscriber)</option>
             <option value="Admin">מנהל (Admin)</option>
           </select>

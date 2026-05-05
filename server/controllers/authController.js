@@ -1,4 +1,4 @@
-const { registerUser ,loginUser ,upgradeToSubscriber } = require('../service/authService')
+const { registerUser, loginUser } = require('../service/authService')
 
 const register = async (req, res) => {
     try {
@@ -21,7 +21,6 @@ const register = async (req, res) => {
     }
 }
 
- 
 const login = async (req, res) => {
     try {
         const { email, password } = req.body
@@ -35,15 +34,4 @@ const login = async (req, res) => {
     }
 }
 
-const upgrade = async (req, res) => {
-    try {
-        // req.user.userId מגיע מה-Middleware של ה-Auth שלך
-        const result = await upgradeToSubscriber(req.user.userId);
-        res.json(result);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
-    }
-};
-
-module.exports = { register, login, upgrade };
-
+module.exports = { register, login }

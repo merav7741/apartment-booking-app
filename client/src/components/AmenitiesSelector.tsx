@@ -9,9 +9,7 @@ import {
   Checkbox, 
   Box 
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-// אובייקט תרגום עבור הצ'קבוקסים
 const translationMap: Record<string, string> = {
   wifi: 'וואי-פיי', ac: 'מזגן', heating: 'חימום', elevator: 'מעלית', parking: 'חניה',
   kitchen: 'מטבח', microwave: 'מיקרוגל', fridge: 'מקרר', dishwasher: 'מדיח כלים', coffee_machine: 'מכונת קפה',
@@ -29,7 +27,6 @@ const AMENITIES_DATA = {
   "אחר ונוף": ['pets_allowed', 'sea_view', 'mountain_view', 'city_view', 'fireplace', 'workspace']
 };
 
-// props שמגיעים מהטופס - הערכים הנבחרים ופונקציית עדכון
 type Props = {
   selectedAmenities: Record<string, boolean>
   onChange: (amenities: Record<string, boolean>) => void
@@ -38,7 +35,6 @@ type Props = {
 export default function AmenitiesSelector({ selectedAmenities, onChange }: Props) {
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // מעדכן את ה-state בטופס עם הערך החדש
     onChange({
       ...selectedAmenities,
       [event.target.name]: event.target.checked,
@@ -49,7 +45,7 @@ export default function AmenitiesSelector({ selectedAmenities, onChange }: Props
     <Box sx={{ width: '75%', margin: 'auto', direction: 'rtl' }}>
       {Object.entries(AMENITIES_DATA).map(([category, items]) => (
         <Accordion key={category} disableGutters>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <AccordionSummary expandIcon={<span>▼</span>}>
             <Typography sx={{ fontWeight: 'bold' }}>{category}</Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -64,7 +60,6 @@ export default function AmenitiesSelector({ selectedAmenities, onChange }: Props
                       name={item}
                     />
                   }
-                  // מציג את התרגום מהמפה, ואם לא קיים - מציג את המקור
                   label={translationMap[item] || item}
                 />
               ))}

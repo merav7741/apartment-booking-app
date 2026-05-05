@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import ApartmentCard from "../components/ApartmentCard"
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { fetchAllApartments } from '../store/apartmentSlice'
+import type { Apartment } from '../types/apartment.types'
 
 export default function Home() {
   const dispatch = useAppDispatch()
@@ -10,7 +11,7 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('')
   const navigate = useNavigate()
 
-  const filteredApartments = allApartments.filter((apt: any) => {
+  const filteredApartments = allApartments.filter((apt: Apartment) => {
     const search = searchTerm.toLowerCase()
     return (
       apt.name?.toLowerCase().includes(search) ||
@@ -19,8 +20,8 @@ export default function Home() {
     )
   })
 
-  const handleApartmentClick = (id: string) => {
-    navigate(`/apartment/${id}`)
+  const handleSearch = () => {
+    // החיפוש כבר עובד דרך filteredApartments
   }
 
   useEffect(() => {
@@ -38,6 +39,7 @@ export default function Home() {
           placeholder="היכן אתה מחפש?"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           style={{
             padding: '10px',
             fontSize: '16px',
@@ -47,7 +49,7 @@ export default function Home() {
             marginRight: '10px'
           }}
         />
-        <button>חפש</button>
+        <button onClick={handleSearch}>חפש</button>
       </div>
 
       <div>
@@ -61,11 +63,11 @@ export default function Home() {
             gap: '20px',
             marginTop: '20px'
           }}>
-            {filteredApartments.map((apt: any) => (
+            {filteredApartments.map((apt: Apartment) => (
               <ApartmentCard
                 key={apt._id}
                 apartment={apt}
-                onClick={handleApartmentClick}
+                onClick={(id) => navigate(`/apartment/${id}`)}
               />
             ))}
           </div>
