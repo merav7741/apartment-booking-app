@@ -22,11 +22,6 @@ export default function ApartmentCard({ apartment, onClick }: ApartmentCardProps
       const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5500';
       return `${baseUrl}/${firstImg.replace(/\\/g, '/')}`;
     }
-
-    // שלב 3: בדיקת גיבוי אם קיים שדה imageUrl ישיר (כמחרוזת)
-    const directUrl = (apartment as any).imageUrl;
-    if (typeof directUrl === 'string') return directUrl;
-
     return null;
   };
 
@@ -74,7 +69,7 @@ export default function ApartmentCard({ apartment, onClick }: ApartmentCardProps
       <div style={{ padding: '16px' }}>
         <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 'bold' }}>{apartment.name}</h3>
         <p style={{ margin: '0 0 12px 0', color: '#666', fontSize: '14px' }}>
-          📍 {apartment.address || apartment.location || apartment.address}
+          📍 {apartment.address || apartment.location}
         </p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #eee', paddingTop: '12px' }}>
           <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#2563eb' }}>

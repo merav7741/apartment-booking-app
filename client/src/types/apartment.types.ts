@@ -4,6 +4,15 @@ export interface ApartmentOwner {
   fullName?: string
 }
 
+export interface Review {
+  _id?: string
+  userId: string
+  rating: number
+  comment: string
+  createdAt?: string
+  updatedAt?: string
+}
+
 export interface Apartment {
   _id: string
   name: string
@@ -20,6 +29,8 @@ export interface Apartment {
   notAvailableDates?: Date[]
   createdAt?: string
   updatedAt?: string
+  reviews?: Review[]
+
 }
 
 export interface ApartmentState {

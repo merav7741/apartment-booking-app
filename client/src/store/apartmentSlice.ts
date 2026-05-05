@@ -8,11 +8,9 @@ export const fetchAllApartments = createAsyncThunk<Apartment[]>(
   async (_, { rejectWithValue }) => {
     try {
       const response = await fetch(API_URL)
-      
       if (!response.ok) {
         return rejectWithValue('שגיאה בטעינת דירות')
       }
-      
       const data = await response.json()
       return Array.isArray(data) ? data : []
     } catch (error) {

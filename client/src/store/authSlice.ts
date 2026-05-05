@@ -23,7 +23,7 @@ const loadAuthFromStorage = (): Pick<AuthState, 'user' | 'token' | 'isAuthentica
 
 export const loginUser = createAsyncThunk<AuthResponse, LoginCredentials>(
   'auth/login',
-  async (credentials, { rejectWithValue }) => {
+  async (credentials, {rejectWithValue }) => {
     try {
       const response = await fetch(`${API_URL}/login`, {
         method: 'POST',
@@ -33,7 +33,6 @@ export const loginUser = createAsyncThunk<AuthResponse, LoginCredentials>(
 
       const data = await response.json()
       if (!response.ok) return rejectWithValue(data.message || 'שגיאה בהתחברות')
-
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
       return data
@@ -78,17 +77,17 @@ export const upgradeUser = createAsyncThunk<AuthResponse, void>(
       })
 
       const data = await response.json()
-      if (!response.ok) return rejectWithValue(data.message || 'שגיאה בשדרוג')
+      if (!response.ok) return rejectWithValue(data.message ||'שגיעה ביצירת המנוי')
 
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
-      
       return data
     } catch (error) {
       return rejectWithValue('שגיאה בחיבור לשרת')
     }
   }
 )
+
 
 const initialState: AuthState = {
   ...loadAuthFromStorage(),
