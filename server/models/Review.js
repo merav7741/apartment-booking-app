@@ -7,6 +7,10 @@ const ReviewSchema = new Schema(
             ref: 'User',
             required: true
         },
+        userName: {
+            type: String,
+            required: true
+        },
         rating: {
             type: Number,
             min: 0,

@@ -149,6 +149,7 @@ export default function ApartmentDetails() {
 <ReviewsSection
   reviews={apartment.reviews || []}
   userId={user?._id || ''}
+  userName={user?.name || ''}
   apartmentId={id!}
   apartment={apartment}
   onReviewAdded={fetchApartment}

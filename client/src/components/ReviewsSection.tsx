@@ -5,12 +5,13 @@ import type { Review } from '../types/apartment.types'
 interface ReviewsSectionProps {
   reviews: Review[]
   userId: string
+  userName: string
   apartmentId: string
   apartment: any
   onReviewAdded: () => void
 }
 
-export default function ReviewsSection({ reviews, userId, apartmentId, apartment, onReviewAdded }: ReviewsSectionProps) {
+export default function ReviewsSection({ reviews, userId, userName, apartmentId, apartment, onReviewAdded }: ReviewsSectionProps) {
   const [newRating, setNewRating] = useState(5)
   const [newComment, setNewComment] = useState('')
   const [isSubmittingReview, setIsSubmittingReview] = useState(false)
@@ -22,6 +23,7 @@ export default function ReviewsSection({ reviews, userId, apartmentId, apartment
 
     const newReview = {
       userId,
+      userName,
       rating: newRating,
       comment: newComment,
     }
@@ -76,7 +78,7 @@ export default function ReviewsSection({ reviews, userId, apartmentId, apartment
       {reviews?.map((rev, i) => (
         <div key={i} style={{ borderBottom: '1px solid #eee', padding: '15px 0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            {/* <strong>{rev._id}</strong> */}
+            <strong>{rev.userId === userId ? 'אתה' : rev.userName}</strong>
             <span style={{ color: '#f59e0b' }}>{'★'.repeat(rev.rating)}</span>
           </div>
           <p style={{ margin: '5px 0', color: '#444' }}>{rev.comment}</p>
