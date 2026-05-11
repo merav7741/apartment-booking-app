@@ -5,13 +5,8 @@ import { registerUser, clearError } from '../store/authSlice'
 import { useEffect } from 'react'
 
 type RegisterFormData = {
-  fullName: string
-  email: string
-  password: string
-  confirmPassword: string
-  phone: string
-  role: string
-  adminCode?: string
+  fullName: string; email: string; password: string; confirmPassword: string;
+  phone: string; role: string; adminCode?: string;
 }
 
 export default function Register() {
@@ -19,171 +14,131 @@ export default function Register() {
   const dispatch = useAppDispatch()
   const { loading, error } = useAppSelector((state) => state.auth)
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors }
-  } = useForm<RegisterFormData>({
-    defaultValues: {
-      fullName: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-      phone: '',
-      role: 'Subscriber',
-      adminCode: ''
-    }
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormData>({
+    defaultValues: { fullName: '', email: '', password: '', confirmPassword: '', phone: '', role: 'Subscriber', adminCode: '' }
   })
 
   const password = watch('password')
   const role = watch('role')
 
   useEffect(() => {
-    return () => {
-      dispatch(clearError())
-    }
+    return () => { dispatch(clearError()) }
   }, [dispatch])
 
   const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
     const result = await dispatch(registerUser({
-      name: data.fullName,
-      email: data.email,
-      phone: data.phone,
-      password: data.password,
-      role: data.role,
-      adminCode: data.adminCode
+      name: data.fullName, email: data.email, phone: data.phone,
+      password: data.password, role: data.role, adminCode: data.adminCode
     }))
-    
     if (registerUser.fulfilled.match(result)) {
-      alert('נרשמת בהצלחה!')
       navigate('/login')
     }
   }
 
   return (
-    <div style={{ maxWidth: '400px', margin: '40px auto', padding: '20px', direction: 'rtl' }}>
-      <h1>הרשמה</h1>
+    <div style={pageWrapper}>
+      <div style={cardStyle}>
+        <h1 style={titleStyle}>ליצור חשבון חדש</h1>
+        <p style={subtitleStyle}>הצטרפו לקהילת הנדל"ן המובילה</p>
 
-      {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
+        {error && <div style={errorAlertStyle}>{error}</div>}
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block' }}>שם מלא:</label>
-          <input
-            type="text"
-            style={{ width: '100%', padding: '8px' }}
-            placeholder="הכנס שם מלא"
-            {...register('fullName', {
-              required: 'שם מלא הוא שדה חובה',
-              minLength: { value: 2, message: 'שם חייב להכיל לפחות 2 תווים' }
-            })}
-          />
-          {errors.fullName && <span style={{ color: 'red', fontSize: '12px' }}>{errors.fullName.message}</span>}
-        </div>
-
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block' }}>אימייל:</label>
-          <input
-            type="email"
-            style={{ width: '100%', padding: '8px' }}
-            placeholder="your@email.com"
-            {...register('email', {
-              required: 'אימייל הוא שדה חובה',
-              pattern: {
-                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: 'פורמט אימייל לא תקין'
-              }
-            })}
-          />
-          {errors.email && <span style={{ color: 'red', fontSize: '12px' }}>{errors.email.message}</span>}
-        </div>
-
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block' }}>סיסמה:</label>
-          <input
-            type="password"
-            style={{ width: '100%', padding: '8px' }}
-            placeholder="הכנס סיסמה"
-            {...register('password', {
-              required: 'סיסמה היא שדה חובה',
-              minLength: { value: 6, message: 'סיסמה חייבת להכיל לפחות 6 תווים' }
-            })}
-          />
-          {errors.password && <span style={{ color: 'red', fontSize: '12px' }}>{errors.password.message}</span>}
-        </div>
-
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block' }}>אשר סיסמה:</label>
-          <input
-            type="password"
-            style={{ width: '100%', padding: '8px' }}
-            placeholder="אשר סיסמה"
-            {...register('confirmPassword', {
-              required: 'אישור סיסמה הוא שדה חובה',
-              validate: (value) => value === password || 'הסיסמאות לא תואמות'
-            })}
-          />
-          {errors.confirmPassword && <span style={{ color: 'red', fontSize: '12px' }}>{errors.confirmPassword.message}</span>}
-        </div>
-
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block' }}>פלאפון:</label>
-          <input
-            type="text"
-            style={{ width: '100%', padding: '8px' }}
-            placeholder="05xxxxxxxx"
-            {...register('phone', {
-              required: 'טלפון הוא שדה חובה',
-              pattern: {
-                value: /^05\d{8}$/,
-                message: 'מספר טלפון לא תקין'
-              }
-            })}
-          />
-          {errors.phone && <span style={{ color: 'red', fontSize: '12px' }}>{errors.phone.message}</span>}
-        </div>
-
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block' }}>סוג מנוי:</label>
-          <select
-            {...register('role')}
-            style={{ width: '100%', padding: '8px' }}
-          >
-            <option value="Subscriber">מנוי (Subscriber)</option>
-            <option value="Admin">מנהל (Admin)</option>
-          </select>
-        </div>
-
-        {role === 'Admin' && (
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block' }}>קוד מנהל:</label>
-            <input
-              type="password"
-              style={{ width: '100%', padding: '8px' }}
-              placeholder="הכנס קוד מנהל"
-              {...register('adminCode', {
-                required: 'קוד מנהל הוא שדה חובה'
-              })}
-            />
-            {errors.adminCode && <span style={{ color: 'red', fontSize: '12px' }}>{errors.adminCode.message}</span>}
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div style={inputGroup}>
+            <label style={labelStyle}>שם מלא</label>
+            <input type="text" style={inputStyle(!!errors.fullName)} placeholder="ישראל ישראלי"
+              {...register('fullName', { required: 'שם מלא חובה', minLength: 2 })} />
+            {errors.fullName && <span style={errorMessage}>{errors.fullName.message}</span>}
           </div>
-        )}
 
-        <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: 'white', border: 'none', cursor: 'pointer' }}>
-          {loading ? 'נרשם...' : 'הירשם'}
-        </button>
-      </form>
+          <div style={rowGrid}>
+            <div style={inputGroup}>
+              <label style={labelStyle}>אימייל</label>
+              <input type="email" style={inputStyle(!!errors.email)} placeholder="name@company.com"
+                {...register('email', { required: 'אימייל חובה' })} />
+            </div>
+            <div style={inputGroup}>
+              <label style={labelStyle}>טלפון</label>
+              <input type="text" style={inputStyle(!!errors.phone)} placeholder="05XXXXXXXX"
+                {...register('phone', { required: 'טלפון חובה' })} />
+            </div>
+          </div>
 
-      <div style={{ marginTop: '20px', textAlign: 'center' }}>
-        <span>כבר יש לך חשבון? </span>
-        <button 
-          onClick={() => navigate('/login')} 
-          style={{ background: 'none', border: 'none', color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
-        >
-          התחבר כאן
-        </button>
+          <div style={rowGrid}>
+            <div style={inputGroup}>
+              <label style={labelStyle}>סיסמה</label>
+              <input type="password" style={inputStyle(!!errors.password)} placeholder="••••••••"
+                {...register('password', { required: 'סיסמה חובה', minLength: 6 })} />
+            </div>
+            <div style={inputGroup}>
+              <label style={labelStyle}>אימות סיסמה</label>
+              <input type="password" style={inputStyle(!!errors.confirmPassword)} placeholder="••••••••"
+                {...register('confirmPassword', { 
+                  required: 'אימות חובה', 
+                  validate: v => v === password || 'לא תואם' 
+                })} />
+            </div>
+          </div>
+
+          <div style={inputGroup}>
+            <label style={labelStyle}>סוג חשבון</label>
+            <select {...register('role')} style={selectStyle}>
+              <option value="Subscriber">מנוי (מחפש דירה / מפרסם)</option>
+              <option value="Admin">מנהל מערכת</option>
+            </select>
+          </div>
+
+          {role === 'Admin' && (
+            <div style={inputGroup}>
+              <label style={labelStyle}>קוד מנהל מאובטח</label>
+              <input type="password" style={inputStyle(true)} placeholder="Admin Token" {...register('adminCode')} />
+            </div>
+          )}
+
+          <button type="submit" disabled={loading} style={submitBtnStyle}>
+            {loading ? 'יוצר חשבון...' : 'להרשמה'}
+          </button>
+        </form>
+
+        <div style={footerStyle}>
+          כבר רשומים? <span onClick={() => navigate('/login')} style={linkAction}>התחברו כאן</span>
+        </div>
       </div>
     </div>
   )
 }
+const pageWrapper: React.CSSProperties = {
+  minHeight: '90vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+  background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)', padding: '20px', direction: 'rtl'
+};
+
+const cardStyle: React.CSSProperties = {
+  width: '100%', maxWidth: '450px', backgroundColor: 'white', padding: '40px',
+  borderRadius: '20px', boxShadow: '0 15px 35px rgba(0,0,0,0.1)', textAlign: 'center'
+};
+
+const titleStyle = { fontSize: '28px', fontWeight: 'bold', color: '#1a202c', marginBottom: '8px' };
+const subtitleStyle = { color: '#718096', marginBottom: '30px', fontSize: '15px' };
+
+const inputGroup = { textAlign: 'right' as const, marginBottom: '18px' };
+const labelStyle = { display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '600', color: '#4a5568' };
+
+const inputStyle = (isError: boolean): React.CSSProperties => ({
+  width: '100%', padding: '12px 16px', borderRadius: '10px', border: `1px solid ${isError ? '#e53e3e' : '#e2e8f0'}`,
+  fontSize: '15px', transition: '0.2s', outline: 'none', backgroundColor: '#f8fafc'
+});
+
+const selectStyle = { ...inputStyle(false), cursor: 'pointer' };
+
+const submitBtnStyle: React.CSSProperties = {
+  width: '100%', padding: '14px', backgroundColor: '#3182ce', color: 'white',
+  border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 'bold',
+  cursor: 'pointer', transition: '0.3s', marginTop: '10px', boxShadow: '0 4px 6px rgba(49, 130, 206, 0.2)'
+};
+
+const footerStyle = { marginTop: '25px', color: '#718096', fontSize: '14px' };
+const linkAction = { color: '#3182ce', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' };
+const errorMessage = { color: '#e53e3e', fontSize: '12px', marginTop: '4px' };
+const errorAlertStyle = { backgroundColor: '#fff5f5', color: '#c53030', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '14px', border: '1px solid #feb2b2' };
+const rowGrid = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' };
+const iconCircle = { width: '60px', height: '60px', backgroundColor: '#ebf8ff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '24px' };
