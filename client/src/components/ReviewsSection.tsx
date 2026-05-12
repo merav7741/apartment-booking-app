@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import type { Review } from '../types/apartment.types'
+import type { Apartment, Review } from '../types/apartment.types'
 
 interface ReviewsSectionProps {
-  reviews: Review[]; userId: string; userName: string; apartmentId: string; apartment: any; onReviewAdded: () => void;
+  reviews: Review[]; userId: string; userName: string; apartmentId: string; apartment: Apartment; onReviewAdded: () => void;
 }
 
-export default function ReviewsSection({ reviews, userId, userName, apartmentId, apartment, onReviewAdded }: ReviewsSectionProps) {
+export default function ReviewsSection({ reviews, userId, userName, apartmentId, onReviewAdded }: ReviewsSectionProps) {
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
@@ -16,13 +16,21 @@ export default function ReviewsSection({ reviews, userId, userName, apartmentId,
     setIsSubmittingReview(true);
     
     const newReview = { userId, userName, rating: newRating, comment: newComment };
-    const updatedReviews = [...(reviews || []).map(({ _id, ...r }) => r), newReview];
+    const updatedReviews = [
+      ...(reviews || []).map((review) => ({
+        userId: review.userId,
+        userName: review.userName,
+        rating: review.rating,
+        comment: review.comment
+      })),
+      newReview
+    ];
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${apartmentId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-        body: JSON.stringify({ ...apartment, reviews: updatedReviews })
+        body: JSON.stringify({ reviews: updatedReviews })
       });
       if (response.ok) { setNewComment(''); onReviewAdded(); }
     } finally { setIsSubmittingReview(false); }
