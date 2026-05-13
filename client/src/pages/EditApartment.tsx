@@ -24,13 +24,10 @@ export default function EditApartment() {
     const fetchApartment = async () => {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${id}`)
       const data = await response.json()
-      setFormData(data)
+      setFormData({ ...data, characteristics: data.characteristics || [] })
     }
     fetchApartment()
   }, [id])
-
-
-
 
   const [formData, setFormData] = useState<any>(null);
   const [newImageUrl, setNewImageUrl] = useState('');
@@ -44,11 +41,13 @@ export default function EditApartment() {
   };
 
   const handleCharChange = (char: string) => {
-    const currentChars = formData.characteristics || [];
-    const updatedChars = currentChars.includes(char)
-      ? currentChars.filter((c: string) => c !== char)
-      : [...currentChars, char];
-    setFormData({ ...formData, characteristics: updatedChars });
+    setFormData((previousFormData: any) => {
+      const currentChars = previousFormData?.characteristics || [];
+      const updatedChars = currentChars.includes(char)
+        ? currentChars.filter((c: string) => c !== char)
+        : [...currentChars, char];
+      return { ...previousFormData, characteristics: updatedChars };
+    });
   };
 
   const addImage = () => {

@@ -92,7 +92,6 @@ export default function UserDashboard() {
           </div>
         )}
         <div>
-
         </div>
       </section>
 
@@ -118,7 +117,6 @@ export default function UserDashboard() {
                   }
 
                   return (
-                    <>
                       <div key={apt._id} style={{ position: 'relative' }}>
 
                         <div style={adminActionsStyle}>
@@ -135,7 +133,6 @@ export default function UserDashboard() {
 
                         <ApartmentCard apartment={apt} onClick={() => navigate(`/apartment/${apt._id}`)} />
                       </div>
-                    </>
                   );
                 })}
               </div>

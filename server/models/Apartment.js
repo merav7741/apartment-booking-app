@@ -49,7 +49,7 @@ const Apartment = new Schema(
         description: {
             type: String
         },
-        amenities: {
+        characteristics: {
             type: [String],
             enum: [
                 // נוחות בסיסית
@@ -66,7 +66,8 @@ const Apartment = new Schema(
                 'pets_allowed',
                 // אחר
                 'sea_view', 'mountain_view', 'city_view', 'fireplace', 'workspace'
-            ]
+            ],
+            default: []
         },
         notAvailableDates: {
             type: [Date]

@@ -35,7 +35,7 @@ export default function ApartmentCard({ apartment, onClick }: ApartmentCardProps
         )}
         <div style={priceTagStyle}>₪{apartment.price?.toLocaleString()}</div>
       </div>
-
+כן ה
       <div style={{ padding: '16px' }}>
         <h3 style={titleStyle}>{apartment.name}</h3>
         <p style={locationStyle}>📍 {apartment.location}</p>
