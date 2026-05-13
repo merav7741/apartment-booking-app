@@ -90,7 +90,6 @@ const getMyApartments = async (req, res) => {
     }
 }
 
-
-module.exports = { getAll, getById, create, update, remove, getMyApartments, book }
+module.exports = { getAll, getById, create, update, remove, getMyApartments }
 
 
