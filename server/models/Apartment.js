@@ -69,8 +69,34 @@ const Apartment = new Schema(
             ]
         },
         notAvailableDates: {
-            type: [Date]
+            type: [Date],
+            default: []
         },
+        bookings: [
+          {
+            guestId: {
+              type: Schema.Types.ObjectId,
+              ref: 'User',
+              required: true
+            },
+            guestName: {
+              type: String,
+              required: true
+            },
+            startDate: {
+              type: Date,
+              required: true
+            },
+            endDate: {
+              type: Date,
+              required: true
+            },
+            createdAt: {
+              type: Date,
+              default: Date.now
+            }
+          }
+        ],
         ownerId: {
             type: Schema.Types.ObjectId,
             ref: 'User',

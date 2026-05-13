@@ -14,6 +14,14 @@ export interface Review {
   updatedAt?: string
 }
 
+export interface Booking {
+  guestId: string
+  guestName: string
+  startDate: string
+  endDate: string
+  createdAt?: string
+}
+
 export interface Apartment {
   _id: string
   name: string
@@ -28,6 +36,7 @@ export interface Apartment {
   characteristics?: string[]
   ownerId: string | ApartmentOwner
   notAvailableDates?: Date[]
+  bookings?: Booking[]
   createdAt?: string
   updatedAt?: string
   reviews?: Review[]

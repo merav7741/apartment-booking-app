@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import type { AuthState, LoginCredentials, RegisterData, AuthResponse } from '../types/user.types'
+import type { AuthState, LoginCredentials, RegisterData, UpdateProfileData, AuthResponse } from '../types/user.types'
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/auth`
 
@@ -58,6 +58,31 @@ export const registerUser = createAsyncThunk<AuthResponse, RegisterData>(
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
       return data
+    } catch (error) {
+      return rejectWithValue('שגיאה בחיבור לשרת')
+    }
+  }
+)
+
+export const updateProfile = createAsyncThunk<AuthResponse, UpdateProfileData>(
+  'auth/updateProfile',
+  async (userData, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_URL}/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(userData)
+      })
+
+      const data = await response.json()
+      if (!response.ok) return rejectWithValue(data.message || 'שגיאה בעדכון פרופיל')
+
+      const user = data.user
+      localStorage.setItem('user', JSON.stringify(user))
+      return { token: localStorage.getItem('token') || '', user }
     } catch (error) {
       return rejectWithValue('שגיאה בחיבור לשרת')
     }
@@ -139,6 +164,20 @@ const authSlice = createSlice({
       state.isAuthenticated = true
     })
     builder.addCase(registerUser.rejected, (state, action) => {
+      state.loading = false
+      state.error = action.payload as string
+    })
+
+    builder.addCase(updateProfile.pending, (state) => {
+      state.loading = true
+      state.error = null
+    })
+    builder.addCase(updateProfile.fulfilled, (state, action) => {
+      state.loading = false
+      state.user = action.payload.user
+      state.isAuthenticated = true
+    })
+    builder.addCase(updateProfile.rejected, (state, action) => {
       state.loading = false
       state.error = action.payload as string
     })

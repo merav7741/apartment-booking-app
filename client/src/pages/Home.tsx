@@ -11,7 +11,12 @@ const hasFiveStarRating = (apartment: Apartment) =>
 export default function Home() {
   const dispatch = useAppDispatch()
   const { allApartments, loading } = useAppSelector((state) => state.apartments)
+  const [searchValue, setSearchValue] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCity, setSelectedCity] = useState('all')
+  const [maxPrice, setMaxPrice] = useState(10000)
+  const [selectedBedrooms, setSelectedBedrooms] = useState<number | null>(null)
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false)
   const [searchParams] = useSearchParams()
   const apartmentsSectionRef = useRef<HTMLDivElement | null>(null)
   const navigate = useNavigate()
@@ -22,22 +27,41 @@ export default function Home() {
     dispatch(fetchAllApartments())
   }, [dispatch])
 
+  const cities = useMemo(() => {
+    const cityNames = allApartments
+      .map((apt) => apt.city?.trim())
+      .filter(Boolean) as string[]
+
+    return ['all', ...Array.from(new Set(cityNames))]
+  }, [allApartments])
+
   const visibleApartments = useMemo(() => {
     const baseApartments = currentView === 'recommended'
       ? allApartments.filter(hasFiveStarRating)
       : allApartments
 
     const search = searchTerm.trim().toLowerCase()
-    if (!search) return baseApartments
 
-    return baseApartments.filter((apt: Apartment) => (
-      apt.name?.toLowerCase().includes(search) ||
-      apt.city?.toLowerCase().includes(search) ||
-      apt.address?.toLowerCase().includes(search) ||
-      apt.location?.toLowerCase().includes(search) ||
-      apt.description?.toLowerCase().includes(search)
-    ))
-  }, [allApartments, currentView, searchTerm])
+    return baseApartments.filter((apt: Apartment) => {
+      const matchesText = !search || [
+        apt.name,
+        apt.city,
+        apt.address,
+        apt.location,
+        apt.description
+      ].some((value) => value?.toLowerCase().includes(search))
+
+      const matchesCity = selectedCity === 'all' || apt.city === selectedCity
+      const matchesPrice = typeof apt.price === 'number' ? apt.price <= maxPrice : true
+      const matchesBedrooms = selectedBedrooms === null
+        ? true
+        : selectedBedrooms === 4
+          ? (apt.bedrooms ?? 0) >= 4
+          : apt.bedrooms === selectedBedrooms
+
+      return matchesText && matchesCity && matchesPrice && matchesBedrooms
+    })
+  }, [allApartments, currentView, searchTerm, selectedCity, maxPrice, selectedBedrooms])
 
   const title = searchTerm
     ? `תוצאות עבור: ${searchTerm}`
@@ -53,11 +77,13 @@ export default function Home() {
   }
 
   const handleSearchClick = () => {
+    setSearchTerm(searchValue.trim())
     scrollToApartments()
   }
 
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
+      setSearchTerm(searchValue.trim())
       scrollToApartments()
     }
   }
@@ -71,16 +97,84 @@ export default function Home() {
           <h1 style={heroTitle}>SuiteSpot</h1>
           <p style={heroSubtitle}>המקום למצוא בו דירת נופש שמתאימה בדיוק לחופשה שלך</p>
 
-          <div style={searchContainer}>
-            <input
-              type="text"
-              placeholder="חיפוש לפי עיר, אזור, כתובת או שם נכס"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={handleSearchKeyDown}
-              style={searchInputStyle}
-            />
-            <button type="button" onClick={handleSearchClick} style={searchButtonStyle}>חפש</button>
+                  <div style={searchContainer}>
+              <div style={searchBarRow}>
+                <input
+                  type="text"
+                  placeholder="חיפוש מהיר לפי עיר, אזור, כתובת או שם נכס"
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                  style={searchInputStyle}
+                />
+                <button type="button" onClick={handleSearchClick} style={searchButtonStyle}>חפש</button>
+              </div>
+
+              <div style={filterToggleRow}>
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedSearch((prev) => !prev)}
+                  style={filterToggleButtonStyle}
+                >
+                  {showAdvancedSearch ? 'הסתר פילטרים מתקדמים' : 'הצג פילטרים מתקדמים'}
+                </button>
+              </div>
+
+              {showAdvancedSearch && (
+                <div style={advancedPanelStyle}>
+                <div style={searchFieldGroup}>
+                  <label style={fieldLabel}>עיר</label>
+                  <select
+                    value={selectedCity}
+                    onChange={(e) => setSelectedCity(e.target.value)}
+                    style={selectStyle}
+                  >
+                    <option value="all">כל הערים</option>
+                    {cities.map((city) => (
+                      city !== 'all' && <option key={city} value={city}>{city}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={searchFieldGroup}>
+                  <label style={fieldLabel}>טווח מחיר עד {maxPrice.toLocaleString('he-IL')} ₪</label>
+                  <input
+                    type="range"
+                    min={0}
+                    max={10000}
+                    step={250}
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(Number(e.target.value))}
+                    style={rangeStyle}
+                  />
+                </div>
+
+                <div style={roomsGroup}>
+                  <span style={fieldLabel}>חדרים</span>
+                  <div style={roomsButtonWrapper}>
+                    {[1, 2, 3, 4].map((rooms) => (
+                      <button
+                        key={rooms}
+                        type="button"
+                        onClick={() => setSelectedBedrooms(rooms === 4 ? 4 : rooms)}
+                        style={selectedBedrooms === rooms || (rooms === 4 && selectedBedrooms === 4)
+                          ? activeRoomButtonStyle
+                          : roomButtonStyle}
+                      >
+                        {rooms === 4 ? '4+' : rooms}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBedrooms(null)}
+                      style={selectedBedrooms === null ? activeRoomButtonStyle : clearButtonStyle}
+                    >
+                      ללא הגבלה
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -118,9 +212,13 @@ export default function Home() {
           </div>
         ) : (
           <div style={noResultsStyle}>
-            {currentView === 'recommended' && !searchTerm
-              ? 'עדיין אין דירות עם דירוג 5 כוכבים.'
-              : 'לא נמצאו דירות שתואמות לחיפוש שלך.'}
+            <div style={noResultsIcon}>🔎</div>
+            <div style={noResultsText}>
+              {currentView === 'recommended' && !searchTerm
+                ? 'עוד לא נמצאו דירות עם דירוג 5 כוכבים.'
+                : 'לא נמצאו דירות שתואמות לחיפוש שלך.'}
+            </div>
+            <div style={noResultsHelper}>נסו לשנות את העיר, להרחיב את טווח המחירים או לבחור מספר חדרים אחר.</div>
           </div>
         )}
       </div>
@@ -180,37 +278,143 @@ const heroSubtitle: React.CSSProperties = {
 
 const searchContainer: React.CSSProperties = {
   display: 'flex',
+  flexDirection: 'column',
   width: '100%',
-  maxWidth: '750px',
-  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-  padding: '12px',
-  borderRadius: '100px',
-  boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
-  backdropFilter: 'blur(10px)'
+  maxWidth: '850px',
+  backgroundColor: 'rgba(255, 255, 255, 0.96)',
+  padding: '22px',
+  borderRadius: '28px',
+  border: '1px solid rgba(148, 163, 184, 0.25)',
+  boxShadow: '0 24px 80px rgba(15, 23, 42, 0.12)',
+  backdropFilter: 'blur(16px)',
+  gap: '18px'
+}
+
+const searchBarRow: React.CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: '1.5fr 0.5fr',
+  gap: '12px',
+  alignItems: 'center'
+}
+
+const filterToggleRow: React.CSSProperties = {
+  display: 'flex',
+  justifyContent: 'flex-start',
+  marginTop: '12px'
+}
+
+const searchFieldGroup: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '10px'
+}
+
+const fieldLabel: React.CSSProperties = {
+  fontSize: '14px',
+  color: '#334155',
+  fontWeight: 700
+}
+
+const selectStyle: React.CSSProperties = {
+  borderRadius: '16px',
+  padding: '12px 14px',
+  border: '1px solid #cbd5e1',
+  fontSize: '16px',
+  outline: 'none',
+  backgroundColor: 'white',
+  color: '#0f172a'
+}
+
+const advancedPanelStyle: React.CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+  gap: '16px',
+  padding: '18px',
+  backgroundColor: '#f8fafc',
+  border: '1px solid #e2e8f0',
+  borderRadius: '22px'
+}
+
+const rangeStyle: React.CSSProperties = {
+  width: '100%',
+  appearance: 'none',
+  height: '10px',
+  borderRadius: '999px',
+  background: 'linear-gradient(90deg, #3b82f6 0%, #60a5fa 65%, #e2e8f0 100%)',
+  outline: 'none',
+  cursor: 'pointer'
+}
+
+const roomsGroup: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '10px'
+}
+
+const roomsButtonWrapper: React.CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '10px'
+}
+
+const roomButtonStyle: React.CSSProperties = {
+  border: '1px solid #cbd5e1',
+  backgroundColor: 'white',
+  color: '#334155',
+  borderRadius: '16px',
+  padding: '10px 14px',
+  cursor: 'pointer',
+  minWidth: '72px',
+  fontWeight: 700
+}
+
+const activeRoomButtonStyle: React.CSSProperties = {
+  ...roomButtonStyle,
+  borderColor: '#2563eb',
+  backgroundColor: '#eff6ff',
+  color: '#1d4ed8'
+}
+
+const clearButtonStyle: React.CSSProperties = {
+  ...roomButtonStyle,
+  backgroundColor: '#f8fafc',
+  color: '#475569'
 }
 
 const searchInputStyle: React.CSSProperties = {
-  flex: 1,
-  border: 'none',
-  padding: '15px 30px',
-  fontSize: '18px',
+  width: '100%',
+  height: '52px',
+  border: '1px solid #cbd5e1',
+  padding: '0 18px',
+  fontSize: '16px',
   outline: 'none',
-  borderRadius: '100px',
-  backgroundColor: 'transparent',
-  color: '#1e293b'
+  borderRadius: '18px',
+  backgroundColor: 'white',
+  color: '#0f172a'
 }
 
 const searchButtonStyle: React.CSSProperties = {
   backgroundColor: '#2563eb',
   color: 'white',
   border: 'none',
-  padding: '0 45px',
-  borderRadius: '100px',
+  borderRadius: '18px',
+  padding: '14px 20px',
   cursor: 'pointer',
   fontWeight: 700,
-  fontSize: '18px',
-  transition: 'all 0.3s ease',
-  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
+  fontSize: '16px',
+  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+  boxShadow: '0 12px 28px rgba(37, 99, 235, 0.18)'
+}
+
+const filterToggleButtonStyle: React.CSSProperties = {
+  border: '1px solid #c7d2fe',
+  backgroundColor: '#f8fafc',
+  color: '#2563eb',
+  borderRadius: '18px',
+  padding: '12px 18px',
+  cursor: 'pointer',
+  fontWeight: 700,
+  fontSize: '15px'
 }
 
 const contentWrapper: React.CSSProperties = {
@@ -270,12 +474,32 @@ const gridStyle: React.CSSProperties = {
 
 const noResultsStyle: React.CSSProperties = {
   textAlign: 'center',
-  padding: '90px 20px',
-  fontSize: '20px',
-  color: '#64748b',
+  padding: '80px 24px',
+  fontSize: '18px',
+  color: '#475569',
   backgroundColor: 'white',
-  borderRadius: '8px',
-  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+  borderRadius: '24px',
+  boxShadow: '0 18px 40px rgba(15, 23, 42, 0.06)',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '18px'
+}
+
+const noResultsIcon: React.CSSProperties = {
+  fontSize: '48px'
+}
+
+const noResultsText: React.CSSProperties = {
+  fontSize: '26px',
+  fontWeight: 800,
+  color: '#0f172a'
+}
+
+const noResultsHelper: React.CSSProperties = {
+  color: '#64748b',
+  maxWidth: '520px',
+  lineHeight: 1.7
 }
 
 const loaderStyle: React.CSSProperties = {

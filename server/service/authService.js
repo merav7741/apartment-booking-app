@@ -30,4 +30,22 @@ const login = async (email, password) => {
     return { token, user: { _id: user._id, name: user.name, email: user.email, phone: user.phone, role: user.role } }
 }
 
-module.exports = { registerUser: register, loginUser: login }
+const updateUserProfile = async (userId, updateData) => {
+    const { name, email, phone } = updateData
+    if (email) {
+        const existingUser = await User.findOne({ email, _id: { $ne: userId } })
+        if (existingUser) throw new Error('האימייל כבר בשימוש')
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { name, email, phone },
+        { new: true, runValidators: true }
+    )
+
+    if (!updatedUser) throw new Error('משתמש לא נמצא')
+
+    return { _id: updatedUser._id, name: updatedUser.name, email: updatedUser.email, phone: updatedUser.phone, role: updatedUser.role }
+}
+
+module.exports = { registerUser: register, loginUser: login, updateUserProfile }

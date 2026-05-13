@@ -141,4 +141,3 @@ const linkAction = { color: '#3182ce', cursor: 'pointer', fontWeight: 'bold', te
 const errorMessage = { color: '#e53e3e', fontSize: '12px', marginTop: '4px' };
 const errorAlertStyle = { backgroundColor: '#fff5f5', color: '#c53030', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '14px', border: '1px solid #feb2b2' };
 const rowGrid = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' };
-const iconCircle = { width: '60px', height: '60px', backgroundColor: '#ebf8ff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '24px' };

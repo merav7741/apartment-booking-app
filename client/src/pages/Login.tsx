@@ -77,8 +77,6 @@ const inputStyle = (isError: boolean): React.CSSProperties => ({
   fontSize: '15px', transition: '0.2s', outline: 'none', backgroundColor: '#f8fafc'
 });
 
-const selectStyle = { ...inputStyle(false), cursor: 'pointer' };
-
 const submitBtnStyle: React.CSSProperties = {
   width: '100%', padding: '14px', backgroundColor: '#3182ce', color: 'white',
   border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 'bold',
@@ -87,7 +85,5 @@ const submitBtnStyle: React.CSSProperties = {
 
 const footerStyle = { marginTop: '25px', color: '#718096', fontSize: '14px' };
 const linkAction = { color: '#3182ce', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' };
-const errorMessage = { color: '#e53e3e', fontSize: '12px', marginTop: '4px' };
 const errorAlertStyle = { backgroundColor: '#fff5f5', color: '#c53030', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '14px', border: '1px solid #feb2b2' };
-const rowGrid = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' };
 const iconCircle = { width: '60px', height: '60px', backgroundColor: '#ebf8ff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '24px' };

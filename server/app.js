@@ -1,15 +1,14 @@
 const express = require('express')
-const mongoose=require('mongoose')
+const mongoose = require('mongoose')
 require('dotenv').config()
-const PORT=process.env.PORT
+const PORT = process.env.PORT || 5500
 const app = express()
 app.use(express.json())
 const cors = require('cors')
 app.use(cors())
 
-const {connectDB}=require('./config/db');
+const { connectDB } = require('./config/db')
 connectDB()
-
 
 const apartmentRoutes = require('./routes/apartmentRoutes')
 const authRoutes = require('./routes/authRouter')
@@ -17,7 +16,27 @@ const authRoutes = require('./routes/authRouter')
 app.use('/api/auth', authRoutes)
 app.use('/api/apartments', apartmentRoutes)
 
+const logRegisteredRoutes = () => {
+  const stack = app._router?.stack
+  if (!stack) {
+    console.log('Registered routes: none available yet')
+    return
+  }
 
-app.listen(PORT,()=>{
-    console.log(`Server is running on port ${PORT}`)
+  const routes = stack
+    .filter((layer) => layer.route)
+    .map((layer) => {
+      const path = layer.route.path
+      const methods = Object.keys(layer.route.methods).join(', ').toUpperCase()
+      return `${methods} ${path}`
+    })
+
+  console.log('Registered routes:')
+  routes.forEach((route) => console.log(`  - ${route}`))
+}
+
+logRegisteredRoutes()
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`)
 })

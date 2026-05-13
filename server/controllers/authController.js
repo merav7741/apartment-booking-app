@@ -1,4 +1,4 @@
-const { registerUser, loginUser } = require('../service/authService')
+const { registerUser, loginUser, updateUserProfile } = require('../service/authService')
 
 const register = async (req, res) => {
     try {
@@ -34,4 +34,17 @@ const login = async (req, res) => {
     }
 }
 
-module.exports = { register, login }
+const updateProfile = async (req, res) => {
+    try {
+        const { name, email, phone } = req.body
+        const userId = req.user?.userId
+        if (!userId) return res.status(401).json({ message: 'Token לא תקין' })
+
+        const updatedUser = await updateUserProfile(userId, { name, email, phone })
+        res.json({ user: updatedUser })
+    } catch (err) {
+        res.status(400).json({ message: err.message })
+    }
+}
+
+module.exports = { register, login, updateProfile }

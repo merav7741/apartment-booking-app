@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, Outlet, useLocation } from 'react-router-dom'
 import ApartmentCard from '../components/ApartmentCard'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
@@ -22,41 +22,17 @@ export default function UserDashboard() {
   const { user, isAuthenticated, token } = useAppSelector((state) => state.auth)
 
   const [activeTab, setActiveTab] = useState<DashboardTab>('apartments')
-  const [allSystemApartments, setAllSystemApartments] = useState<Apartment[]>([])
-
   const publishedCount = myApartments.length
   const recommendedCount = useMemo(
     () => myApartments.filter((apt) => apt.reviews?.some((review) => Number(review.rating) === 5)).length,
     [myApartments]
   )
 
-  const fetchAllApartmentsForAdmin = useCallback(async () => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setAllSystemApartments(data)
-      }
-    } catch (err) {
-      console.error('Error fetching all apartments', err)
-    }
-  }, [token])
-
   useEffect(() => {
     if (isAuthenticated) {
       dispatch(fetchMyApartments())
     }
   }, [dispatch, isAuthenticated])
-
-  useEffect(() => {
-    if (isAuthenticated && user?.role === 'Admin') {
-      // Admin data is fetched after mount so the management section stays in sync.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      fetchAllApartmentsForAdmin()
-    }
-  }, [fetchAllApartmentsForAdmin, isAuthenticated, user?.role])
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
@@ -70,7 +46,6 @@ export default function UserDashboard() {
 
       if (response.ok) {
         await dispatch(fetchMyApartments())
-        if (user?.role === 'Admin') fetchAllApartmentsForAdmin()
       }
     } catch {
       alert('אירעה שגיאה במחיקת הדירה')
@@ -140,15 +115,6 @@ export default function UserDashboard() {
         )}
       </main>
 
-      {user?.role === 'Admin' && activeTab === 'apartments' && (
-        <AdminApartments
-          apartments={allSystemApartments}
-          userId={user?._id || ''}
-          onEdit={(id) => navigate(`/dashboard/edit/${id}`)}
-          onDelete={handleDelete}
-          onOpen={(id) => navigate(`/apartment/${id}`)}
-        />
-      )}
     </div>
   )
 }
