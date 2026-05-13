@@ -14,7 +14,6 @@ const verifyToken = (req, res, next) => {
         return res.status(401).json({ message: 'Token לא תקין' })
     }
 }
-
 const verifySubscriberOrAdmin = (req, res, next) => {
     if (req.user.role === 'Admin' || req.user.role === 'Subscriber') {
         next()
