@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { useAppSelector } from '../store/hooks'
-import AmenitiesSelector from '../components/AmenitiesSelector'
+import CharacteristicsSelector from '../components/CharacteristicsSelector'
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/apartments`
 
@@ -22,7 +22,7 @@ export default function AddApartment() {
   const { user, token, isAuthenticated } = useAppSelector((state) => state.auth)
   
   const [images, setImages] = useState<string[]>([])
-  const [amenities, setAmenities] = useState<Record<string, boolean>>({})
+  const [characteristics, setCharacteristics] = useState<Record<string, boolean>>({})
 
   const { register, handleSubmit, formState: { errors } } = useForm<ApartmentFormData>({
     defaultValues: {
@@ -58,7 +58,7 @@ export default function AddApartment() {
         body: JSON.stringify({
           ...data,
           image: images,
-          amenities: Object.keys(amenities).filter(key => amenities[key])
+          characteristics: Object.keys(characteristics).filter(key => characteristics[key])
         })
       })
 
@@ -224,9 +224,9 @@ export default function AddApartment() {
           )}
         </div>
 
-        <AmenitiesSelector
-          selectedAmenities={amenities}
-          onChange={setAmenities}
+        <CharacteristicsSelector
+          selectedCharacteristics={characteristics}
+          onChange={setCharacteristics}
         />
 
         <button

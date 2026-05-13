@@ -114,7 +114,6 @@ export default function UserDashboard() {
           <ProfileTab user={user} />
         )}
       </main>
-
     </div>
   )
 }

@@ -19,7 +19,7 @@ const translationMap: Record<string, string> = {
   pets_allowed: 'חיות מחמד מותרות', sea_view: 'נוף לים', mountain_view: 'נוף להרים', city_view: 'נוף עירוני', fireplace: 'קמין', workspace: 'פינת עבודה'
 };
 
-const AMENITIES_DATA = {
+const CHARACTERISTICS_DATA = {
   "נוחות בסיסית": ['wifi', 'ac', 'heating', 'elevator', 'parking'],
   "מטבח וארוחות": ['kitchen', 'microwave', 'fridge', 'dishwasher', 'coffee_machine'],
   "מתקני חוץ": ['garden', 'balcony', 'pool', 'jacuzzi', 'nearbyAttractions', 'nearbySynagogue'],
@@ -28,22 +28,22 @@ const AMENITIES_DATA = {
 };
 
 type Props = {
-  selectedAmenities: Record<string, boolean>
-  onChange: (amenities: Record<string, boolean>) => void
+  selectedCharacteristics: Record<string, boolean>
+  onChange: (characteristics: Record<string, boolean>) => void
 }
 
-export default function AmenitiesSelector({ selectedAmenities, onChange }: Props) {
+export default function CharacteristicsSelector({ selectedCharacteristics, onChange }: Props) {
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     onChange({
-      ...selectedAmenities,
+      ...selectedCharacteristics,
       [event.target.name]: event.target.checked,
     })
   }
 
   return (
     <Box sx={{ width: '75%', margin: 'auto', direction: 'rtl' }}>
-      {Object.entries(AMENITIES_DATA).map(([category, items]) => (
+      {Object.entries(CHARACTERISTICS_DATA).map(([category, items]) => (
         <Accordion key={category} disableGutters>
           <AccordionSummary expandIcon={<span>▼</span>}>
             <Typography sx={{ fontWeight: 'bold' }}>{category}</Typography>
@@ -55,7 +55,7 @@ export default function AmenitiesSelector({ selectedAmenities, onChange }: Props
                   key={item}
                   control={
                     <Checkbox
-                      checked={!!selectedAmenities[item]}
+                      checked={!!selectedCharacteristics[item]}
                       onChange={handleChange}
                       name={item}
                     />

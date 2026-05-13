@@ -30,6 +30,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (user?.role === 'Admin') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchAllApartmentsForAdmin()
     } else {
       setLoading(false)

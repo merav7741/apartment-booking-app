@@ -58,6 +58,9 @@ const Header = () => {
         {isAuthenticated && (
           <NavLink to='/dashboard' style={linkStyle}>אזור אישי</NavLink>
         )}
+        {isAuthenticated && user?.role === 'Admin' && (
+          <NavLink to='/admin' style={linkStyle}>לוח מנהל</NavLink>
+        )}
       </div>
 
       <div style={navGroupStyle}>

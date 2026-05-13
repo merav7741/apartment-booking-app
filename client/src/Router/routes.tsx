@@ -3,6 +3,7 @@ import AppLayout from '../layouts/AppLayout'
 import Home from '../pages/Home'
 import ApartmentDetails from '../pages/ApartmentDetails'
 import UserDashboard from '../pages/UserDashboard'
+import AdminDashboard from '../pages/AdminDashboard'
 import Login from '../pages/Login'
 import Register from '../pages/Register'
 import AddApartment from '../pages/AddApartment'
@@ -28,6 +29,14 @@ const router = createBrowserRouter([
           { path: "addApartment", element: <AddApartment /> },
           { path: "edit/:id", element: <EditApartment /> }
         ]
+      },
+      {
+        path: "admin",
+        element: (
+          <ProtectedRoute>
+            <AdminDashboard />
+          </ProtectedRoute>
+        )
       }
     ]
   }
