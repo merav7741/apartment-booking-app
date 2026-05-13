@@ -1,4 +1,4 @@
-const { getAllApartments, getApartmentById, createApartment, updateApartment, deleteApartment, bookApartment } = require('../service/apartmentService');
+const { getAllApartments, getApartmentById, createApartment, updateApartment, deleteApartment } = require('../service/apartmentService');
 
 const getAll = async (req, res) => {
     try {
@@ -78,34 +78,6 @@ const remove = async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: err.message })
     }
-}
-
-const book = async (req, res) => {
-  try {
-    const { id } = req.params
-    const { startDate, endDate } = req.body
-
-    if (!id) {
-      return res.status(400).json({ error: 'Apartment id is required' })
-    }
-    if (!startDate || !endDate) {
-      return res.status(400).json({ error: 'Start date and end date are required' })
-    }
-
-    const updatedApartment = await bookApartment(id, {
-      guestId: req.user.userId,
-      guestName: req.user.name || req.user.email || 'מזמין/ה',
-      startDate,
-      endDate
-    })
-
-    res.json(updatedApartment)
-  } catch (err) {
-    if (err.message.includes('already booked')) {
-      return res.status(409).json({ message: err.message })
-    }
-    res.status(500).json({ message: err.message })
-  }
 }
 
 const getMyApartments = async (req, res) => {

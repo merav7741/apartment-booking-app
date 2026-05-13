@@ -219,7 +219,7 @@ function ProfileField({ label, value }: { label: string; value?: string }) {
   )
 }
 
-function AdminApartments({
+export function AdminApartments({
   apartments,
   userId,
   onEdit,
