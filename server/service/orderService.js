@@ -178,7 +178,15 @@ const getOrdersByCustomer = async (customerId) => {
     if (!isValidObjectId(customerId)) {
         throw new Error('Invalid customerId')
     }
-    return await Order.find({ customerId: customerId, status: { $ne: 'Canceled' } })
+    const fourMonthsFromNow = new Date()
+    fourMonthsFromNow.setMonth(fourMonthsFromNow.getMonth() + 4)
+    return await Order.find({
+        customerId: customerId,
+        $or: [
+            { status: 'Canceled' },
+            { startDate: { $lte: fourMonthsFromNow } }
+        ]
+    })
         .populate('landlordID')
         .populate('apartmentId')
         .sort({ createdAt: -1 })

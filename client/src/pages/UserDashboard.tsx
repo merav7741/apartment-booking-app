@@ -7,10 +7,11 @@ import { fetchMyBookings, fetchIncomingBookings, updateBookingStatus } from '../
 import type { Apartment } from '../types/apartment.types'
 import type { User } from '../types/user.types'
 
-type DashboardTab = 'apartments' | 'bookings' | 'profile'
+type DashboardTab = 'apartments' | 'myBookings' | 'bookings' | 'profile'
 
 const tabs: { id: DashboardTab; label: string }[] = [
   { id: 'apartments', label: 'הנכסים שלי' },
+  { id: 'myBookings', label: 'הזמנות שלי' },
   { id: 'bookings', label: 'הזמנות נכנסות' },
   { id: 'profile', label: 'פרופיל' }
 ]
@@ -24,7 +25,18 @@ export default function UserDashboard() {
   const { incomingBookings, myBookings } = useAppSelector((state) => state.bookings)
 
   const [activeTab, setActiveTab] = useState<DashboardTab>('apartments')
+  const pendingCount = incomingBookings.filter((b) => b.status === 'Pending Approval').length
   const publishedCount = myApartments.length
+  const recentBookings = useMemo(() => {
+    const ninetyDaysAgo = new Date()
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
+
+    return myBookings.filter((booking) => {
+      const bookingDate = new Date(booking.startDate)
+      return bookingDate >= ninetyDaysAgo
+    })
+  }, [myBookings])
+
   const recommendedCount = useMemo(
     () => myApartments.filter((apt) => apt.reviews?.some((review) => Number(review.rating) === 5)).length,
     [myApartments]
@@ -79,6 +91,10 @@ export default function UserDashboard() {
           <strong style={statValueStyle}>{recommendedCount}</strong>
         </div>
         <div style={statBoxStyle}>
+          <span style={statLabelStyle}>הזמנות אחרונות</span>
+          <strong style={statValueStyle}>{recentBookings.length}</strong>
+        </div>
+        <div style={statBoxStyle}>
           <span style={statLabelStyle}>הזמנות נכנסות</span>
           <strong style={statValueStyle}>{incomingBookings.length}</strong>
         </div>
@@ -99,6 +115,9 @@ export default function UserDashboard() {
             style={activeTab === tab.id ? activeTabStyle : tabStyle}
           >
             {tab.label}
+            {tab.id === 'bookings' && pendingCount > 0 && (
+              <span style={badgeStyle}>{pendingCount}</span>
+            )}
           </button>
         ))}
       </div>
@@ -112,6 +131,10 @@ export default function UserDashboard() {
             onDelete={handleDelete}
             onOpen={(id) => navigate(`/apartment/${id}`)}
           />
+        )}
+
+        {activeTab === 'myBookings' && (
+          <MyBookingsTab bookings={myBookings} />
         )}
 
         {activeTab === 'bookings' && (
@@ -190,6 +213,73 @@ function ApartmentWithActions({
       {ownerLabel && <div style={ownerTagStyle}>בעלים: {ownerLabel}</div>}
       <ApartmentCard apartment={apartment} onClick={onOpen} />
     </div>
+  )
+}
+
+function MyBookingsTab({ bookings }: { bookings: any[] }) {
+  const sortedBookings = [...bookings]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+  if (sortedBookings.length === 0) {
+    return (
+      <section>
+        <h2 style={sectionTitleStyle}>הזמנות שלי</h2>
+        <div style={emptyStateStyle}>
+          אין הזמנות בחודשים האחרונים. ברגע שתבצעו הזמנה, היא תופיע כאן.
+        </div>
+      </section>
+    )
+  }
+
+  return (
+    <section>
+      <h2 style={sectionTitleStyle}>הזמנות שלי</h2>
+      <div style={bookingsGridStyle}>
+        {sortedBookings.map((booking) => (
+          <div key={booking._id} style={{
+            ...bookingCardStyle,
+            borderRight: booking.status === 'Canceled' ? '4px solid #ef4444' : bookingCardStyle.borderRight
+          }}>
+            <div style={bookingHeaderStyle}>
+              <div>
+                <h3 style={bookingApartmentStyle}>{booking.apartmentId?.name || 'דירה לא זמינה'}</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6b7280' }}>
+                  📍 {booking.apartmentId?.address || ''}
+                </p>
+              </div>
+              <div style={{ ...statusBadgeStyle, backgroundColor: getStatusColor(booking.status) }}>
+                {getStatusLabel(booking.status)}
+              </div>
+            </div>
+
+            <div style={bookingDetailsStyle}>
+              <div style={detailRowStyle}>
+                <span style={detailLabelStyle}>🗓️ התחלה</span>
+                <span style={detailValueStyle}>{new Date(booking.startDate).toLocaleDateString('he-IL')}</span>
+              </div>
+              <div style={detailRowStyle}>
+                <span style={detailLabelStyle}>🗓️ סיום</span>
+                <span style={detailValueStyle}>{new Date(booking.endDate).toLocaleDateString('he-IL')}</span>
+              </div>
+              <div style={detailRowStyle}>
+                <span style={detailLabelStyle}>🌙 לילות</span>
+                <span style={detailValueStyle}>{booking.numberOfNights}</span>
+              </div>
+              <div style={detailRowStyle}>
+                <span style={detailLabelStyle}>💰 סה"כ</span>
+                <span style={{ ...detailValueStyle, fontWeight: 'bold', color: '#10b981' }}>₪{booking.totalPrice?.toLocaleString()}</span>
+              </div>
+            </div>
+
+            {booking.status === 'Canceled' && (
+              <div style={{ padding: '10px', backgroundColor: '#fef2f2', borderRadius: '6px', fontSize: '13px', color: '#991b1b' }}>
+                ❌ הזמנה זו בוטלה
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
   )
 }
 
@@ -702,4 +792,19 @@ const cancelButtonStyle: React.CSSProperties = {
   fontWeight: '600',
   cursor: 'pointer',
   transition: 'background-color 0.2s'
+}
+
+const badgeStyle: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginRight: '6px',
+  backgroundColor: '#ef4444',
+  color: 'white',
+  borderRadius: '999px',
+  fontSize: '11px',
+  fontWeight: 700,
+  minWidth: '18px',
+  height: '18px',
+  padding: '0 5px'
 }

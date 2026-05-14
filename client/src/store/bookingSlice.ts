@@ -23,6 +23,7 @@ export interface Booking {
 export interface BookingState {
   myBookings: Booking[]
   incomingBookings: Booking[]
+  allBookings: Booking[]
   bookedDates: { start: string; end: string }[]
   loading: boolean
   error: string | null
@@ -139,6 +140,34 @@ export const fetchBookedDates = createAsyncThunk<
   }
 })
 
+export const fetchAllBookings = createAsyncThunk<
+  Booking[],
+  void,
+  { state: RootState }
+>('bookings/fetchAll', async (_, { rejectWithValue, getState }) => {
+  try {
+    const token = getState().auth.token
+    if (!token) {
+      return rejectWithValue('נדרש להתחבר')
+    }
+
+    const response = await fetch(API_URL, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    if (!response.ok) {
+      return rejectWithValue('שגיאה בטעינת כל ההזמנות')
+    }
+
+    const data = await response.json()
+    return Array.isArray(data) ? data : []
+  } catch (error) {
+    return rejectWithValue('שגיאה בחיבור לשרת')
+  }
+})
+
 export const updateBookingStatus = createAsyncThunk<
   Booking,
   { bookingId: string; status: string },
@@ -173,6 +202,7 @@ export const updateBookingStatus = createAsyncThunk<
 const initialState: BookingState = {
   myBookings: [],
   incomingBookings: [],
+  allBookings: [],
   bookedDates: [],
   loading: false,
   error: null
@@ -244,15 +274,33 @@ const bookingSlice = createSlice({
       })
 
     builder
+      .addCase(fetchAllBookings.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(fetchAllBookings.fulfilled, (state, action) => {
+        state.loading = false
+        state.allBookings = action.payload
+      })
+      .addCase(fetchAllBookings.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload as string
+      })
+
+    builder
       .addCase(updateBookingStatus.pending, (state) => {
         state.loading = true
         state.error = null
       })
       .addCase(updateBookingStatus.fulfilled, (state, action) => {
         state.loading = false
-        const index = state.incomingBookings.findIndex((b) => b._id === action.payload._id)
-        if (index !== -1) {
-          state.incomingBookings[index] = action.payload
+        const incomingIndex = state.incomingBookings.findIndex((b) => b._id === action.payload._id)
+        if (incomingIndex !== -1) {
+          state.incomingBookings[incomingIndex] = action.payload
+        }
+        const myIndex = state.myBookings.findIndex((b) => b._id === action.payload._id)
+        if (myIndex !== -1) {
+          state.myBookings[myIndex] = action.payload
         }
       })
       .addCase(updateBookingStatus.rejected, (state, action) => {
