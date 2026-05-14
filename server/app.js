@@ -17,7 +17,9 @@ app.use('/api/auth', authRoutes)
 app.use('/api/apartments', apartmentRoutes)
 
 const logRegisteredRoutes = () => {
-  const routes = app._router.stack
+  const routerStack = app.router?.stack || app._router?.stack || []
+
+  const routes = routerStack
     .filter((layer) => layer.route)
     .map((layer) => {
       const path = layer.route.path
