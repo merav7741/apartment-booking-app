@@ -7,7 +7,6 @@ interface ApartmentCardProps {
 
 export default function ApartmentCard({ apartment, onClick }: ApartmentCardProps) {
   const getDisplayImage = () => {
-    // בודק את שני השמות האפשריים לשדה התמונות
     const possibleImages = apartment.image;
     if (possibleImages && Array.isArray(possibleImages) && possibleImages.length > 0) {
       const firstImg = possibleImages[0];
@@ -35,7 +34,7 @@ export default function ApartmentCard({ apartment, onClick }: ApartmentCardProps
         )}
         <div style={priceTagStyle}>₪{apartment.price?.toLocaleString()}</div>
       </div>
-כן ה
+
       <div style={{ padding: '16px' }}>
         <h3 style={titleStyle}>{apartment.name}</h3>
         <p style={locationStyle}>📍 {apartment.location}</p>

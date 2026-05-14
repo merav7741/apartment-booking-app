@@ -17,13 +17,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/apartments', apartmentRoutes)
 
 const logRegisteredRoutes = () => {
-  const stack = app._router?.stack
-  if (!stack) {
-    console.log('Registered routes: none available yet')
-    return
-  }
-
-  const routes = stack
+  const routes = app._router.stack
     .filter((layer) => layer.route)
     .map((layer) => {
       const path = layer.route.path

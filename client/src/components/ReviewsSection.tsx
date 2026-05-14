@@ -57,11 +57,11 @@ export default function ReviewsSection({ reviews, userId, userName, apartmentId,
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {reviews?.map((rev, i) => (
           <div key={i} style={reviewCardStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <strong style={{ fontSize: '16px' }}>{rev.userName}</strong>
-              <span style={{ color: '#f59e0b', fontSize: '18px' }}>{'★'.repeat(rev.rating)}</span>
+            <div style={ReviewsDivStyle}>
+              <strong style={reviewUserStyle}>{rev.userName}</strong>
+              <span style={reviewRatingStyle}>{'★'.repeat(rev.rating)}</span>
             </div>
-            <p style={{ margin: 0, color: '#4b5563', lineHeight: '1.5' }}>{rev.comment}</p>
+            <p style={reviewTextStyle}>{rev.comment}</p>
           </div>
         ))}
       </div>
@@ -69,8 +69,13 @@ export default function ReviewsSection({ reviews, userId, userName, apartmentId,
   )
 }
 
+
 const addReviewBoxStyle = { backgroundColor: '#f8fafc', padding: '25px', borderRadius: '16px', border: '1px solid #e2e8f0', marginBottom: '40px' };
 const textareaStyle = { width: '100%', height: '100px', padding: '15px', borderRadius: '12px', border: '1px solid #cbd5e1', marginBottom: '15px', resize: 'none' as const };
 const selectStyle = { padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1' };
 const submitBtnStyle = { padding: '10px 25px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' };
 const reviewCardStyle = { padding: '20px', borderRadius: '12px', backgroundColor: '#fff', border: '1px solid #f1f5f9', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' };
+const reviewTextStyle = { margin: 0, color: '#4b5563', lineHeight: '1.5' };
+const reviewRatingStyle = { color: '#fbbf24', fontSize: '18px' };
+const reviewUserStyle = { fontWeight: 'bold', color: '#111827' };
+const ReviewsDivStyle ={ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }

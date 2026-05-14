@@ -50,7 +50,7 @@ export default function ApartmentDetails() {
       `חדרים: ${apartment.bedrooms}`,
       `תיאור: ${apartment.description || 'אין תיאור זמין.'}`,
       `
-קישורים לתמונות:`,
+    קישורים לתמונות:`,
       ...(imageUrls.length > 0 ? imageUrls : ['אין תמונות זמינות.'])
     ].join('\n')
 
@@ -85,6 +85,9 @@ export default function ApartmentDetails() {
       <div style={headerSectionStyle}>
         <h1 style={{ fontSize: '32px', marginBottom: '10px' }}>{apartment.name}</h1>
         <p style={{ color: '#6b7280' }}>📍 {apartment.location} • {apartment.address}</p>
+
+        <h3 style={subTitleStyle}>תיאור הנכס</h3>
+        <p style={descriptionStyle}>{apartment.description || "אין תיאור זמין לדירה זו."}</p>
       </div>
 
       <div style={mainGridStyle}>
@@ -112,8 +115,6 @@ export default function ApartmentDetails() {
           <h3 style={subTitleStyle}>מתקנים ושירותים</h3>
           <AmenitiesGrid characteristics={apartment.characteristics} />
 
-          <h3 style={subTitleStyle}>תיאור הנכס</h3>
-          <p style={descriptionStyle}>{apartment.description || "אין תיאור זמין לדירה זו."}</p>
         </div>
 
         <div style={rightColumnStyle}>
