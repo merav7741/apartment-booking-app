@@ -130,6 +130,14 @@ const updateOrder = async (id, data) => {
         throw new Error('Order not found')
     }
 
+    // אם רק מעדכנים סטטוס - אין צורך בvalidation מלא
+    if (Object.keys(data).length === 1 && data.status) {
+        return await Order.findByIdAndUpdate(id, { status: data.status }, { new: true })
+            .populate('customerId')
+            .populate('landlordID')
+            .populate('apartmentId')
+    }
+
     const customerId = data.customerId ?? existingOrder.customerId
     const landlordID = data.landlordID ?? existingOrder.landlordID
     const apartmentId = data.apartmentId ?? existingOrder.apartmentId
@@ -168,6 +176,7 @@ const getOrdersByLandlord = async (landlordId) => {
     if (!isValidObjectId(landlordId)) {
         throw new Error('Invalid landlordId')
     }
+    
     return await Order.find({ landlordID: landlordId, status: { $ne: 'Canceled' } })
         .populate('customerId')
         .populate('apartmentId')
