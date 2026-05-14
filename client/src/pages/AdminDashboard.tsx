@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAppSelector } from '../store/hooks'
+import { useAppDispatch, useAppSelector } from '../store/hooks'
+import { fetchAllBookings } from '../store/bookingSlice'
 import type { Apartment } from '../types/apartment.types'
 import { AdminApartments } from './UserDashboard'
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const { user, token } = useAppSelector((state) => state.auth)
+  const { allBookings } = useAppSelector((state) => state.bookings)
   const [allSystemApartments, setAllSystemApartments] = useState<Apartment[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -32,10 +35,11 @@ export default function AdminDashboard() {
     if (user?.role === 'Admin') {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchAllApartmentsForAdmin()
+      dispatch(fetchAllBookings())
     } else {
       setLoading(false)
     }
-  }, [fetchAllApartmentsForAdmin, user?.role])
+  }, [fetchAllApartmentsForAdmin, user?.role, dispatch])
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
@@ -76,13 +80,55 @@ export default function AdminDashboard() {
       {loading ? (
         <p style={messageStyle}>טוען דירות...</p>
       ) : (
-        <AdminApartments
-          apartments={allSystemApartments}
-          userId={user?._id || ''}
-          onEdit={(id) => navigate(`/dashboard/edit/${id}`)}
-          onDelete={handleDelete}
-          onOpen={(id) => navigate(`/apartment/${id}`)}
-        />
+        <>
+          <AdminApartments
+            apartments={allSystemApartments}
+            userId={user?._id || ''}
+            onEdit={(id) => navigate(`/dashboard/edit/${id}`)}
+            onDelete={handleDelete}
+            onOpen={(id) => navigate(`/apartment/${id}`)}
+          />
+          <section style={{ marginTop: '36px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#111827', marginBottom: '18px' }}>כל ההזמנות במערכת</h2>
+            {allBookings.length === 0 ? (
+              <div style={{ padding: '20px', borderRadius: '16px', background: '#f8fafc', color: '#475569' }}>אין הזמנות להצגה כרגע.</div>
+            ) : (
+              <div style={{ display: 'grid', gap: '18px' }}>
+                {allBookings.map((booking: any) => (
+                  <div key={booking._id} style={{ border: '1px solid #e2e8f0', borderRadius: '18px', padding: '20px', background: '#fff' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginBottom: '14px', flexWrap: 'wrap' }}>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: '20px', color: '#111827' }}>{booking.apartmentId?.name || 'דירה'}</h3>
+                        <p style={{ margin: '8px 0 0', color: '#475569' }}>אורח: {booking.customerId?.name || 'לא ידוע'}</p>
+                      </div>
+                      <div style={{ padding: '8px 14px', borderRadius: '999px', fontSize: '14px', fontWeight: 700, color: '#fff', backgroundColor: booking.status === 'Approved' ? '#22c55e' : booking.status === 'Pending Approval' ? '#f59e0b' : '#ef4444' }}>
+                        {booking.status}
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px', color: '#475569' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>🗓️ התחלה</span>
+                        <span>{new Date(booking.startDate).toLocaleDateString('he-IL')}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>🗓️ סיום</span>
+                        <span>{new Date(booking.endDate).toLocaleDateString('he-IL')}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>💰 סה"כ</span>
+                        <span style={{ fontWeight: 700, color: '#10b981' }}>₪{booking.totalPrice.toLocaleString()}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>📍 דירה</span>
+                        <span>{booking.apartmentId?.address || 'לא זמין'}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </>
       )}
     </div>
   )
