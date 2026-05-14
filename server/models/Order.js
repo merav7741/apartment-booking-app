@@ -11,6 +11,27 @@ const OrderSchema = new Schema(
             ref: 'User',
             required: true
         },
+        apartmentId: {
+            type: Schema.Types.ObjectId,
+            ref: 'Apartment',
+            required: true
+        },
+        startDate: {
+            type: Date,
+            required: true
+        },
+        endDate: {
+            type: Date,
+            required: true
+        },
+        totalPrice: {
+            type: Number,
+            required: true
+        },
+        numberOfNights: {
+            type: Number,
+            required: true
+        },
         status: {
             type: String,
             enum: ['Canceled', 'Pending Approval', 'Approved'],

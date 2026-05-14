@@ -129,14 +129,17 @@ export default function ApartmentDetails() {
             {!isAuthenticated ? (
               <button onClick={() => navigate('/login')} style={primaryBtnStyle}>התחבר להזמנה</button>
             ) : (
-              <div style={{ lineHeight: 1.7, color: '#374151' }}>
-                <p style={{ marginBottom: '16px' }}>
-                  ההזמנות כרגע מבוטלות בצד התוכנה. שמירת תאריכים לא מתבצעת אוטומטית במסד הנתונים.
+              <>
+                <button 
+                  onClick={() => navigate(`/booking/${id}`)}
+                  style={primaryBtnStyle}
+                >
+                  🗓️ ספק הזמנה
+                </button>
+                <p style={{ marginTop: '16px', fontSize: '13px', color: '#6b7280', marginBottom: '0' }}>
+                  לחץ על הכפתור כדי לבחור תאריכים ולהזמין את הדירה
                 </p>
-                <p style={{ marginBottom: '0', color: '#6b7280' }}>
-                  אם יש צורך בעדכון ידני של תאריכים, יש לבצע זאת ישירות מול החברה.
-                </p>
-              </div>
+              </>
             )}
           </div>
         </div>

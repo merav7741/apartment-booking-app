@@ -12,9 +12,11 @@ connectDB()
 
 const apartmentRoutes = require('./routes/apartmentRoutes')
 const authRoutes = require('./routes/authRouter')
+const orderRoutes = require('./routes/orderRouter')
 
 app.use('/api/auth', authRoutes)
 app.use('/api/apartments', apartmentRoutes)
+app.use('/api/orders', orderRoutes)
 
 const logRegisteredRoutes = () => {
   const stack = app._router?.stack

@@ -8,6 +8,7 @@ import Login from '../pages/Login'
 import Register from '../pages/Register'
 import AddApartment from '../pages/AddApartment'
 import EditApartment from '../pages/EditApartment'
+import BookingPage from '../pages/BookingPage'
 import ProtectedRoute from '../components/ProtectedRoute'
 
 const router = createBrowserRouter([
@@ -18,6 +19,7 @@ const router = createBrowserRouter([
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
       { path: "apartment/:id", element: <ApartmentDetails /> },
+      { path: "booking/:apartmentId", element: <BookingPage /> },
       {
         path: "dashboard",
         element: (
