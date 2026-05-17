@@ -3,6 +3,7 @@ import { useNavigate, Outlet, useLocation } from 'react-router-dom'
 import ApartmentCard from '../components/ApartmentCard'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { fetchMyApartments } from '../store/apartmentSlice'
+import { updateProfile } from '../store/authSlice'
 import { fetchMyBookings, fetchIncomingBookings, updateBookingStatus } from '../store/bookingSlice'
 import type { Apartment } from '../types/apartment.types'
 import type { User } from '../types/user.types'
@@ -404,15 +405,119 @@ function getStatusLabel(status: string): string {
 }
 
 function ProfileTab({ user }: { user: User | null }) {
+  const dispatch = useAppDispatch()
+  const { loading, error } = useAppSelector((state) => state.auth)
+  const [isEditing, setIsEditing] = useState(false)
+  const [name, setName] = useState(user?.name || '')
+  const [email, setEmail] = useState(user?.email || '')
+  const [phone, setPhone] = useState(user?.phone || '')
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name)
+      setEmail(user.email)
+      setPhone(user.phone)
+    }
+  }, [user])
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setSuccessMessage(null)
+
+    if (!user) return
+
+    try {
+      await dispatch(updateProfile({ name, email, phone })).unwrap()
+      setSuccessMessage('הפרופיל עודכן בהצלחה')
+      setIsEditing(false)
+    } catch {
+      // error is handled by slice state
+    }
+  }
+
+  const handleCancel = () => {
+    setIsEditing(false)
+    if (user) {
+      setName(user.name)
+      setEmail(user.email)
+      setPhone(user.phone)
+    }
+    setSuccessMessage(null)
+  }
+
+  if (!user) {
+    return (
+      <section>
+        <h2 style={sectionTitleStyle}>פרופיל</h2>
+        <div style={emptyStateStyle}>לא נמצא משתמש. היכנס שוב כדי להציג את הפרופיל.</div>
+      </section>
+    )
+  }
+
   return (
     <section>
-      <h2 style={sectionTitleStyle}>פרופיל</h2>
-      <div style={profileGridStyle}>
-        <ProfileField label="שם מלא" value={user?.name} />
-        <ProfileField label="אימייל" value={user?.email} />
-        <ProfileField label="טלפון" value={user?.phone} />
-        <ProfileField label="הרשאה" value={user?.role === 'Admin' ? 'מנהל' : 'מנוי'} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+        <h2 style={sectionTitleStyle}>פרופיל</h2>
+        {!isEditing && (
+          <button type="button" onClick={() => setIsEditing(true)} style={editBtnStyle}>
+            ערוך פרופיל
+          </button>
+        )}
       </div>
+
+      {successMessage && <div style={successMessageStyle}>{successMessage}</div>}
+      {error && <div style={errorMessageStyle}>{error}</div>}
+
+      {isEditing ? (
+        <form onSubmit={handleSubmit} style={profileFormStyle}>
+          <label style={formLabelStyle}>
+            שם מלא
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              style={inputStyle}
+              required
+            />
+          </label>
+          <label style={formLabelStyle}>
+            אימייל
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={inputStyle}
+              required
+            />
+          </label>
+          <label style={formLabelStyle}>
+            טלפון
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              style={inputStyle}
+            />
+          </label>
+
+          <div style={formActionsStyle}>
+            <button type="button" onClick={handleCancel} style={cancelButtonStyle}>
+              בטל
+            </button>
+            <button type="submit" disabled={loading} style={saveButtonStyle}>
+              שמור עדכון
+            </button>
+          </div>
+        </form>
+      ) : (
+        <div style={profileGridStyle}>
+          <ProfileField label="שם מלא" value={user.name} />
+          <ProfileField label="אימייל" value={user.email} />
+          <ProfileField label="טלפון" value={user.phone} />
+          <ProfileField label="הרשאה" value={user.role === 'Admin' ? 'מנהל' : 'מנוי'} />
+        </div>
+      )}
     </section>
   )
 }
@@ -648,6 +753,58 @@ const emptyStateStyle: React.CSSProperties = {
   textAlign: 'center',
   fontSize: '16px',
   lineHeight: 1.7
+}
+
+const profileFormStyle: React.CSSProperties = {
+  display: 'grid',
+  gap: '16px',
+  marginTop: '20px'
+}
+
+const formLabelStyle: React.CSSProperties = {
+  display: 'grid',
+  gap: '8px',
+  fontWeight: 700,
+  color: '#111827'
+}
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '12px 14px',
+  borderRadius: '8px',
+  border: '1px solid #d1d5db',
+  fontSize: '15px'
+}
+
+const formActionsStyle: React.CSSProperties = {
+  display: 'flex',
+  justifyContent: 'flex-end',
+  gap: '12px',
+  flexWrap: 'wrap'
+}
+
+const saveButtonStyle: React.CSSProperties = {
+  ...editBtnStyle,
+  backgroundColor: '#10b981'
+}
+
+
+const successMessageStyle: React.CSSProperties = {
+  marginTop: '16px',
+  padding: '12px 16px',
+  borderRadius: '8px',
+  backgroundColor: '#ecfdf5',
+  color: '#065f46',
+  border: '1px solid #6ee7b7'
+}
+
+const errorMessageStyle: React.CSSProperties = {
+  marginTop: '16px',
+  padding: '12px 16px',
+  borderRadius: '8px',
+  backgroundColor: '#fef2f2',
+  color: '#991b1b',
+  border: '1px solid #fecaca'
 }
 
 const smallNoteStyle: React.CSSProperties = {
