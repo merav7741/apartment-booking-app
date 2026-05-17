@@ -146,7 +146,7 @@ export default function ApartmentDetails() {
         </div>
       </div>
 
-      <ReviewsSection reviews={apartment.reviews || []} userId={user?._id || ''} userName={user?.name || ''} apartmentId={id!} apartment={apartment} onReviewAdded={fetchApartment} />
+      <ReviewsSection reviews={apartment.reviews || []} userId={user?._id || ''} userName={user?.name || ''} apartmentId={id!} onReviewAdded={fetchApartment} />
     </div>
   )
 }

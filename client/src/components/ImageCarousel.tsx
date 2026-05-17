@@ -1,4 +1,6 @@
-import React from 'react'
+import { Box, IconButton, Paper } from '@mui/material'
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
+import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 
 type ImageCarouselProps = {
   imageUrls: string[]
@@ -10,48 +12,48 @@ type ImageCarouselProps = {
 
 export default function ImageCarousel({ imageUrls, activeIndex, onPrev, onNext, onSelect }: ImageCarouselProps) {
   return (
-    <div style={carouselWrapperStyle as React.CSSProperties}>
-      <img
+    <Box sx={{ position: 'relative', mb: 3 }}>
+      <Box
+        component="img"
         src={imageUrls[activeIndex] || 'https://via.placeholder.com/1200x700?text=No+Image'}
-        style={mainImgStyle}
+        sx={{ width: '100%', height: 500, objectFit: 'cover', borderRadius: 6, boxShadow: 4 }}
       />
 
       {imageUrls.length > 1 && (
-        <div style={carouselControlsStyle as React.CSSProperties}>
-          <button type="button" onClick={onPrev} style={carouselNavButtonStyle as React.CSSProperties}>‹</button>
-          <button type="button" onClick={onNext} style={carouselNavButtonStyle as React.CSSProperties}>›</button>
-        </div>
+        <Box sx={{ position: 'absolute', top: '50%', left: 0, right: 0, display: 'flex', justifyContent: 'space-between', transform: 'translateY(-50%)', px: 1.5, pointerEvents: 'none' }}>
+          <IconButton onClick={onPrev} sx={{ pointerEvents: 'auto', bgcolor: 'rgba(15,23,42,0.78)', color: 'common.white', boxShadow: 3, '&:hover': { bgcolor: 'rgba(15,23,42,0.92)' } }}>
+            <NavigateBeforeIcon fontSize="large" />
+          </IconButton>
+          <IconButton onClick={onNext} sx={{ pointerEvents: 'auto', bgcolor: 'rgba(15,23,42,0.78)', color: 'common.white', boxShadow: 3, '&:hover': { bgcolor: 'rgba(15,23,42,0.92)' } }}>
+            <NavigateNextIcon fontSize="large" />
+          </IconButton>
+        </Box>
       )}
 
       {imageUrls.length > 1 && (
-        <div style={thumbsRowStyle}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: 1.5, mt: 2 }}>
           {imageUrls.map((src, index) => (
-            <button
+            <Paper
               key={`${src}-${index}`}
-              type="button"
+              component="button"
               onClick={() => onSelect(index)}
-              style={thumbButtonStyle(index === activeIndex)}
+              elevation={0}
+              sx={{
+                border: 2,
+                borderColor: index === activeIndex ? 'primary.main' : 'divider',
+                borderRadius: 4,
+                overflow: 'hidden',
+                p: 0,
+                cursor: 'pointer',
+                bgcolor: 'background.paper',
+                transition: 'border-color 0.2s'
+              }}
             >
-              <img src={src} style={thumbImgStyle} />
-            </button>
+              <Box component="img" src={src} sx={{ width: '100%', height: 80, objectFit: 'cover', display: 'block' }} />
+            </Paper>
           ))}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   )
 }
-
-const carouselWrapperStyle = { position: 'relative', marginBottom: '25px' };
-const mainImgStyle = { width: '100%', height: '500px', objectFit: 'cover' as const, borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' };
-const carouselControlsStyle = { position: 'absolute', top: '50%', left: 0, right: 0, display: 'flex', justifyContent: 'space-between', transform: 'translateY(-50%)', padding: '0 10px', pointerEvents: 'none' };
-const carouselNavButtonStyle = { pointerEvents: 'auto', width: '44px', height: '44px', borderRadius: '999px', border: 'none', backgroundColor: 'rgba(15,23,42,0.78)', color: 'white', fontSize: '24px', cursor: 'pointer', boxShadow: '0 8px 20px rgba(0,0,0,0.18)', transition: 'transform 0.2s' };
-const thumbsRowStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '12px', marginTop: '18px' };
-const thumbButtonStyle = (isActive: boolean): React.CSSProperties => ({
-  border: isActive ? '2px solid #2563eb' : '1px solid #e5e7eb',
-  borderRadius: '16px',
-  overflow: 'hidden',
-  padding: 0,
-  background: 'white',
-  cursor: 'pointer'
-});
-const thumbImgStyle = { width: '100%', height: '80px', objectFit: 'cover' as const, display: 'block' };

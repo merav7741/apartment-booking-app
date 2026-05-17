@@ -41,107 +41,82 @@ const Header = () => {
   return (
     <AppBar
       position="sticky"
+      elevation={1}
       sx={{
-        backgroundColor: "rgba(255, 255, 255, 0.94)",
-        backdropFilter: "blur(10px)",
-        borderBottom: "1px solid #e5e7eb",
-        color: "text.primary",
-        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+        bgcolor: 'background.paper',
+        borderBottom: 1,
+        borderColor: 'divider',
+        color: 'text.primary',
       }}
     >
       <Toolbar
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          padding: "12px 40px",
-          direction: "rtl",
+          display: 'flex',
+          justifyContent: 'space-between',
+          px: 5,
+          py: 1.5,
+          direction: 'rtl',
         }}
       >
         {/* Logo & Navigation */}
-        <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
           <Box
             component="img"
             src="/logo.png"
             alt="לוגו האתר"
             sx={{
-              height: "45px",
-              width: "auto",
-              cursor: "pointer",
-              transition: "transform 0.2s",
-              "&:hover": { transform: "scale(1.05)" },
+              height: 45,
+              width: 'auto',
+              cursor: 'pointer',
+              transition: 'transform 0.2s',
+              '&:hover': { transform: 'scale(1.05)' },
             }}
-            onClick={() => navigate("/")}
+            onClick={() => navigate('/')}
           />
 
-          {/* Apartments Dropdown */}
-          <Box>
-            <Button
-              id="apartments-button"
-              aria-controls={menuOpen ? "apartments-menu" : undefined}
-              aria-haspopup="true"
-              aria-expanded={menuOpen ? "true" : undefined}
-              onClick={handleMenuClick}
-              sx={{
-                color: "#4b5563",
-                textTransform: "none",
-                fontSize: "15px",
-                fontWeight: 600,
-                padding: 0,
-              }}
-            >
-              הדירות שלנו ▼
-            </Button>
-            <Menu
-              id="apartments-menu"
-              anchorEl={anchorEl}
-              open={menuOpen}
-              onClose={handleMenuClose}
-            >
-              <MenuItem onClick={() => goToApartments("recommended")}>
-                דירות מומלצות
-              </MenuItem>
-              <MenuItem onClick={() => goToApartments("all")}>
-                כל הדירות
-              </MenuItem>
-            </Menu>
-          </Box>
+          <Button
+            onClick={handleMenuClick}
+            sx={{
+              color: 'text.secondary',
+              textTransform: 'none',
+              fontSize: 15,
+              fontWeight: 600,
+              p: 0,
+            }}
+          >
+            הדירות שלנו ▼
+          </Button>
+          <Menu anchorEl={anchorEl} open={menuOpen} onClose={handleMenuClose}>
+            <MenuItem onClick={() => goToApartments('recommended')}>דירות מומלצות</MenuItem>
+            <MenuItem onClick={() => goToApartments('all')}>כל הדירות</MenuItem>
+          </Menu>
 
-          {/* Dashboard Link */}
           {isAuthenticated && (
             <Button
               component={NavLink}
               to="/dashboard"
               sx={{
-                textDecoration: "none",
-                color: "#4b5563",
-                textTransform: "none",
-                fontSize: "15px",
+                color: 'text.secondary',
+                textTransform: 'none',
+                fontSize: 15,
                 fontWeight: 500,
-                "&.active": {
-                  color: "primary.main",
-                  fontWeight: 700,
-                },
+                '&.active': { color: 'primary.main', fontWeight: 700 },
               }}
             >
               אזור אישי
             </Button>
           )}
 
-          {/* Admin Link */}
-          {isAuthenticated && user?.role === "Admin" && (
+          {isAuthenticated && user?.role === 'Admin' && (
             <Button
               component={NavLink}
               to="/admin"
               sx={{
-                textDecoration: "none",
-                color: "#4b5563",
-                textTransform: "none",
-                fontSize: "15px",
+                color: 'text.secondary',
+                textTransform: 'none',
+                fontSize: 15,
                 fontWeight: 500,
-                "&.active": {
-                  color: "primary.main",
-                  fontWeight: 700,
-                },
+                '&.active': { color: 'primary.main', fontWeight: 700 },
               }}
             >
               לוח מנהל
@@ -150,19 +125,20 @@ const Header = () => {
         </Box>
 
         {/* User Section */}
-        <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           {isAuthenticated ? (
             <>
               <Chip
-                avatar={<Avatar>{user?.name?.[0]}</Avatar>}
+                avatar={<Avatar sx={{ bgcolor: 'primary.main' }}>{user?.name?.[0]}</Avatar>}
                 label={user?.name}
                 variant="outlined"
+                color="primary"
               />
               <Button
                 onClick={handleLogout}
                 variant="outlined"
                 color="error"
-                sx={{ textTransform: "none" }}
+                sx={{ textTransform: 'none' }}
               >
                 התנתק
               </Button>
@@ -172,7 +148,8 @@ const Header = () => {
               component={NavLink}
               to="/login"
               variant="contained"
-              sx={{ textTransform: "none" }}
+              color="primary"
+              sx={{ textTransform: 'none' }}
             >
               התחברות
             </Button>
