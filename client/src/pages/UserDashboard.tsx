@@ -787,7 +787,10 @@ const saveButtonStyle: React.CSSProperties = {
   ...editBtnStyle,
   backgroundColor: '#10b981'
 }
-
+const cancelButtonStyle: React.CSSProperties = {
+  ...editBtnStyle,
+  backgroundColor: '#64748b'
+}
 
 const successMessageStyle: React.CSSProperties = {
   marginTop: '16px',
