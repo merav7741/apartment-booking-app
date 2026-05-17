@@ -787,10 +787,7 @@ const saveButtonStyle: React.CSSProperties = {
   ...editBtnStyle,
   backgroundColor: '#10b981'
 }
-const cancelButtonStyle: React.CSSProperties = {
-  ...editBtnStyle,
-  backgroundColor: '#64748b'
-}
+
 
 const successMessageStyle: React.CSSProperties = {
   marginTop: '16px',
@@ -808,12 +805,6 @@ const errorMessageStyle: React.CSSProperties = {
   backgroundColor: '#fef2f2',
   color: '#991b1b',
   border: '1px solid #fecaca'
-}
-
-const smallNoteStyle: React.CSSProperties = {
-  marginTop: '8px',
-  color: '#2563eb',
-  fontWeight: 700
 }
 
 const profileGridStyle: React.CSSProperties = {

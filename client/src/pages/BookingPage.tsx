@@ -9,7 +9,7 @@ export default function BookingPage() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth)
+  const { isAuthenticated } = useAppSelector((state) => state.auth)
   const { bookedDates, loading, error } = useAppSelector((state) => state.bookings)
 
   const [apartment, setApartment] = useState<Apartment | null>(null)
@@ -18,7 +18,6 @@ export default function BookingPage() {
   const [numberOfNights, setNumberOfNights] = useState(0)
   const [totalPrice, setTotalPrice] = useState(0)
   const [currentMonth, setCurrentMonth] = useState(new Date())
-  const [hoveredDate, setHoveredDate] = useState<Date | null>(null)
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -215,8 +214,6 @@ export default function BookingPage() {
                       cursor: isBooked || isPast ? 'not-allowed' : 'pointer'
                     }}
                     type="button"
-                    onMouseEnter={() => setHoveredDate(date)}
-                    onMouseLeave={() => setHoveredDate(null)}
                   >
                     {date.getDate()}
                   </button>
@@ -349,7 +346,7 @@ const backButtonStyle: React.CSSProperties = {
   transition: 'all 0.2s'
 }
 
-const contentStyle: React.CSSProperties = {
+const contentStyle: any = {
   maxWidth: '1200px',
   margin: '0 auto',
   display: 'grid',
@@ -357,7 +354,7 @@ const contentStyle: React.CSSProperties = {
   gap: '30px',
   '@media (max-width: 768px)': {
     gridTemplateColumns: '1fr'
-  } as any
+  }
 }
 
 const leftColumnStyle: React.CSSProperties = {

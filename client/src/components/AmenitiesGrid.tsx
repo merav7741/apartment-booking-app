@@ -1,3 +1,5 @@
+import { Box, Typography } from '@mui/material'
+
 const AMENITY_LABELS: Record<string, string> = {
   wifi: 'וואי-פיי', ac: 'מזגן', heating: 'חימום', elevator: 'מעלית', parking: 'חניה',
   kitchen: 'מטבח', microwave: 'מיקרוגל', fridge: 'מקרר', dishwasher: 'מדיח כלים', coffee_machine: 'מכונת קפה',
@@ -21,22 +23,44 @@ type AmenitiesGridProps = {
 
 export default function AmenitiesGrid({ characteristics }: AmenitiesGridProps) {
   if (!characteristics?.length) {
-    return <div style={emptyAmenitiesStyle}>לא נבחרו מתקנים לדירה זו</div>
+    return (
+      <Box sx={{ color: '#64748b', p: 2, bgcolor: '#f8fafc', borderRadius: 2.25, textAlign: 'center' }}>
+        לא נבחרו מתקנים לדירה זו
+      </Box>
+    )
   }
 
   return (
-    <div style={amenitiesGridStyle}>
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+        gap: 1.5,
+        mb: 3.75,
+      }}
+    >
       {characteristics.map((item) => (
-        <div key={item} style={amenityItemStyle}>
-          <span style={amenityIconStyle}>{AMENITY_ICONS[item] || '✅'}</span>
-          <span>{AMENITY_LABELS[item] || item}</span>
-        </div>
+        <Box
+          key={item}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.25,
+            p: 1.75,
+            borderRadius: 2,
+            bgcolor: 'white',
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 4px 15px rgba(15,23,42,0.05)',
+          }}
+        >
+          <Typography sx={{ fontSize: '18px' }}>
+            {AMENITY_ICONS[item] || '✅'}
+          </Typography>
+          <Typography variant="body2">
+            {AMENITY_LABELS[item] || item}
+          </Typography>
+        </Box>
       ))}
-    </div>
+    </Box>
   )
 }
-
-const amenitiesGridStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginBottom: '30px' };
-const amenityItemStyle = { display: 'flex', alignItems: 'center', gap: '10px', padding: '14px', borderRadius: '16px', backgroundColor: 'white', border: '1px solid #e5e7eb', boxShadow: '0 4px 15px rgba(15,23,42,0.05)' };
-const amenityIconStyle = { fontSize: '18px' };
-const emptyAmenitiesStyle = { color: '#64748b', padding: '16px', gridColumn: '1 / -1', backgroundColor: '#f8fafc', borderRadius: '18px', textAlign: 'center' as const };
