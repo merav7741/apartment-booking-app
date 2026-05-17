@@ -13,10 +13,10 @@ export default function OwnerProfileCard({ ownerName }: OwnerProfileCardProps) {
         {ownerInitial}
       </Avatar>
       <Box>
-        <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
           בעל/ת הנכס
         </Typography>
-        <Typography variant="h6" fontWeight={800} color="text.primary">
+        <Typography variant="h6" color="text.primary" sx={{ fontWeight: 800 }}>
           {ownerName}
         </Typography>
       </Box>

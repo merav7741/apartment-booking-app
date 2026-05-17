@@ -3,6 +3,27 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchMyApartments } from '../store/apartmentSlice';
 
+// MUI Core Imports
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  Grid, 
+  TextField, 
+  MenuItem, 
+  FormControlLabel, 
+  Checkbox, 
+  Paper, 
+  Chip,
+  IconButton
+} from '@mui/material';
+
+// MUI Icons Imports
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import CancelIcon from '@mui/icons-material/Cancel';
+import SaveIcon from '@mui/icons-material/Save';
+
 const ALL_CHARACTERISTICS = [
   'wifi', 'ac', 'heating', 'elevator', 'parking', 'kitchen', 'microwave',
   'fridge', 'dishwasher', 'coffee_machine', 'garden', 'balcony', 'pool',
@@ -20,17 +41,21 @@ export default function EditApartment() {
   const dispatch = useAppDispatch();
 
   const { user } = useAppSelector((state) => state.auth);
+  const [formData, setFormData] = useState<any>(null);
+  const [newImageUrl, setNewImageUrl] = useState('');
+
   useEffect(() => {
     const fetchApartment = async () => {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${id}`)
-      const data = await response.json()
-      setFormData({ ...data, characteristics: data.characteristics || [] })
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${id}`)
+        const data = await response.json()
+        setFormData({ ...data, characteristics: data.characteristics || [] })
+      } catch (err) {
+        console.error('Error fetching apartment:', err)
+      }
     }
     fetchApartment()
   }, [id])
-
-  const [formData, setFormData] = useState<any>(null);
-  const [newImageUrl, setNewImageUrl] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -62,7 +87,6 @@ export default function EditApartment() {
     setFormData({ ...formData, image: updatedImages });
   };
 
-  // פונקציית שמירה
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -106,84 +130,154 @@ export default function EditApartment() {
     }
   };
 
-  if (!formData) return <p style={{ textAlign: 'center', marginTop: '50px' }}>טוען נתונים...</p>;
+  if (!formData) {
+    return (
+      <Typography variant="h6" align="center" sx={{ mt: 6, color: 'text.secondary' }}>
+        טוען נתונים...
+      </Typography>
+    );
+  }
 
   return (
-    <div style={containerStyle}>
-      <h2 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
-        עריכת דירה: {formData.name}
-        {user?.role === 'Admin' && <span style={adminTag}>מצב מנהלת</span>}
-      </h2>
+    <Box sx={{ maxWidth: 800, mx: 'auto', my: 4, p: 3, direction: 'rtl' }}>
+      <Paper variant="outlined" sx={{ p: 4, borderRadius: 3, bgcolor: 'background.paper' }}>
+        
+        {/* כותרת הדף */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'between', pb: 2, mb: 4, borderBottom: 1, borderColor: 'divider' }}>
+          <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold', color: 'text.primary', flexGrow: 1 }}>
+            עריכת דירה: {formData.name}
+          </Typography>
+          {user?.role === 'Admin' && (
+            <Chip label="מצב מנהלת" color="error" variant="soft" size="small" />
+          )}
+        </Box>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <div style={gridStyle}>
-          <label>שם הדירה: <input name="name" value={formData.name} onChange={handleChange} style={inputStyle} /></label>
-          <label>מחיר ללילה: <input name="price" type="number" value={formData.price} onChange={handleChange} style={inputStyle} /></label>
-          <label>עיר: <input name="city" value={formData.city} onChange={handleChange} style={inputStyle} /></label>
-          <label>כתובת: <input name="address" value={formData.address} onChange={handleChange} style={inputStyle} /></label>
-          <label>חדרי שינה: <input name="bedrooms" type="number" value={formData.bedrooms} onChange={handleChange} style={inputStyle} /></label>
-          <label>אזור:
-            <select name="location" value={formData.location} onChange={handleChange} style={inputStyle}>
-              {LOCATIONS.map(loc => <option key={loc} value={loc}>{loc}</option>)}
-            </select>
-          </label>
-        </div>
+        {/* טופס */}
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          
+          {/* שדות קלט ראשיים בגריד */}
+          <Grid container spacing={2.5}>
+            <Grid item xs={12} sm={6}>
+              <TextField fullWidth label="שם הדירה" name="name" value={formData.name} onChange={handleChange} variant="outlined" />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField fullWidth label="מחיר ללילה" name="price" type="number" value={formData.price} onChange={handleChange} variant="outlined" />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField fullWidth label="עיר" name="city" value={formData.city} onChange={handleChange} variant="outlined" />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField fullWidth label="כתובת" name="address" value={formData.address} onChange={handleChange} variant="outlined" />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField fullWidth label="חדרי שינה" name="bedrooms" type="number" value={formData.bedrooms} onChange={handleChange} variant="outlined" />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                select
+                label="אזור"
+                name="location"
+                value={formData.location || ''}
+                onChange={handleChange}
+                variant="outlined"
+              >
+                {LOCATIONS.map((loc) => (
+                  <MenuItem key={loc} value={loc}>
+                    {loc}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+          </Grid>
 
-        <label>תיאור: <textarea name="description" value={formData.description} onChange={handleChange} style={{ ...inputStyle, height: '80px' }} /></label>
+          {/* שדה תיאור */}
+          <TextField fullWidth multiline rows={3} label="תיאור" name="description" value={formData.description} onChange={handleChange} variant="outlined" />
 
-        {/* תמונות */}
-        <div style={sectionStyle}>
-          <h4>תמונות</h4>
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-            <input placeholder="הדבק URL לתמונה" value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} style={inputStyle} />
-            <button type="button" onClick={addImage} style={addBtnStyle}>הוסף</button>
-          </div>
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            {formData.image?.map((img: string, index: number) => (
-              <div key={index} style={{ position: 'relative' }}>
-                <img src={img} alt="" style={thumbStyle} />
-                <button type="button" onClick={() => removeImage(index)} style={removeImgBtn}>X</button>
-              </div>
-            ))}
-          </div>
-        </div>
+          {/* ניהול תמונות */}
+          <Paper variant="soft" sx={{ p: 2.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1.5, color: 'text.primary' }}>
+              תמונות הנכס
+            </Typography>
+            
+            <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+              <TextField 
+                fullWidth 
+                size="small"
+                placeholder="הדבק URL לתמונה" 
+                value={newImageUrl} 
+                onChange={(e) => setNewImageUrl(e.target.value)} 
+                variant="outlined"
+                bgcolor="background.paper"
+              />
+              <Button variant="contained" color="primary" onClick={addImage} startIcon={<AddIcon />} sx={{ px: 3, borderRadius: 1.5 }}>
+                הוסף
+              </Button>
+            </Box>
 
-        {/* מאפיינים */}
-        <div style={sectionStyle}>
-          <h4>מאפיינים:</h4>
-          <div style={charGrid}>
-            {ALL_CHARACTERISTICS.map(char => (
-              <label key={char} style={{ fontSize: '12px', display: 'flex', gap: '5px', alignItems: 'center' }}>
-                <input type="checkbox" checked={formData.characteristics?.includes(char)} onChange={() => handleCharChange(char)} />
-                {char.replace('_', ' ')}
-              </label>
-            ))}
-          </div>
-        </div>
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              {formData.image?.map((img: string, index: number) => (
+                <Box key={index} sx={{ position: 'relative', width: 75, height: 75 }}>
+                  <Box 
+                    component="img" 
+                    src={img} 
+                    alt="" 
+                    sx={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 2, border: 1, borderColor: 'divider' }} 
+                  />
+                  <IconButton 
+                    size="small" 
+                    onClick={() => removeImage(index)} 
+                    sx={{ position: 'absolute', top: -6, right: -6, bgcolor: 'error.main', color: 'error.contrastText', p: 0.2, '&:hover': { bgcolor: 'error.dark' } }}
+                  >
+                    <CancelIcon sx={{ fontSize: 16 }} />
+                  </IconButton>
+                </Box>
+              ))}
+            </Box>
+          </Paper>
 
-        {/* כפתורי פעולה */}
-        <div style={{ display: 'flex', gap: '15px' }}>
-          <button type="submit" style={saveBtn}>שמור שינויים</button>
-          <button type="button" onClick={handleDelete} style={deleteBtn}>מחק דירה 🗑️</button>
-          <button type="button" onClick={() => navigate('/dashboard')} style={cancelBtn}>ביטול</button>
-        </div>
-      </form>
-    </div>
+          {/* ניהול מאפיינים */}
+          <Paper variant="soft" sx={{ p: 2.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1.5, color: 'text.primary' }}>
+              מאפיינים ושירותים
+            </Typography>
+            <Grid container spacing={1}>
+              {ALL_CHARACTERISTICS.map((char) => (
+                <Grid item xs={6} sm={4} md={3} key={char}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox 
+                        size="small"
+                        checked={formData.characteristics?.includes(char) || false} 
+                        onChange={() => handleCharChange(char)} 
+                      />
+                    }
+                    label={
+                      <Typography variant="caption" sx={{ textTransform: 'capitalize', color: 'text.primary' }}>
+                        {char.replace('_', ' ')}
+                      </Typography>
+                    }
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </Paper>
+
+          {/* כפתורי פעולה תחתונים */}
+          <Box sx={{ display: 'flex', gap: 2, mt: 2, flexWrap: { xs: 'wrap', sm: 'nowrap' } }}>
+            <Button variant="contained" color="success" type="submit" startIcon={<SaveIcon />} sx={{ flex: { xs: '1 1 100%', sm: 2 }, py: 1.5, borderRadius: 2, fontWeight: 'bold', boxShadow: 'none' }}>
+              שמור שינויים
+            </Button>
+            <Button variant="outlined" color="error" onClick={handleDelete} startIcon={<DeleteIcon />} sx={{ flex: 1, py: 1.5, borderRadius: 2, fontWeight: 'medium' }}>
+              מחק דירה
+            </Button>
+            <Button variant="outlined" color="inherit" onClick={() => navigate('/dashboard')} sx={{ flex: 1, py: 1.5, borderRadius: 2, fontWeight: 'medium' }}>
+              ביטול
+            </Button>
+          </Box>
+
+        </Box>
+      </Paper>
+    </Box>
   );
 }
-
-// עיצובים (Styles)
-const containerStyle: React.CSSProperties = { maxWidth: '800px', margin: '20px auto', padding: '25px', direction: 'rtl', backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 2px 15px rgba(0,0,0,0.1)' };
-const gridStyle = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' };
-const inputStyle = { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd', marginTop: '5px' };
-const sectionStyle = { border: '1px solid #eee', padding: '15px', borderRadius: '8px', backgroundColor: '#fcfcfc' };
-const thumbStyle = { width: '70px', height: '70px', objectFit: 'cover' as 'cover', borderRadius: '4px' };
-const charGrid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '8px' };
-const adminTag: React.CSSProperties = { fontSize: '12px', backgroundColor: '#fee2e2', color: '#b91c1c', padding: '4px 8px', borderRadius: '4px', marginRight: '10px', verticalAlign: 'middle' };
-
-// כפתורים
-const saveBtn = { flex: 2, padding: '12px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' as const };
-const deleteBtn = { flex: 1, padding: '12px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' };
-const cancelBtn = { flex: 1, padding: '12px', backgroundColor: '#6b7280', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' };
-const addBtnStyle = { backgroundColor: '#2563eb', color: 'white', border: 'none', padding: '0 20px', borderRadius: '6px', cursor: 'pointer' };
-const removeImgBtn: React.CSSProperties = { position: 'absolute', top: '-5px', right: '-5px', background: 'red', color: 'white', border: 'none', borderRadius: '50%', width: '18px', height: '18px', fontSize: '10px', cursor: 'pointer' };
