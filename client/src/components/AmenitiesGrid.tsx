@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material'
-import { AMENITY_TRANSLATIONS } from './amenities';
+import { AMENITY_TRANSLATIONS } from '../store/amenities';
 
 const AMENITY_ICONS: Record<string, string> = {
   wifi: '📶', ac: '❄️', heating: '🔥', elevator: '🛗', parking: '🅿️',
