@@ -11,7 +11,7 @@ import type { Apartment } from '../types/apartment.types'
 import ReviewsSection from '../components/ReviewsSection'
 import ImageCarousel from '../components/ImageCarousel'
 import OwnerProfileCard from '../components/OwnerProfileCard'
-import AmenitiesGrid from '../components/AmenitiesGrid'
+import AmenitiesGrid from '../components/apartment/AmenitiesGrid'
 
 export default function ApartmentDetails() {
   const { id } = useParams<{ id: string }>()

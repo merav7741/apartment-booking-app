@@ -2,7 +2,7 @@ import { useState, type KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { useAppSelector } from '../store/hooks'
-import CharacteristicsSelector from '../components/CharacteristicsSelector'
+import CharacteristicsSelector from '../components/apartment/CharacteristicsSelector'
 
 import { Box, Button, Card, CardContent, IconButton, MenuItem, Paper, TextField, Typography } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'

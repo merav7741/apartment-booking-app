@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import ApartmentCard from "../components/ApartmentCard";
-import SearchFilters from "../components/SearchFilters"; // היבוא של הקומפוננטה החדשה
+import ApartmentCard from "../components/apartment/ApartmentCard";
+import SearchFilters from "../components/apartment/SearchFilters"; // היבוא של הקומפוננטה החדשה
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchAllApartments } from '../store/apartmentSlice';
 import type { Apartment } from '../types/apartment.types';

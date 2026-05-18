@@ -1,5 +1,5 @@
 import { Card, CardMedia, CardContent, Typography, Box, Chip } from '@mui/material'
-import type { Apartment } from '../types/apartment.types'
+import type { Apartment } from '../../types/apartment.types'
 
 interface ApartmentCardProps {
   apartment: Apartment

@@ -4,7 +4,9 @@ import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { fetchAllBookings } from '../store/bookingSlice'
 import type { Booking } from '../store/bookingSlice'
 import type { Apartment } from '../types/apartment.types'
-import { AdminApartments } from '../components/dashboard/ApartmentsTab'
+
+// התיקון כאן: מייבאים את הקומפוננטה החדשה מהקובץ החדש שלה כ-default import
+import AdminApartmentsTab from '../components/dashboard/AdminApartmentsTab'
 
 import { Box, Card, CardContent, Chip, CircularProgress, Divider, Paper, Typography } from '@mui/material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
@@ -100,7 +102,8 @@ export default function AdminDashboard() {
         </Box>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-          <AdminApartments
+          {/* התיקון כאן: שינוי שם התגית ל-AdminApartmentsTab */}
+          <AdminApartmentsTab
             apartments={allSystemApartments}
             userId={user?._id || ''}
             onEdit={(id) => navigate(`/dashboard/edit/${id}`)}
@@ -119,7 +122,7 @@ export default function AdminDashboard() {
             {allBookings.length === 0 ? (
               <Paper variant="outlined" sx={{ p: 4, textAlign: 'center', borderRadius: 3, bgcolor: '#f8fafc' }}>
                 <Typography color="text.secondary" sx={{ fontWeight: 700 }}>
-                אין הזמנות להצגה כרגע.
+                  אין הזמנות להצגה כרגע.
                 </Typography>
               </Paper>
             ) : (

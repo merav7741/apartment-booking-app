@@ -15,15 +15,11 @@ import {
 
 import { Search as SearchIcon, Tune as TuneIcon } from '@mui/icons-material';
 
-const AMENITY_LABELS: Record<string, string> = {
-  wifi: 'וואי-פיי', ac: 'מזגן', heating: 'חימום', elevator: 'מעלית', parking: 'חניה',
-  kitchen: 'מטבח', microwave: 'מיקרוגל', fridge: 'מקרר', dishwasher: 'מדיח כלים', coffee_machine: 'מכונת קפה',
-  garden: 'גינה', balcony: 'מרפסת', pool: 'בריכה', jacuzzi: 'ג׳קוזי', nearbyAttractions: 'אטרקציות בקרבת מקום', nearbySynagogue: 'בית כנסת קרוב',
-  gym: 'חדר כושר', sauna: 'סאונה', security: 'אבטחה', cleaning_service: 'שירותי ניקיון',
-  wheelchair_accessible: 'נגישות לכיסא גלגלים', baby_crib: 'עריסת תינוק', high_chair: 'כיסא אוכל לתינוק',
-  pets_allowed: 'חיות מחמד מותרות', sea_view: 'נוף לים', mountain_view: 'נוף להרים', city_view: 'נוף עירוני', fireplace: 'קמין', workspace: 'פינת עבודה'
-};
-const ALL_AMENITIES = Object.keys(AMENITY_LABELS);
+// התיקון כאן: מייבאים את התרגומים המרכזיים מקובץ הטיפוסים הגלובלי
+import { AMENITY_TRANSLATIONS } from '../../types/amenities';
+
+// מייצרים את רשימת המפתחות מתוך האובייקט הגלובלי המיובא
+const ALL_AMENITIES = Object.keys(AMENITY_TRANSLATIONS);
 
 interface SearchFiltersProps {
   searchValue: string;
@@ -188,7 +184,7 @@ export default function SearchFilters({
                       onChange={() => handleAmenityToggle(amenity)}
                     />
                   }
-                  label={<Typography variant="body2" sx={{ fontWeight: 500 }}>{AMENITY_LABELS[amenity]}</Typography>}
+                  label={<Typography variant="body2" sx={{ fontWeight: 500 }}>{AMENITY_TRANSLATIONS[amenity]}</Typography>}
                 />
               ))}
             </Box>
