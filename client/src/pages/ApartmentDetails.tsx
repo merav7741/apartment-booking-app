@@ -8,9 +8,9 @@ import {
 } from '@mui/icons-material';
 import { useAppSelector } from '../store/hooks'
 import type { Apartment } from '../types/apartment.types'
-import ReviewsSection from '../components/ReviewsSection'
-import ImageCarousel from '../components/ImageCarousel'
-import OwnerProfileCard from '../components/OwnerProfileCard'
+import ReviewsSection from '../components/apartment/ReviewsSection'
+import ImageCarousel from '../components/apartment/ImageCarousel'
+import OwnerProfileCard from '../components/apartment/OwnerProfileCard'
 import AmenitiesGrid from '../components/apartment/AmenitiesGrid'
 
 export default function ApartmentDetails() {

@@ -25,6 +25,9 @@ export default function AddApartment() {
   const { user, token, isAuthenticated } = useAppSelector((state) => state.auth)
   const [images, setImages] = useState<string[]>([])
   const [characteristics, setCharacteristics] = useState<Record<string, boolean>>({})
+  
+  // --- השינוי ההכרחי: ניהול ערך תיבת הטקסט של הקישור ---
+  const [imageUrlInput, setImageUrlInput] = useState<string>('')
 
   const { register, handleSubmit, formState: { errors } } = useForm<ApartmentFormData>({
     defaultValues: {
@@ -78,15 +81,17 @@ export default function AddApartment() {
     }
   }
 
-  const handleImageKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  // --- תיקון הפונקציה לשימוש ב-State ושינוי הטיפוס החוזה של MUI ---
+  const handleImageKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== 'Enter') return
 
     e.preventDefault()
-    const url = e.currentTarget.value.trim()
+    
+    const url = imageUrlInput.trim()
     if (!url) return
 
     setImages((current) => [...current, url])
-    e.currentTarget.value = ''
+    setImageUrlInput('') // מוחק את הקישור מהתיבה לאחר ההוספה
   }
 
   if (!user) {
@@ -184,9 +189,14 @@ export default function AddApartment() {
 
             <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, bgcolor: '#f8fafc' }}>
               <Typography variant="subtitle2" sx={{ fontWeight: 900, mb: 1 }}>תמונות (URLs)</Typography>
+              
+              {/* --- עדכון השדה לרכיב מנוהל (Controlled) --- */}
               <TextField
                 fullWidth
-                placeholder="הכנס קישור לתמונה ולחץ Enter"
+                label="הכנס קישור לתמונה ולחץ Enter"
+                placeholder="https://example.com/image.jpg"
+                value={imageUrlInput}
+                onChange={(e) => setImageUrlInput(e.target.value)}
                 onKeyDown={handleImageKeyDown}
                 slotProps={{ input: { sx: { borderRadius: 2.5, bgcolor: 'background.paper' } } }}
               />

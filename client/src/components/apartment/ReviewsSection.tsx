@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Box, Typography, Paper, Select, MenuItem, TextField, Button, Divider } from '@mui/material'
-import type { Review } from '../types/apartment.types'
+import type { Review } from '../../types/apartment.types'
 
 interface ReviewsSectionProps {
   reviews: Review[];
