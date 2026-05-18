@@ -130,7 +130,6 @@ const updateOrder = async (id, data) => {
         throw new Error('Order not found')
     }
 
-    // אם רק מעדכנים סטטוס - אין צורך בvalidation מלא
     if (Object.keys(data).length === 1 && data.status) {
         return await Order.findByIdAndUpdate(id, { status: data.status }, { new: true })
             .populate('customerId')

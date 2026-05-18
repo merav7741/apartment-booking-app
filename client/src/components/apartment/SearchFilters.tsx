@@ -15,10 +15,8 @@ import {
 
 import { Search as SearchIcon, Tune as TuneIcon } from '@mui/icons-material';
 
-// התיקון כאן: מייבאים את התרגומים המרכזיים מקובץ הטיפוסים הגלובלי
 import { AMENITY_TRANSLATIONS } from '../../types/amenities';
 
-// מייצרים את רשימת המפתחות מתוך האובייקט הגלובלי המיובא
 const ALL_AMENITIES = Object.keys(AMENITY_TRANSLATIONS);
 
 interface SearchFiltersProps {

@@ -4,10 +4,8 @@ const { create, getAll, getById, update, remove, getOrdersByLandlord, getOrdersB
 require('../controllers/orderControler')
 const { verifyToken, verifySubscriberOrAdmin } = require('../middleware/auth')
 
-// Non-authenticated endpoints (must come first)
 router.get('/booked-dates/:apartmentId', getBookedDates)
 
-// Authenticated endpoints
 router.post('/', verifyToken, create)
 router.get('/', verifyToken, verifySubscriberOrAdmin, getAll)
 router.get('/by-customer', verifyToken, getOrdersByCustomer)

@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { registerUser, clearError } from '../store/authSlice'
 
-// MUI Core Imports
 import { 
   Box, 
   Typography, 

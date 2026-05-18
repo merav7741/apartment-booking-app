@@ -29,7 +29,6 @@ export default function AdminApartmentsTab({ apartments, loading = false, onEdit
       {apartments.length > 0 ? (
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 3 }}>
           {apartments.map((apt) => {
-            // חילוץ פרטי הבעלים מתוך האובייקט המוצמד (Populated ownerId)
             const ownerInfo = typeof apt.ownerId === 'object' ? apt.ownerId : null
             const ownerLabel = ownerInfo?.fullName || ownerInfo?.name
 

@@ -183,7 +183,6 @@
   }
 }
 
-/* === סגנונות בסיסיים לאתר === */
 
 .app-layout {
   min-height: 100vh;
@@ -233,7 +232,6 @@ main {
   padding: 2rem;
 }
 
-/* סגנונות לטפסים */
 form {
   max-width: 400px;
   margin: 0 auto;
@@ -283,7 +281,6 @@ button[type="submit"] {
   width: 100%;
 }
 
-/* סגנונות לדפים */
 .home,  .apartment-details, .user-dashboard, .login, .register, .add-apartment {
   padding: 2rem 0;
 }

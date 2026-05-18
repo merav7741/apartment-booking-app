@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ApartmentCard from "../components/apartment/ApartmentCard";
-import SearchFilters from "../components/apartment/SearchFilters"; // היבוא של הקומפוננטה החדשה
+import SearchFilters from "../components/apartment/SearchFilters";
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchAllApartments } from '../store/apartmentSlice';
 import type { Apartment } from '../types/apartment.types';
 
-// MUI Core Imports
 import { 
   Box, 
   Typography, 
@@ -43,7 +42,6 @@ export default function Home() {
     dispatch(fetchAllApartments());
   }, [dispatch]);
 
-  // חילוץ ערים ייחודיות עבור תיבת הבחירה
   const cities = useMemo(() => {
     const cityNames = allApartments
       .map((apt) => apt.city?.trim())
@@ -52,7 +50,6 @@ export default function Home() {
     return ['all', ...Array.from(new Set(cityNames))];
   }, [allApartments]);
 
-  // לוגיקת הסינון המקצועית שומרת על ביצועים בזכות useMemo
   const visibleApartments = useMemo(() => {
     const baseApartments = currentView === 'recommended'
       ? allApartments.filter(hasFiveStarRating)

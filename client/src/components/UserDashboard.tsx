@@ -4,13 +4,11 @@ import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { fetchMyApartments } from '../store/apartmentSlice'
 import { fetchMyBookings, fetchIncomingBookings, updateBookingStatus } from '../store/bookingSlice'
 
-// ייבוא תתי-הכרטיסיות החדשות שיצרנו בצעדים הקודמים
 import ApartmentsTab from '../components/dashboard/ApartmentsTab'
 import MyBookingsTab from '../components/dashboard/MyBookingsTab'
 import BookingsTab from '../components/dashboard/BookingsTab'
 import ProfileTab from '../components/dashboard/ProfileTab'
 
-// MUI Imports
 import { Box, Container, Typography, Button, Tabs, Tab, Card, CardContent, Badge, Paper } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import HomeIcon from '@mui/icons-material/Home'

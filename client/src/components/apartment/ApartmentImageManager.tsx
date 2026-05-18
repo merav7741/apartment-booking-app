@@ -67,7 +67,7 @@ export default function ApartmentImageManager({ images, onChange }: ApartmentIma
                 overflow: 'hidden',
                 border: '1px solid',
                 borderColor: 'divider',
-                '&:hover .delete-btn': { opacity: 1 } // מציג את כפתור המחיקה בריחופו של העכבר
+                '&:hover .delete-btn': { opacity: 1 }
               }}
             >
               <img

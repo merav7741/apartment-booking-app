@@ -5,7 +5,6 @@ import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { loginUser, clearError } from '../store/authSlice'
 import type { LoginCredentials } from '../types/user.types'
 
-// MUI Core Imports
 import { 
   Box, 
   Typography, 
@@ -17,7 +16,6 @@ import {
   Avatar
 } from '@mui/material'
 
-// MUI Icons Imports
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 
 export default function Login() {

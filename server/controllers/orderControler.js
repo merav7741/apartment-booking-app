@@ -9,7 +9,6 @@ const create = async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields: apartmentId, startDate, endDate' })
     }
 
-    // Get apartment owner ID
     const Apartment = require('../models/Apartment')
     const apartment = await Apartment.findById(apartmentId)
     if (!apartment) {

@@ -93,7 +93,7 @@ export const upgradeUser = createAsyncThunk<AuthResponse, void>(
   async (_, { rejectWithValue }) => {
     try {
       const response = await fetch(`${API_URL}/upgrade`, {
-        method: 'PUT', // חשוב: PUT כי זה עדכון נתונים
+        method: 'PUT', 
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`

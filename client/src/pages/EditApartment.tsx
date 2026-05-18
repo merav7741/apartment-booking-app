@@ -5,7 +5,6 @@ import { fetchMyApartments } from '../store/apartmentSlice';
 
 import { AMENITY_TRANSLATIONS } from '../types/amenities';
 
-// MUI Core Imports
 import { 
   Box, 
   Typography, 
@@ -20,13 +19,11 @@ import {
   IconButton
 } from '@mui/material';
 
-// MUI Icons Imports
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import CancelIcon from '@mui/icons-material/Cancel';
 import SaveIcon from '@mui/icons-material/Save';
 
-// ⬅️ המערך מייצר את עצמו אוטומטית מתוך המפתחות של המילון המרכזי שלך
 const ALL_CHARACTERISTICS = Object.keys(AMENITY_TRANSLATIONS);
 const LOCATIONS = ['Center', 'North', 'South', 'East', 'West'];
 
