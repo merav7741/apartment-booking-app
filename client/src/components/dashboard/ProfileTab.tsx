@@ -98,7 +98,7 @@ function ProfileFieldItem({ label, value }: { label: string; value?: string }) {
   return (
     <Card variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: '#f8fafc' }}>
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>{label}</Typography>
-      <Typography variant="body1" sx={{ fontWeight: 800, color: 'text.primary', wordBreak: 'break-word' }}>{value || 'לא הוזן'}</Typography>
+      <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary', wordBreak: 'break-word' }}>{value || 'לא הוזן'}</Typography>
     </Card>
   )
 }

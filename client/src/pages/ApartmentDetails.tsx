@@ -9,8 +9,8 @@ import {
 } from '@mui/icons-material';
 import { useAppSelector } from '../store/hooks'
 import type { Apartment } from '../types/apartment.types'
-import ReviewsSection from '../components/ReviewsSection'
-import ImageCarousel from '../components/ImageCarousel'
+import ReviewsSection from '../components/apartment/ReviewsSection'
+import ImageCarousel from '../components/apartment/ImageCarousel'
 import OwnerProfileCard from '../components/apartment/OwnerProfileCard'
 import AmenitiesGrid from '../components/apartment/AmenitiesGrid'
 
@@ -24,7 +24,6 @@ export default function ApartmentDetails() {
 
   const fetchApartment = async () => {
     if (!id) return
-
     try {
       setLoading(true)
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${id}`)
@@ -116,10 +115,6 @@ export default function ApartmentDetails() {
     )
   }
 
-  const averageRating = apartment.reviews && apartment.reviews.length > 0
-    ? apartment.reviews.reduce((acc, rev) => acc + rev.rating, 0) / apartment.reviews.length
-    : 5;
-
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, md: 3 }, py: 5, direction: 'rtl' }}>
       <Button
@@ -133,6 +128,7 @@ export default function ApartmentDetails() {
         חזרה
       </Button>
 
+      {/* החלק העליון החדש והמעוצב - גרסה מתוקנת ומיושרת לימין */}
       <Box sx={{ mb: 4, pb: 3, borderBottom: '1px dashed', borderColor: 'divider' }}>
         <Box sx={{ 
           display: 'flex', 
@@ -142,6 +138,7 @@ export default function ApartmentDetails() {
           gap: 3 
         }}>
           
+          {/* צד ימין: כותרת, מיקום ותיאור הנכס מיושרים פיקס לימין */}
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'right' }}>
             <Typography variant="h3" component="h1" sx={{ fontWeight: 900, fontSize: { xs: 28, sm: 36, md: 42 }, mb: 1.5, color: 'text.primary' }}>
               {apartment.name}
@@ -171,6 +168,7 @@ export default function ApartmentDetails() {
             </Box>
           </Box>
 
+          {/* צד שמאל: קופסת הדירוג המעוצבת */}
           <Box sx={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -185,13 +183,17 @@ export default function ApartmentDetails() {
           }}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1, color: 'text.primary' }}>
-                {averageRating.toFixed(1)}
+                {(apartment.reviews && apartment.reviews.length > 0
+                  ? apartment.reviews.reduce((acc, rev) => acc + rev.rating, 0) / apartment.reviews.length
+                  : 5).toFixed(1)}
               </Typography>
             </Box>
             <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
               <Rating
-                value={averageRating}
+                value={apartment.reviews && apartment.reviews.length > 0
+                  ? apartment.reviews.reduce((acc, rev) => acc + rev.rating, 0) / apartment.reviews.length
+                  : 5}
                 readOnly
                 precision={0.5}
                 size="small"

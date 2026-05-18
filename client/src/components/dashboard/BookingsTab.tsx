@@ -54,7 +54,7 @@ export default function BookingsTab({ bookings, onStatusChange }: BookingsTabPro
                 </Box>
               </CardContent>
 
-              {booking.status === 'Pending Approval' && (
+              {booking.status  === 'Pending Approval' &&(
                 <>
                   <Divider sx={{ mx: 2 }} />
                   <CardActions sx={{ p: 2, gap: 1.5 }}>
