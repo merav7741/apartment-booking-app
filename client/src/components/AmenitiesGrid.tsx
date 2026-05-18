@@ -1,13 +1,5 @@
 import { Box, Typography } from '@mui/material'
-
-const AMENITY_LABELS: Record<string, string> = {
-  wifi: 'וואי-פיי', ac: 'מזגן', heating: 'חימום', elevator: 'מעלית', parking: 'חניה',
-  kitchen: 'מטבח', microwave: 'מיקרוגל', fridge: 'מקרר', dishwasher: 'מדיח כלים', coffee_machine: 'מכונת קפה',
-  garden: 'גינה', balcony: 'מרפסת', pool: 'בריכה', jacuzzi: 'גקוזי', nearbyAttractions: 'אטרקציות בקרבת מקום', nearbySynagogue: 'בית כנסת קרוב',
-  gym: 'חדר כושר', sauna: 'סאונה', security: 'אבטחה', cleaning_service: 'שירותי ניקיון',
-  wheelchair_accessible: 'נגישות לכיסא גלגלים', baby_crib: 'עריסת תינוק', high_chair: 'כיסא אוכל לתינוק',
-  pets_allowed: 'חיות מחמד מותרות', sea_view: 'נוף לים', mountain_view: 'נוף להרים', city_view: 'נוף עירוני', fireplace: 'קמין', workspace: 'פינת עבודה'
-}
+import { AMENITY_TRANSLATIONS } from './amenities';
 
 const AMENITY_ICONS: Record<string, string> = {
   wifi: '📶', ac: '❄️', heating: '🔥', elevator: '🛗', parking: '🅿️',
@@ -57,7 +49,7 @@ export default function AmenitiesGrid({ characteristics }: AmenitiesGridProps) {
             {AMENITY_ICONS[item] || '✅'}
           </Typography>
           <Typography variant="body2">
-            {AMENITY_LABELS[item] || item}
+            {AMENITY_TRANSLATIONS[item] || item}
           </Typography>
         </Box>
       ))}

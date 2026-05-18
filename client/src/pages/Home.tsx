@@ -1,82 +1,64 @@
-import { useEffect, useMemo, useRef, useState } from "react"
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import ApartmentCard from "../components/ApartmentCard"
-import { useAppDispatch, useAppSelector } from '../store/hooks'
-import { fetchAllApartments } from '../store/apartmentSlice'
-import type { Apartment } from '../types/apartment.types'
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import ApartmentCard from "../components/ApartmentCard";
+import SearchFilters from "../components/SearchFilters"; // היבוא של הקומפוננטה החדשה
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { fetchAllApartments } from '../store/apartmentSlice';
+import type { Apartment } from '../types/apartment.types';
 
 // MUI Core Imports
 import { 
   Box, 
   Typography, 
-  Button, 
   Grid, 
-  TextField, 
-  MenuItem, 
-  Slider, 
   CircularProgress,
   ToggleButton,
   ToggleButtonGroup,
-  Paper,
-  Checkbox,
-  FormControlLabel,
-  Divider,
-  Chip
-} from '@mui/material'
+  Paper
+} from '@mui/material';
 
 // MUI Icons Imports
-import SearchIcon from '@mui/icons-material/Search'
-import TuneIcon from '@mui/icons-material/Tune'
-import FindInPageIcon from '@mui/icons-material/FindInPage'
+import FindInPageIcon from '@mui/icons-material/FindInPage';
 
 const hasFiveStarRating = (apartment: Apartment) =>
-  apartment.reviews?.some((review) => Number(review.rating) === 5) ?? false
-
-const AMENITY_LABELS: Record<string, string> = {
-  wifi: 'וואי-פיי', ac: 'מזגן', heating: 'חימום', elevator: 'מעלית', parking: 'חניה',
-  kitchen: 'מטבח', microwave: 'מיקרוגל', fridge: 'מקרר', dishwasher: 'מדיח כלים', coffee_machine: 'מכונת קפה',
-  garden: 'גינה', balcony: 'מרפסת', pool: 'בריכה', jacuzzi: 'גקוזי', nearbyAttractions: 'אטרקציות בקרבת מקום', nearbySynagogue: 'בית כנסת קרוב',
-  gym: 'חדר כושר', sauna: 'סאונה', security: 'אבטחה', cleaning_service: 'שירותי ניקיון',
-  wheelchair_accessible: 'נגישות לכיסא גלגלים', baby_crib: 'עריסת תינוק', high_chair: 'כיסא אוכל לתינוק',
-  pets_allowed: 'חיות מחמד מותרות', sea_view: 'נוף לים', mountain_view: 'נוף להרים', city_view: 'נוף עירוני', fireplace: 'קמין', workspace: 'פינת עבודה'
-}
-
-const ALL_AMENITIES = Object.keys(AMENITY_LABELS)
+  apartment.reviews?.some((review) => Number(review.rating) === 5) ?? false;
 
 export default function Home() {
-  const dispatch = useAppDispatch()
-  const { allApartments, loading } = useAppSelector((state) => state.apartments)
-  const [searchValue, setSearchValue] = useState('')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCity, setSelectedCity] = useState('all')
-  const [maxPrice, setMaxPrice] = useState(10000)
-  const [selectedBedrooms, setSelectedBedrooms] = useState<number | null>(null)
-  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
-  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false)
-  const [searchParams] = useSearchParams()
-  const apartmentsSectionRef = useRef<HTMLDivElement | null>(null)
-  const navigate = useNavigate()
+  const dispatch = useAppDispatch();
+  const { allApartments, loading } = useAppSelector((state) => state.apartments);
+  const [searchValue, setSearchValue] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCity, setSelectedCity] = useState('all');
+  const [maxPrice, setMaxPrice] = useState(10000);
+  const [selectedBedrooms, setSelectedBedrooms] = useState<number | null>(null);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [searchParams] = useSearchParams();
+  const apartmentsSectionRef = useRef<HTMLDivElement | null>(null);
+  const navigate = useNavigate();
 
-  const currentView = searchParams.get('view') === 'all' ? 'all' : 'recommended'
+  const currentView = searchParams.get('view') === 'all' ? 'all' : 'recommended';
 
   useEffect(() => {
-    dispatch(fetchAllApartments())
-  }, [dispatch])
+    dispatch(fetchAllApartments());
+  }, [dispatch]);
 
+  // חילוץ ערים ייחודיות עבור תיבת הבחירה
   const cities = useMemo(() => {
     const cityNames = allApartments
       .map((apt) => apt.city?.trim())
-      .filter(Boolean) as string[]
+      .filter(Boolean) as string[];
 
-    return ['all', ...Array.from(new Set(cityNames))]
-  }, [allApartments])
+    return ['all', ...Array.from(new Set(cityNames))];
+  }, [allApartments]);
 
+  // לוגיקת הסינון המקצועית שומרת על ביצועים בזכות useMemo
   const visibleApartments = useMemo(() => {
     const baseApartments = currentView === 'recommended'
       ? allApartments.filter(hasFiveStarRating)
-      : allApartments
+      : allApartments;
 
-    const search = searchTerm.trim().toLowerCase()
+    const search = searchTerm.trim().toLowerCase();
 
     return baseApartments.filter((apt: Apartment) => {
       const matchesText = !search || [
@@ -85,54 +67,39 @@ export default function Home() {
         apt.address,
         apt.location,
         apt.description
-      ].some((value) => value?.toLowerCase().includes(search))
+      ].some((value) => value?.toLowerCase().includes(search));
 
-      const matchesCity = selectedCity === 'all' || apt.city === selectedCity
-      const matchesPrice = typeof apt.price === 'number' ? apt.price <= maxPrice : true
+      const matchesCity = selectedCity === 'all' || apt.city === selectedCity;
+      const matchesPrice = typeof apt.price === 'number' ? apt.price <= maxPrice : true;
       const matchesBedrooms = selectedBedrooms === null
         ? true
         : selectedBedrooms === 4
           ? (apt.bedrooms ?? 0) >= 4
-          : apt.bedrooms === selectedBedrooms
+          : apt.bedrooms === selectedBedrooms;
       const matchesAmenities = selectedAmenities.length === 0 ||
-        selectedAmenities.every((amenity) => apt.characteristics?.includes(amenity))
+        selectedAmenities.every((amenity) => apt.characteristics?.includes(amenity));
 
-      return matchesText && matchesCity && matchesPrice && matchesBedrooms && matchesAmenities
-    })
-  }, [allApartments, currentView, searchTerm, selectedCity, maxPrice, selectedBedrooms, selectedAmenities])
-
-  const handleAmenityToggle = (amenity: string) => {
-    setSelectedAmenities((current) =>
-      current.includes(amenity)
-        ? current.filter((item) => item !== amenity)
-        : [...current, amenity]
-    )
-  }
+      return matchesText && matchesCity && matchesPrice && matchesBedrooms && matchesAmenities;
+    });
+  }, [allApartments, currentView, searchTerm, selectedCity, maxPrice, selectedBedrooms, selectedAmenities]);
 
   const title = searchTerm
     ? `תוצאות עבור: ${searchTerm}`
     : currentView === 'recommended'
       ? 'דירות מומלצות'
-      : 'כל הדירות'
+      : 'כל הדירות';
 
   const scrollToApartments = () => {
     apartmentsSectionRef.current?.scrollIntoView({
       behavior: 'smooth',
       block: 'start'
-    })
-  }
+    });
+  };
 
-  const handleSearchClick = () => {
-    setSearchTerm(searchValue.trim())
-    scrollToApartments()
-  }
-
-  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      setSearchTerm(searchValue.trim())
-      scrollToApartments()
-    }
-  }
+  const handleSearchSubmit = () => {
+    setSearchTerm(searchValue.trim());
+    scrollToApartments();
+  };
 
   if (loading) {
     return (
@@ -140,7 +107,7 @@ export default function Home() {
         <CircularProgress color="primary" size={50} />
         <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 'bold' }}>טוען דירות...</Typography>
       </Box>
-    )
+    );
   }
 
   return (
@@ -182,216 +149,23 @@ export default function Home() {
             המקום למצוא בו דירת נופש שמתאימה בדיוק לחופשה שלך
           </Typography>
 
-          {/* תיבת החיפוש */}
-          <Paper 
-            elevation={0}
-            sx={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              width: '100%', 
-              maxWidth: 850, 
-              bgcolor: 'rgba(255, 255, 255, 0.96)', 
-              p: 3, 
-              borderRadius: 5, 
-              border: 1, 
-              borderColor: 'rgba(148, 163, 184, 0.25)', 
-              boxShadow: '0 24px 80px rgba(15, 23, 42, 0.12)', 
-              backdropFilter: 'blur(16px)', 
-              gap: 2 
-            }}
-          >
-            {/* שורת קלט ראשית */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr auto' }, gap: 1.5, alignItems: 'center' }}>
-              <TextField 
-                fullWidth
-                placeholder="חיפוש מהיר לפי עיר, אזור, כתובת או שם נכס"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                onKeyDown={handleSearchKeyDown}
-                variant="outlined"
-                slotProps={{
-                  input: { sx: { borderRadius: 3, bgcolor: 'background.paper' } }
-                }}
-              />
-              <Button 
-                variant="contained" 
-                color="primary" 
-                onClick={handleSearchClick}
-                startIcon={<SearchIcon />}
-                sx={{
-                  gap: 1,
-                  height: 56,
-                  px: 4.5,
-                  borderRadius: 3,
-                  fontWeight: 800,
-                  fontSize: '16px',
-                  boxShadow: '0 14px 30px rgba(37, 99, 235, 0.25)',
-                  '&:hover': {
-                    transform: 'translateY(-1px)',
-                    boxShadow: '0 18px 36px rgba(37, 99, 235, 0.32)'
-                  },
-                  '& .MuiButton-startIcon': {
-                    m: 0
-                  }
-                }}
-              >
-                חפש
-              </Button>
-            </Box>
-
-            {/* כפתור פילטרים מתקדמים */}
-            <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-              <Button
-                variant="outlined"
-                color="primary"
-                onClick={() => setShowAdvancedSearch((prev) => !prev)}
-                startIcon={<TuneIcon />}
-                sx={{
-                  gap: 1,
-                  borderRadius: 999,
-                  fontWeight: 800,
-                  py: 1.1,
-                  px: 2.75,
-                  bgcolor: showAdvancedSearch ? 'rgba(37, 99, 235, 0.08)' : 'background.paper',
-                  borderColor: showAdvancedSearch ? 'primary.main' : 'divider',
-                  boxShadow: '0 8px 20px rgba(15, 23, 42, 0.06)',
-                  '& .MuiButton-startIcon': {
-                    m: 0
-                  }
-                }}
-              >
-                {showAdvancedSearch ? 'הסתר פילטרים מתקדמים' : 'הצג פילטרים מתקדמים'}
-              </Button>
-              {selectedAmenities.length > 0 && (
-                <Chip
-                  label={`${selectedAmenities.length} מאפיינים נבחרו`}
-                  color="primary"
-                  variant="outlined"
-                  sx={{ mr: 1, fontWeight: 700, borderRadius: 999 }}
-                />
-              )}
-            </Box>
-
-            {/* פאנל מתקדם */}
-            {showAdvancedSearch && (
-              <Box 
-                sx={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: { xs: '1fr', md: '220px 1fr 1fr' }, 
-                  gap: 3, 
-                  p: 2.5, 
-                  bgcolor: 'action.hover', 
-                  border: 1, 
-                  borderColor: 'divider', 
-                  borderRadius: 4 
-                }}
-              >
-                {/* פילטר עיר */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxWidth: 220 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>עיר</Typography>
-                  <TextField
-                    select
-                    size="small"
-                    fullWidth
-                    value={selectedCity}
-                    onChange={(e) => setSelectedCity(e.target.value)}
-                    slotProps={{ input: { sx: { borderRadius: 3, bgcolor: 'background.paper', minHeight: 42 } } }}
-                  >
-                    <MenuItem value="all">כל הערים</MenuItem>
-                    {cities.map((city) => (
-                      city !== 'all' && <MenuItem key={city} value={city}>{city}</MenuItem>
-                    ))}
-                  </TextField>
-                </Box>
-
-                {/* פילטר מחיר */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>
-                    טווח מחיר עד ₪{maxPrice.toLocaleString('he-IL')}
-                  </Typography>
-                  <Box sx={{ px: 1, pt: 1 }}>
-                    <Slider
-                      min={0}
-                      max={10000}
-                      step={250}
-                      value={maxPrice}
-                      onChange={(_, value) => setMaxPrice(value as number)}
-                      valueLabelDisplay="auto"
-                    />
-                  </Box>
-                </Box>
-
-                {/* פילטר חדרים */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>חדרים</Typography>
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    {[1, 2, 3, 4].map((rooms) => (
-                      <Button
-                        key={rooms}
-                        variant={selectedBedrooms === rooms ? "contained" : "outlined"}
-                        color={selectedBedrooms === rooms ? "primary" : "inherit"}
-                        onClick={() => setSelectedBedrooms(rooms)}
-                        sx={{ borderRadius: 3, minWidth: 50, fontWeight: 'bold' }}
-                      >
-                        {rooms === 4 ? '4+' : rooms}
-                      </Button>
-                    ))}
-                    <Button
-                      variant={selectedBedrooms === null ? "contained" : "outlined"}
-                      color={selectedBedrooms === null ? "primary" : "inherit"}
-                      onClick={() => setSelectedBedrooms(null)}
-                      sx={{ borderRadius: 3, fontWeight: 'bold', mr: { xs: 0, sm: 1.5 } }}
-                    >
-                      ללא הגבלה
-                    </Button>
-                  </Box>
-                </Box>
-
-                <Box sx={{ gridColumn: '1 / -1' }}>
-                  <Divider sx={{ my: 0.5 }} />
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, mb: 1.5, flexWrap: 'wrap' }}>
-                    <Typography variant="body2" sx={{ fontWeight: 800, color: 'text.secondary' }}>
-                      מאפיינים ושירותים
-                    </Typography>
-                    {selectedAmenities.length > 0 && (
-                      <Button size="small" color="inherit" onClick={() => setSelectedAmenities([])} sx={{ borderRadius: 999, fontWeight: 700 }}>
-                        נקה מאפיינים
-                      </Button>
-                    )}
-                  </Box>
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-                      gap: 0.5,
-                    }}
-                  >
-                    {ALL_AMENITIES.map((amenity) => (
-                      <FormControlLabel
-                        key={amenity}
-                        control={
-                          <Checkbox
-                            size="small"
-                            checked={selectedAmenities.includes(amenity)}
-                            onChange={() => handleAmenityToggle(amenity)}
-                          />
-                        }
-                        label={AMENITY_LABELS[amenity]}
-                        sx={{
-                          m: 0,
-                          px: 1,
-                          py: 0.25,
-                          borderRadius: 2,
-                          bgcolor: selectedAmenities.includes(amenity) ? 'rgba(37, 99, 235, 0.08)' : 'transparent',
-                          '& .MuiFormControlLabel-label': { fontSize: 14, fontWeight: 600 }
-                        }}
-                      />
-                    ))}
-                  </Box>
-                </Box>
-              </Box>
-            )}
-          </Paper>
+          {/* קריאה לקומפוננטת הפילטרים החדשה והעברת ה-Props הדרושים */}
+          <SearchFilters 
+            searchValue={searchValue}
+            setSearchValue={setSearchValue}
+            onSearchSubmit={handleSearchSubmit}
+            showAdvancedSearch={showAdvancedSearch}
+            setShowAdvancedSearch={setShowAdvancedSearch}
+            selectedCity={selectedCity}
+            setSelectedCity={setSelectedCity}
+            cities={cities}
+            maxPrice={maxPrice}
+            setMaxPrice={setMaxPrice}
+            selectedBedrooms={selectedBedrooms}
+            setSelectedBedrooms={setSelectedBedrooms}
+            selectedAmenities={selectedAmenities}
+            setSelectedAmenities={setSelectedAmenities}
+          />
         </Box>
       </Box>
 
@@ -448,8 +222,8 @@ export default function Home() {
           >
             <FindInPageIcon sx={{ fontSize: 56, color: 'text.secondary' }} />
             <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary' }}>
-              {currentView === 'recommended' && !searchTerm
-                ? 'עוד לא נמצאו דירות עם דירוג 5 כוכבים.'
+              {!searchTerm && currentView === 'recommended'
+                ? 'עוד לא נמצאו דירות מומלצות.'
                 : 'לא נמצאו דירות שתואמות לחיפוש שלך.'}
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 520, lineHeight: 1.7 }}>
@@ -459,5 +233,5 @@ export default function Home() {
         )}
       </Box>
     </Box>
-  )
+  );
 }
