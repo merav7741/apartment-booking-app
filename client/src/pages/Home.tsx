@@ -5,8 +5,43 @@ import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { fetchAllApartments } from '../store/apartmentSlice'
 import type { Apartment } from '../types/apartment.types'
 
+// MUI Core Imports
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  Grid, 
+  TextField, 
+  MenuItem, 
+  Slider, 
+  CircularProgress,
+  ToggleButton,
+  ToggleButtonGroup,
+  Paper,
+  Checkbox,
+  FormControlLabel,
+  Divider,
+  Chip
+} from '@mui/material'
+
+// MUI Icons Imports
+import SearchIcon from '@mui/icons-material/Search'
+import TuneIcon from '@mui/icons-material/Tune'
+import FindInPageIcon from '@mui/icons-material/FindInPage'
+
 const hasFiveStarRating = (apartment: Apartment) =>
   apartment.reviews?.some((review) => Number(review.rating) === 5) ?? false
+
+const AMENITY_LABELS: Record<string, string> = {
+  wifi: 'וואי-פיי', ac: 'מזגן', heating: 'חימום', elevator: 'מעלית', parking: 'חניה',
+  kitchen: 'מטבח', microwave: 'מיקרוגל', fridge: 'מקרר', dishwasher: 'מדיח כלים', coffee_machine: 'מכונת קפה',
+  garden: 'גינה', balcony: 'מרפסת', pool: 'בריכה', jacuzzi: 'גקוזי', nearbyAttractions: 'אטרקציות בקרבת מקום', nearbySynagogue: 'בית כנסת קרוב',
+  gym: 'חדר כושר', sauna: 'סאונה', security: 'אבטחה', cleaning_service: 'שירותי ניקיון',
+  wheelchair_accessible: 'נגישות לכיסא גלגלים', baby_crib: 'עריסת תינוק', high_chair: 'כיסא אוכל לתינוק',
+  pets_allowed: 'חיות מחמד מותרות', sea_view: 'נוף לים', mountain_view: 'נוף להרים', city_view: 'נוף עירוני', fireplace: 'קמין', workspace: 'פינת עבודה'
+}
+
+const ALL_AMENITIES = Object.keys(AMENITY_LABELS)
 
 export default function Home() {
   const dispatch = useAppDispatch()
@@ -16,6 +51,7 @@ export default function Home() {
   const [selectedCity, setSelectedCity] = useState('all')
   const [maxPrice, setMaxPrice] = useState(10000)
   const [selectedBedrooms, setSelectedBedrooms] = useState<number | null>(null)
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false)
   const [searchParams] = useSearchParams()
   const apartmentsSectionRef = useRef<HTMLDivElement | null>(null)
@@ -58,10 +94,20 @@ export default function Home() {
         : selectedBedrooms === 4
           ? (apt.bedrooms ?? 0) >= 4
           : apt.bedrooms === selectedBedrooms
+      const matchesAmenities = selectedAmenities.length === 0 ||
+        selectedAmenities.every((amenity) => apt.characteristics?.includes(amenity))
 
-      return matchesText && matchesCity && matchesPrice && matchesBedrooms
+      return matchesText && matchesCity && matchesPrice && matchesBedrooms && matchesAmenities
     })
-  }, [allApartments, currentView, searchTerm, selectedCity, maxPrice, selectedBedrooms])
+  }, [allApartments, currentView, searchTerm, selectedCity, maxPrice, selectedBedrooms, selectedAmenities])
+
+  const handleAmenityToggle = (amenity: string) => {
+    setSelectedAmenities((current) =>
+      current.includes(amenity)
+        ? current.filter((item) => item !== amenity)
+        : [...current, amenity]
+    )
+  }
 
   const title = searchTerm
     ? `תוצאות עבור: ${searchTerm}`
@@ -88,427 +134,330 @@ export default function Home() {
     }
   }
 
-  if (loading) return <div style={loaderStyle}>טוען דירות...</div>
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', flexDirection: 'column', gap: 2, bgcolor: 'background.default' }}>
+        <CircularProgress color="primary" size={50} />
+        <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 'bold' }}>טוען דירות...</Typography>
+      </Box>
+    )
+  }
 
   return (
-    <div style={pageContainer}>
-      <div style={heroSection}>
-        <div style={heroOverlay}>
-          <h1 style={heroTitle}>SuiteSpot</h1>
-          <p style={heroSubtitle}>המקום למצוא בו דירת נופש שמתאימה בדיוק לחופשה שלך</p>
+    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', direction: 'rtl' }}>
+      
+      {/* אזור ה-Hero הראשי */}
+      <Box 
+        sx={{ 
+          width: '100%', 
+          minHeight: 500, 
+          backgroundImage: 'url("/hero-bg.png")', 
+          backgroundSize: 'cover', 
+          backgroundPosition: 'center', 
+          backgroundAttachment: 'fixed', 
+          position: 'relative', 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center' 
+        }}
+      >
+        <Box 
+          sx={{ 
+            width: '100%', 
+            height: '100%', 
+            py: { xs: 8, md: 15 }, 
+            px: 2, 
+            bgcolor: 'rgba(15, 23, 42, 0.5)', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            backdropFilter: 'blur(2px)' 
+          }}
+        >
+          <Typography variant="h1" sx={{ fontSize: { xs: '42px', md: '56px' }, fontWeight: 900, mb: 2, color: 'common.white', textShadow: '2px 4px 10px rgba(0,0,0,0.5)', textAlign: 'center' }}>
+            SuiteSpot
+          </Typography>
+          <Typography variant="h5" component="p" sx={{ fontSize: { xs: '18px', md: '24px' }, mb: 6, color: 'grey.100', textShadow: '1px 2px 5px rgba(0,0,0,0.5)', textAlign: 'center', fontWeight: 500 }}>
+            המקום למצוא בו דירת נופש שמתאימה בדיוק לחופשה שלך
+          </Typography>
 
-                  <div style={searchContainer}>
-              <div style={searchBarRow}>
-                <input
-                  type="text"
-                  placeholder="חיפוש מהיר לפי עיר, אזור, כתובת או שם נכס"
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                  onKeyDown={handleSearchKeyDown}
-                  style={searchInputStyle}
+          {/* תיבת החיפוש */}
+          <Paper 
+            elevation={0}
+            sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              width: '100%', 
+              maxWidth: 850, 
+              bgcolor: 'rgba(255, 255, 255, 0.96)', 
+              p: 3, 
+              borderRadius: 5, 
+              border: 1, 
+              borderColor: 'rgba(148, 163, 184, 0.25)', 
+              boxShadow: '0 24px 80px rgba(15, 23, 42, 0.12)', 
+              backdropFilter: 'blur(16px)', 
+              gap: 2 
+            }}
+          >
+            {/* שורת קלט ראשית */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr auto' }, gap: 1.5, alignItems: 'center' }}>
+              <TextField 
+                fullWidth
+                placeholder="חיפוש מהיר לפי עיר, אזור, כתובת או שם נכס"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                variant="outlined"
+                slotProps={{
+                  input: { sx: { borderRadius: 3, bgcolor: 'background.paper' } }
+                }}
+              />
+              <Button 
+                variant="contained" 
+                color="primary" 
+                onClick={handleSearchClick}
+                startIcon={<SearchIcon />}
+                sx={{
+                  gap: 1,
+                  height: 56,
+                  px: 4.5,
+                  borderRadius: 3,
+                  fontWeight: 800,
+                  fontSize: '16px',
+                  boxShadow: '0 14px 30px rgba(37, 99, 235, 0.25)',
+                  '&:hover': {
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 18px 36px rgba(37, 99, 235, 0.32)'
+                  },
+                  '& .MuiButton-startIcon': {
+                    m: 0
+                  }
+                }}
+              >
+                חפש
+              </Button>
+            </Box>
+
+            {/* כפתור פילטרים מתקדמים */}
+            <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={() => setShowAdvancedSearch((prev) => !prev)}
+                startIcon={<TuneIcon />}
+                sx={{
+                  gap: 1,
+                  borderRadius: 999,
+                  fontWeight: 800,
+                  py: 1.1,
+                  px: 2.75,
+                  bgcolor: showAdvancedSearch ? 'rgba(37, 99, 235, 0.08)' : 'background.paper',
+                  borderColor: showAdvancedSearch ? 'primary.main' : 'divider',
+                  boxShadow: '0 8px 20px rgba(15, 23, 42, 0.06)',
+                  '& .MuiButton-startIcon': {
+                    m: 0
+                  }
+                }}
+              >
+                {showAdvancedSearch ? 'הסתר פילטרים מתקדמים' : 'הצג פילטרים מתקדמים'}
+              </Button>
+              {selectedAmenities.length > 0 && (
+                <Chip
+                  label={`${selectedAmenities.length} מאפיינים נבחרו`}
+                  color="primary"
+                  variant="outlined"
+                  sx={{ mr: 1, fontWeight: 700, borderRadius: 999 }}
                 />
-                <button type="button" onClick={handleSearchClick} style={searchButtonStyle}>חפש</button>
-              </div>
+              )}
+            </Box>
 
-              <div style={filterToggleRow}>
-                <button
-                  type="button"
-                  onClick={() => setShowAdvancedSearch((prev) => !prev)}
-                  style={filterToggleButtonStyle}
-                >
-                  {showAdvancedSearch ? 'הסתר פילטרים מתקדמים' : 'הצג פילטרים מתקדמים'}
-                </button>
-              </div>
-
-              {showAdvancedSearch && (
-                <div style={advancedPanelStyle}>
-                <div style={searchFieldGroup}>
-                  <label style={fieldLabel}>עיר</label>
-                  <select
+            {/* פאנל מתקדם */}
+            {showAdvancedSearch && (
+              <Box 
+                sx={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: { xs: '1fr', md: '220px 1fr 1fr' }, 
+                  gap: 3, 
+                  p: 2.5, 
+                  bgcolor: 'action.hover', 
+                  border: 1, 
+                  borderColor: 'divider', 
+                  borderRadius: 4 
+                }}
+              >
+                {/* פילטר עיר */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxWidth: 220 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>עיר</Typography>
+                  <TextField
+                    select
+                    size="small"
+                    fullWidth
                     value={selectedCity}
                     onChange={(e) => setSelectedCity(e.target.value)}
-                    style={selectStyle}
+                    slotProps={{ input: { sx: { borderRadius: 3, bgcolor: 'background.paper', minHeight: 42 } } }}
                   >
-                    <option value="all">כל הערים</option>
+                    <MenuItem value="all">כל הערים</MenuItem>
                     {cities.map((city) => (
-                      city !== 'all' && <option key={city} value={city}>{city}</option>
+                      city !== 'all' && <MenuItem key={city} value={city}>{city}</MenuItem>
                     ))}
-                  </select>
-                </div>
+                  </TextField>
+                </Box>
 
-                <div style={searchFieldGroup}>
-                  <label style={fieldLabel}>טווח מחיר עד {maxPrice.toLocaleString('he-IL')} ₪</label>
-                  <input
-                    type="range"
-                    min={0}
-                    max={10000}
-                    step={250}
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(Number(e.target.value))}
-                    style={rangeStyle}
-                  />
-                </div>
+                {/* פילטר מחיר */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>
+                    טווח מחיר עד ₪{maxPrice.toLocaleString('he-IL')}
+                  </Typography>
+                  <Box sx={{ px: 1, pt: 1 }}>
+                    <Slider
+                      min={0}
+                      max={10000}
+                      step={250}
+                      value={maxPrice}
+                      onChange={(_, value) => setMaxPrice(value as number)}
+                      valueLabelDisplay="auto"
+                    />
+                  </Box>
+                </Box>
 
-                <div style={roomsGroup}>
-                  <span style={fieldLabel}>חדרים</span>
-                  <div style={roomsButtonWrapper}>
+                {/* פילטר חדרים */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>חדרים</Typography>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                     {[1, 2, 3, 4].map((rooms) => (
-                      <button
+                      <Button
                         key={rooms}
-                        type="button"
-                        onClick={() => setSelectedBedrooms(rooms === 4 ? 4 : rooms)}
-                        style={selectedBedrooms === rooms || (rooms === 4 && selectedBedrooms === 4)
-                          ? activeRoomButtonStyle
-                          : roomButtonStyle}
+                        variant={selectedBedrooms === rooms ? "contained" : "outlined"}
+                        color={selectedBedrooms === rooms ? "primary" : "inherit"}
+                        onClick={() => setSelectedBedrooms(rooms)}
+                        sx={{ borderRadius: 3, minWidth: 50, fontWeight: 'bold' }}
                       >
                         {rooms === 4 ? '4+' : rooms}
-                      </button>
+                      </Button>
                     ))}
-                    <button
-                      type="button"
+                    <Button
+                      variant={selectedBedrooms === null ? "contained" : "outlined"}
+                      color={selectedBedrooms === null ? "primary" : "inherit"}
                       onClick={() => setSelectedBedrooms(null)}
-                      style={selectedBedrooms === null ? activeRoomButtonStyle : clearButtonStyle}
+                      sx={{ borderRadius: 3, fontWeight: 'bold', mr: { xs: 0, sm: 1.5 } }}
                     >
                       ללא הגבלה
-                    </button>
-                  </div>
-                </div>
-              </div>
+                    </Button>
+                  </Box>
+                </Box>
+
+                <Box sx={{ gridColumn: '1 / -1' }}>
+                  <Divider sx={{ my: 0.5 }} />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, mb: 1.5, flexWrap: 'wrap' }}>
+                    <Typography variant="body2" sx={{ fontWeight: 800, color: 'text.secondary' }}>
+                      מאפיינים ושירותים
+                    </Typography>
+                    {selectedAmenities.length > 0 && (
+                      <Button size="small" color="inherit" onClick={() => setSelectedAmenities([])} sx={{ borderRadius: 999, fontWeight: 700 }}>
+                        נקה מאפיינים
+                      </Button>
+                    )}
+                  </Box>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+                      gap: 0.5,
+                    }}
+                  >
+                    {ALL_AMENITIES.map((amenity) => (
+                      <FormControlLabel
+                        key={amenity}
+                        control={
+                          <Checkbox
+                            size="small"
+                            checked={selectedAmenities.includes(amenity)}
+                            onChange={() => handleAmenityToggle(amenity)}
+                          />
+                        }
+                        label={AMENITY_LABELS[amenity]}
+                        sx={{
+                          m: 0,
+                          px: 1,
+                          py: 0.25,
+                          borderRadius: 2,
+                          bgcolor: selectedAmenities.includes(amenity) ? 'rgba(37, 99, 235, 0.08)' : 'transparent',
+                          '& .MuiFormControlLabel-label': { fontSize: 14, fontWeight: 600 }
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              </Box>
             )}
-          </div>
-        </div>
-      </div>
+          </Paper>
+        </Box>
+      </Box>
 
-      <div ref={apartmentsSectionRef} style={contentWrapper}>
-        <div style={sectionHeaderStyle}>
-          <h2 style={sectionTitle}>{title}</h2>
-          <div style={viewToggleStyle}>
-            <button
-              type="button"
-              style={currentView === 'recommended' ? activeToggleStyle : toggleButtonStyle}
-              onClick={() => navigate('/?view=recommended')}
-            >
+      {/* אזור תוכן הדירות */}
+      <Box ref={apartmentsSectionRef} sx={{ maxWidth: 1300, mx: 'auto', px: 3, py: { xs: 5, md: 8 } }}>
+        
+        {/* כותרת הסקשן וטוגל תצוגה */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, mb: 4.5, flexWrap: 'wrap' }}>
+          <Typography variant="h4" component="h2" sx={{ fontWeight: 800, color: 'text.primary' }}>
+            {title}
+          </Typography>
+          
+          <ToggleButtonGroup
+            value={currentView}
+            exclusive
+            onChange={(_, value) => value && navigate(`/?view=${value}`)}
+            sx={{ bgcolor: 'background.paper', p: 0.5, border: 1, borderColor: 'divider', borderRadius: 2 }}
+          >
+            <ToggleButton value="recommended" sx={{ px: 2.5, py: 1, borderRadius: 1.5, fontWeight: 600, border: 'none', '&.Mui-selected': { bgcolor: 'primary.main', color: 'primary.contrastText', boxShadow: '0 4px 10px rgba(37, 99, 235, 0.2)', '&:hover': { bgcolor: 'primary.dark' } } }}>
               דירות מומלצות
-            </button>
-            <button
-              type="button"
-              style={currentView === 'all' ? activeToggleStyle : toggleButtonStyle}
-              onClick={() => navigate('/?view=all')}
-            >
+            </ToggleButton>
+            <ToggleButton value="all" sx={{ px: 2.5, py: 1, borderRadius: 1.5, fontWeight: 600, border: 'none', '&.Mui-selected': { bgcolor: 'primary.main', color: 'primary.contrastText', boxShadow: '0 4px 10px rgba(37, 99, 235, 0.2)', '&:hover': { bgcolor: 'primary.dark' } } }}>
               כל הדירות
-            </button>
-          </div>
-        </div>
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
 
+        {/* גריד רשימת הדירות / הודעת אין תוצאות */}
         {visibleApartments.length > 0 ? (
-          <div style={gridStyle}>
+          <Grid container spacing={4}>
             {visibleApartments.map((apt: Apartment) => (
-              <ApartmentCard
-                key={apt._id}
-                apartment={apt}
-                onClick={(id) => navigate(`/apartment/${id}`)}
-              />
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={apt._id}>
+                <ApartmentCard
+                  apartment={apt}
+                  onClick={(id) => navigate(`/apartment/${id}`)}
+                />
+              </Grid>
             ))}
-          </div>
+          </Grid>
         ) : (
-          <div style={noResultsStyle}>
-            <div style={noResultsIcon}>🔎</div>
-            <div style={noResultsText}>
+          <Paper 
+            variant="outlined"
+            sx={{ 
+              textAlign: 'center', 
+              py: 10, 
+              px: 3, 
+              borderRadius: 5, 
+              boxShadow: '0 18px 40px rgba(15, 23, 42, 0.06)', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              gap: 2 
+            }}
+          >
+            <FindInPageIcon sx={{ fontSize: 56, color: 'text.secondary' }} />
+            <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary' }}>
               {currentView === 'recommended' && !searchTerm
                 ? 'עוד לא נמצאו דירות עם דירוג 5 כוכבים.'
                 : 'לא נמצאו דירות שתואמות לחיפוש שלך.'}
-            </div>
-            <div style={noResultsHelper}>נסו לשנות את העיר, להרחיב את טווח המחירים או לבחור מספר חדרים אחר.</div>
-          </div>
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 520, lineHeight: 1.7 }}>
+              נסו לשנות את העיר, להרחיב את טווח המחירים או לבחור מספר חדרים אחר.
+            </Typography>
+          </Paper>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   )
-}
-
-const pageContainer: React.CSSProperties = {
-  backgroundColor: '#f3f4f6',
-  minHeight: '100vh',
-  direction: 'rtl'
-}
-
-const heroSection: React.CSSProperties = {
-  width: '100%',
-  minHeight: '500px',
-  backgroundImage: 'url("/hero-bg.png")',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundAttachment: 'fixed',
-  position: 'relative',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center'
-}
-
-const heroOverlay: React.CSSProperties = {
-  width: '100%',
-  height: '100%',
-  padding: '120px 20px',
-  backgroundColor: 'rgba(15, 23, 42, 0.5)',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center',
-  backdropFilter: 'blur(2px)'
-}
-
-const heroTitle: React.CSSProperties = {
-  fontSize: '56px',
-  fontWeight: 900,
-  marginBottom: '20px',
-  color: '#ffffff',
-  textShadow: '2px 4px 10px rgba(0,0,0,0.5)',
-  textAlign: 'center'
-}
-
-const heroSubtitle: React.CSSProperties = {
-  fontSize: '24px',
-  opacity: 1,
-  marginBottom: '50px',
-  color: '#f8fafc',
-  textShadow: '1px 2px 5px rgba(0,0,0,0.5)',
-  textAlign: 'center',
-  fontWeight: 500
-}
-
-const searchContainer: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  width: '100%',
-  maxWidth: '850px',
-  backgroundColor: 'rgba(255, 255, 255, 0.96)',
-  padding: '22px',
-  borderRadius: '28px',
-  border: '1px solid rgba(148, 163, 184, 0.25)',
-  boxShadow: '0 24px 80px rgba(15, 23, 42, 0.12)',
-  backdropFilter: 'blur(16px)',
-  gap: '18px'
-}
-
-const searchBarRow: React.CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: '1.5fr 0.5fr',
-  gap: '12px',
-  alignItems: 'center'
-}
-
-const filterToggleRow: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'flex-start',
-  marginTop: '12px'
-}
-
-const searchFieldGroup: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '10px'
-}
-
-const fieldLabel: React.CSSProperties = {
-  fontSize: '14px',
-  color: '#334155',
-  fontWeight: 700
-}
-
-const selectStyle: React.CSSProperties = {
-  borderRadius: '16px',
-  padding: '12px 14px',
-  border: '1px solid #cbd5e1',
-  fontSize: '16px',
-  outline: 'none',
-  backgroundColor: 'white',
-  color: '#0f172a'
-}
-
-const advancedPanelStyle: React.CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
-  gap: '16px',
-  padding: '18px',
-  backgroundColor: '#f8fafc',
-  border: '1px solid #e2e8f0',
-  borderRadius: '22px'
-}
-
-const rangeStyle: React.CSSProperties = {
-  width: '100%',
-  appearance: 'none',
-  height: '10px',
-  borderRadius: '999px',
-  background: 'linear-gradient(90deg, #3b82f6 0%, #60a5fa 65%, #e2e8f0 100%)',
-  outline: 'none',
-  cursor: 'pointer'
-}
-
-const roomsGroup: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '10px'
-}
-
-const roomsButtonWrapper: React.CSSProperties = {
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '10px'
-}
-
-const roomButtonStyle: React.CSSProperties = {
-  border: '1px solid #cbd5e1',
-  backgroundColor: 'white',
-  color: '#334155',
-  borderRadius: '16px',
-  padding: '10px 14px',
-  cursor: 'pointer',
-  minWidth: '72px',
-  fontWeight: 700
-}
-
-const activeRoomButtonStyle: React.CSSProperties = {
-  ...roomButtonStyle,
-  borderColor: '#2563eb',
-  backgroundColor: '#eff6ff',
-  color: '#1d4ed8'
-}
-
-const clearButtonStyle: React.CSSProperties = {
-  ...roomButtonStyle,
-  backgroundColor: '#f8fafc',
-  color: '#475569'
-}
-
-const searchInputStyle: React.CSSProperties = {
-  width: '100%',
-  height: '52px',
-  border: '1px solid #cbd5e1',
-  padding: '0 18px',
-  fontSize: '16px',
-  outline: 'none',
-  borderRadius: '18px',
-  backgroundColor: 'white',
-  color: '#0f172a'
-}
-
-const searchButtonStyle: React.CSSProperties = {
-  backgroundColor: '#2563eb',
-  color: 'white',
-  border: 'none',
-  borderRadius: '18px',
-  padding: '14px 20px',
-  cursor: 'pointer',
-  fontWeight: 700,
-  fontSize: '16px',
-  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-  boxShadow: '0 12px 28px rgba(37, 99, 235, 0.18)'
-}
-
-const filterToggleButtonStyle: React.CSSProperties = {
-  border: '1px solid #c7d2fe',
-  backgroundColor: '#f8fafc',
-  color: '#2563eb',
-  borderRadius: '18px',
-  padding: '12px 18px',
-  cursor: 'pointer',
-  fontWeight: 700,
-  fontSize: '15px'
-}
-
-const contentWrapper: React.CSSProperties = {
-  maxWidth: '1300px',
-  margin: '0 auto',
-  padding: '64px 24px 80px'
-}
-
-const sectionHeaderStyle: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  gap: '20px',
-  marginBottom: '36px',
-  flexWrap: 'wrap'
-}
-
-const sectionTitle: React.CSSProperties = {
-  fontSize: '32px',
-  fontWeight: 800,
-  margin: 0,
-  color: '#1e293b',
-  textAlign: 'right'
-}
-
-const viewToggleStyle: React.CSSProperties = {
-  display: 'flex',
-  gap: '8px',
-  backgroundColor: '#ffffff',
-  border: '1px solid #e5e7eb',
-  borderRadius: '8px',
-  padding: '5px'
-}
-
-const toggleButtonStyle: React.CSSProperties = {
-  border: 'none',
-  backgroundColor: 'transparent',
-  color: '#475569',
-  padding: '9px 16px',
-  borderRadius: '6px',
-  cursor: 'pointer',
-  fontWeight: 600
-}
-
-const activeToggleStyle: React.CSSProperties = {
-  ...toggleButtonStyle,
-  backgroundColor: '#2563eb',
-  color: '#ffffff',
-  boxShadow: '0 4px 10px rgba(37, 99, 235, 0.2)'
-}
-
-const gridStyle: React.CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-  gap: '40px'
-}
-
-const noResultsStyle: React.CSSProperties = {
-  textAlign: 'center',
-  padding: '80px 24px',
-  fontSize: '18px',
-  color: '#475569',
-  backgroundColor: 'white',
-  borderRadius: '24px',
-  boxShadow: '0 18px 40px rgba(15, 23, 42, 0.06)',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: '18px'
-}
-
-const noResultsIcon: React.CSSProperties = {
-  fontSize: '48px'
-}
-
-const noResultsText: React.CSSProperties = {
-  fontSize: '26px',
-  fontWeight: 800,
-  color: '#0f172a'
-}
-
-const noResultsHelper: React.CSSProperties = {
-  color: '#64748b',
-  maxWidth: '520px',
-  lineHeight: 1.7
-}
-
-const loaderStyle: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  height: '100vh',
-  fontSize: '24px',
-  color: '#2563eb',
-  fontWeight: 700,
-  backgroundColor: '#f8fafc'
 }

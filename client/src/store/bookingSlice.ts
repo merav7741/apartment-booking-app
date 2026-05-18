@@ -3,7 +3,7 @@ import type { RootState } from './store'
 
 export interface Booking {
   _id: string
-  customerId: { _id: string; name: string; email: string }
+  customerId: { _id: string; name: string; email: string; phone?: string }
   landlordID: { _id: string; name: string; email: string }
   apartmentId: {
     _id: string

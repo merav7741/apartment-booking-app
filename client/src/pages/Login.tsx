@@ -1,9 +1,24 @@
+import { useEffect } from 'react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { loginUser, clearError } from '../store/authSlice'
 import type { LoginCredentials } from '../types/user.types'
-import { useEffect } from 'react'
+
+// MUI Core Imports
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  TextField, 
+  Paper,
+  Alert,
+  Link,
+  Avatar
+} from '@mui/material'
+
+// MUI Icons Imports
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -22,68 +37,122 @@ export default function Login() {
   }
 
   return (
-    <div style={pageWrapper}>
-      <div style={cardStyle}>
-        <div style={iconCircle}>🔑</div>
-        <h1 style={titleStyle}>ברוכים השבים</h1>
-        <p style={subtitleStyle}>התחברו כדי לנהל את הדירות שלכם</p>
+    <Box 
+      sx={{ 
+        minHeight: '90vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)', 
+        p: 2, 
+        direction: 'rtl' 
+      }}
+    >
+      <Paper 
+        elevation={0}
+        sx={{ 
+          width: '100%', 
+          maxWidth: 450, 
+          bgcolor: 'background.paper', 
+          p: { xs: 3, sm: 5 }, 
+          borderRadius: 5, 
+          boxShadow: '0 15px 35px rgba(0,0,0,0.1)', 
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
+        }}
+      >
+        {/* אייקון עגול בראש הדף */}
+        <Avatar 
+          sx={{ 
+            bgcolor: 'primary.light', 
+            color: 'primary.main', 
+            width: 56, 
+            height: 56, 
+            mb: 2 
+          }}
+        >
+          <LockOutlinedIcon sx={{ fontSize: 28 }} />
+        </Avatar>
 
-        {error && <div style={errorAlertStyle}>{error}</div>}
+        {/* כותרות */}
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'text.primary', mb: 1 }}>
+          ברוכים השבים
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 4 }}>
+          התחברו כדי לנהל את הדירות שלכם
+        </Typography>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div style={inputGroup}>
-            <label style={labelStyle}>אימייל</label>
-            <input type="email" style={inputStyle(!!errors.email)} placeholder="you@example.com"
-              {...register('email', { required: 'שדה חובה' })} />
-          </div>
+        {/* שגיאות מהשרת */}
+        {error && (
+          <Alert severity="error" variant="outlined" sx={{ mb: 3, borderRadius: 2, textAlign: 'right', width: '100%' }}>
+            {error}
+          </Alert>
+        )}
 
-          <div style={inputGroup}>
-            <label style={labelStyle}>סיסמה</label>
-            <input type="password" style={inputStyle(!!errors.password)} placeholder="••••••••"
-              {...register('password', { required: 'שדה חובה' })} />
-          </div>
+        {/* טופס */}
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, width: '100%' }}>
+          
+          {/* אימייל */}
+          <TextField
+            fullWidth
+            label="אימייל"
+            type="email"
+            placeholder="you@example.com"
+            variant="outlined"
+            error={!!errors.email}
+            helperText={errors.email?.message}
+            {...register('email', { required: 'שדה חובה' })}
+            slotProps={{ input: { sx: { borderRadius: 2.5 } } }}
+          />
 
-          <button type="submit" disabled={loading} style={submitBtnStyle}>
+          {/* סיסמה */}
+          <TextField
+            fullWidth
+            label="סיסמה"
+            type="password"
+            placeholder="••••••••"
+            variant="outlined"
+            error={!!errors.password}
+            helperText={errors.password?.message}
+            {...register('password', { required: 'שדה חובה' })}
+            slotProps={{ input: { sx: { borderRadius: 2.5 } } }}
+          />
+
+          {/* כפתור התחברות */}
+          <Button
+            fullWidth
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={loading}
+            sx={{ 
+              py: 1.5, 
+              borderRadius: 2.5, 
+              fontSize: '16px', 
+              fontWeight: 'bold', 
+              mt: 1,
+              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)'
+            }}
+          >
             {loading ? 'מתחבר...' : 'כניסה למערכת'}
-          </button>
-        </form>
+          </Button>
+        </Box>
 
-        <div style={footerStyle}>
-          אין לך חשבון? <span onClick={() => navigate('/register')} style={linkAction}>צור חשבון חדש</span>
-        </div>
-      </div>
-    </div>
+        {/* פוטר ומעבר להרשמה */}
+        <Typography variant="body2" sx={{ color: 'text.secondary', mt: 4 }}>
+          אין לך חשבון?{' '}
+          <Link 
+            component="span" 
+            onClick={() => navigate('/register')} 
+            sx={{ color: 'primary.main', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' }}
+          >
+            צור חשבון חדש
+          </Link>
+        </Typography>
+
+      </Paper>
+    </Box>
   )
 }
-
-const pageWrapper: React.CSSProperties = {
-  minHeight: '90vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-  background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)', padding: '20px', direction: 'rtl'
-};
-
-const cardStyle: React.CSSProperties = {
-  width: '100%', maxWidth: '450px', backgroundColor: 'white', padding: '40px',
-  borderRadius: '20px', boxShadow: '0 15px 35px rgba(0,0,0,0.1)', textAlign: 'center'
-};
-
-const titleStyle = { fontSize: '28px', fontWeight: 'bold', color: '#1a202c', marginBottom: '8px' };
-const subtitleStyle = { color: '#718096', marginBottom: '30px', fontSize: '15px' };
-
-const inputGroup = { textAlign: 'right' as const, marginBottom: '18px' };
-const labelStyle = { display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '600', color: '#4a5568' };
-
-const inputStyle = (isError: boolean): React.CSSProperties => ({
-  width: '100%', padding: '12px 16px', borderRadius: '10px', border: `1px solid ${isError ? '#e53e3e' : '#e2e8f0'}`,
-  fontSize: '15px', transition: '0.2s', outline: 'none', backgroundColor: '#f8fafc'
-});
-
-const submitBtnStyle: React.CSSProperties = {
-  width: '100%', padding: '14px', backgroundColor: '#3182ce', color: 'white',
-  border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 'bold',
-  cursor: 'pointer', transition: '0.3s', marginTop: '10px', boxShadow: '0 4px 6px rgba(49, 130, 206, 0.2)'
-};
-
-const footerStyle = { marginTop: '25px', color: '#718096', fontSize: '14px' };
-const linkAction = { color: '#3182ce', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' };
-const errorAlertStyle = { backgroundColor: '#fff5f5', color: '#c53030', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '14px', border: '1px solid #feb2b2' };
-const iconCircle = { width: '60px', height: '60px', backgroundColor: '#ebf8ff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '24px' };

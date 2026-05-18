@@ -4,6 +4,16 @@ import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { createBooking, fetchBookedDates } from '../store/bookingSlice'
 import type { Apartment } from '../types/apartment.types'
 
+// MUI Core Imports
+import { Box, Typography, Button, Grid, CircularProgress, Paper } from '@mui/material'
+
+// MUI Icons Imports
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
+import InfoIcon from '@mui/icons-material/Info'
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
+
 export default function BookingPage() {
   const { apartmentId } = useParams<{ apartmentId: string }>()
   const navigate = useNavigate()
@@ -27,7 +37,6 @@ export default function BookingPage() {
 
     if (!apartmentId) return
 
-    // Fetch apartment details
     const fetchApartment = async () => {
       try {
         const response = await fetch(
@@ -42,7 +51,7 @@ export default function BookingPage() {
 
     fetchApartment()
     dispatch(fetchBookedDates(apartmentId))
-  }, [apartmentId, isAuthenticated, dispatch])
+  }, [apartmentId, isAuthenticated, dispatch, navigate])
 
   useEffect(() => {
     if (startDate && endDate) {
@@ -131,459 +140,257 @@ export default function BookingPage() {
     year: 'numeric'
   })
 
-  if (!apartment) return <div style={loaderStyle}>טוען פרטי דירה...</div>
+  if (!apartment) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', flexDirection: 'column', gap: 2 }}>
+        <CircularProgress color="inherit" />
+        <Typography variant="body1" color="text.secondary">טוען פרטי דירה...</Typography>
+      </Box>
+    )
+  }
+
   if (!isAuthenticated) return null
 
   return (
-    <div style={containerStyle}>
-      <button
-        type="button"
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', p: 3, direction: 'rtl' }}>
+      
+      {/* כפתור חזרה */}
+      <Button
+        variant="outlined"
+        color="inherit"
+        startIcon={<ArrowBackIcon sx={{ transform: 'rotate(180deg)' }} />}
         onClick={() => navigate(-1)}
-        style={backButtonStyle}
+        sx={{ mb: 3, borderRadius: 2, fontWeight: 'medium', textTransform: 'none', gap: 1, '& .MuiButton-startIcon': { m: 0 } }}
       >
-        ← חזרה
-      </button>
+        חזרה
+      </Button>
 
-      <div style={contentStyle}>
-        <div style={leftColumnStyle}>
-          <h1 style={titleStyle}>בחר תאריכים להזמנה</h1>
-          <p style={apartmentNameStyle}>{apartment.name}</p>
+      {/* גריד תוכן ראשי */}
+      <Grid container spacing={4} sx={{ maxWidth: '1200px', mx: 'auto' }}>
+        
+        {/* עמודה שמאלית - לוח שנה */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            <Box>
+              <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'text.primary', mb: 1 }}>
+                בחר תאריכים להזמנה
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                {apartment.name}
+              </Typography>
+            </Box>
 
-          <div style={calendarContainerStyle}>
-            <div style={calendarHeaderStyle}>
-              <button
-                type="button"
-                onClick={() =>
-                  setCurrentMonth(
-                    new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1)
+            {/* קוביית לוח שנה */}
+            <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, bgcolor: 'background.paper' }}>
+              
+              {/* כותרת לוח השנה והניווט */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Button
+                  color="inherit"
+                  onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
+                  sx={{ minWidth: 'auto', p: 1 }}
+                >
+                  <ArrowForwardIosIcon fontSize="small" />
+                </Button>
+                <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold', width: 150, textAlign: 'center' }}>
+                  {monthName}
+                </Typography>
+                <Button
+                  color="inherit"
+                  onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
+                  sx={{ minWidth: 'auto', p: 1 }}
+                >
+                  <ArrowBackIosNewIcon fontSize="small" />
+                </Button>
+              </Box>
+
+              {/* ימי השבוע */}
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1, mb: 1.5 }}>
+                {['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'].map((day) => (
+                  <Typography key={day} variant="caption" sx={{ textAlign: 'center', fontWeight: 'bold', color: 'text.secondary', p: 1 }}>
+                    {day}
+                  </Typography>
+                ))}
+              </Box>
+
+              {/* גריד הימים */}
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1, mb: 3 }}>
+                {days.map((date, idx) => {
+                  if (!date) {
+                    return <Box key={`empty-${idx}`} />
+                  }
+
+                  const isBooked = isDateBooked(date)
+                  const isStart = startDate && date.toDateString() === startDate.toDateString()
+                  const isEnd = endDate && date.toDateString() === endDate.toDateString()
+                  const isInRange = isDateInRange(date)
+                  const today = new Date()
+                  const isPast = date < today && !isStart && !isEnd
+
+                  // קביעת צבעים וסגנונות מבוססי סטייט
+                  let btnBg = 'action.hover'
+                  let btnColor = 'text.primary'
+                  let btnBorder = '1px solid'
+                  let btnBorderColor = 'divider'
+
+                  if (isBooked) {
+                    btnBg = 'error.light'
+                    btnColor = 'error.dark'
+                    btnBorderColor = 'error.light'
+                  } else if (isPast) {
+                    btnBg = 'action.disabledBackground'
+                    btnColor = 'text.disabled'
+                  } else if (isStart || isEnd) {
+                    btnBg = 'primary.main'
+                    btnColor = 'primary.contrastText'
+                    btnBorderColor = 'primary.dark'
+                  } else if (isInRange) {
+                    btnBg = 'info.light'
+                    btnColor = 'info.dark'
+                    btnBorderColor = 'info.main'
+                  }
+
+                  return (
+                    <Button
+                      key={date.toISOString()}
+                      disabled={isBooked || isPast}
+                      onClick={() => handleDateClick(date)}
+                      sx={{
+                        p: 1.5,
+                        minWidth: 'auto',
+                        aspectRatio: '1/1',
+                        border: btnBorder,
+                        borderColor: btnBorderColor,
+                        borderRadius: 2,
+                        fontSize: '14px',
+                        fontWeight: isStart || isEnd ? 'bold' : 'medium',
+                        bgcolor: btnBg,
+                        color: btnColor,
+                        opacity: isBooked || isPast ? 0.5 : 1,
+                        '&:hover': {
+                          bgcolor: isBooked || isPast ? btnBg : 'primary.light',
+                          color: isBooked || isPast ? btnColor : 'primary.contrastText'
+                        }
+                      }}
+                    >
+                      {date.getDate()}
+                    </Button>
                   )
-                }
-                style={navButtonStyle}
-              >
-                ›
-              </button>
-              <h2 style={{ margin: '0', fontSize: '18px', width: '150px', textAlign: 'center' }}>
-                {monthName}
-              </h2>
-              <button
-                type="button"
-                onClick={() =>
-                  setCurrentMonth(
-                    new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1)
-                  )
-                }
-                style={navButtonStyle}
-              >
-                ‹
-              </button>
-            </div>
+                })}
+              </Box>
 
-            <div style={weekDaysStyle}>
-              {['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'].map((day) => (
-                <div key={day} style={weekDayStyle}>
-                  {day}
-                </div>
+              {/* מקרא לוח השנה */}
+              <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center', pt: 2, borderTop: 1, borderColor: 'divider' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ width: 16, height: 16, borderRadius: 1, bgcolor: 'action.hover', border: 1, borderColor: 'divider' }} />
+                  <Typography variant="caption" color="text.secondary">זמין</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ width: 16, height: 16, borderRadius: 1, bgcolor: 'error.light' }} />
+                  <Typography variant="caption" color="text.secondary">תפוס</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ width: 16, height: 16, borderRadius: 1, bgcolor: 'primary.main' }} />
+                  <Typography variant="caption" color="text.secondary">נבחר</Typography>
+                </Box>
+              </Box>
+
+            </Paper>
+          </Box>
+        </Grid>
+
+        {/* עמודה ימנית - סיכום הזמנה ומידע */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            
+            {/* כרטיס סיכום */}
+            <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, bgcolor: 'background.paper' }}>
+              <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold', color: 'text.primary', pb: 2, mb: 2, borderBottom: 2, borderColor: 'action.hover' }}>
+                סיכום הזמנה
+              </Typography>
+
+              {/* שורות סיכום דינמיות */}
+              {[
+                { label: 'שם הדירה', value: apartment.name, highlight: false },
+                { label: 'תאריך התחלה', value: startDate ? startDate.toLocaleDateString('he-IL') : 'לא נבחר', highlight: false },
+                { label: 'תאריך סיום', value: endDate ? endDate.toLocaleDateString('he-IL') : 'לא נבחר', highlight: false },
+                { label: 'מחיר ללילה', value: `₪${apartment.price}`, highlight: false }
+              ].map((row) => (
+                <Box key={row.label} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5, borderBottom: 1, borderColor: 'action.hover' }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium' }}>{row.label}</Typography>
+                  <Typography variant="body2" color="text.primary" sx={{ fontWeight: 'bold' }}>{row.value}</Typography>
+                </Box>
               ))}
-            </div>
 
-            <div style={daysGridStyle}>
-              {days.map((date, idx) => {
-                if (!date) {
-                  return <div key={`empty-${idx}`} style={emptyDayStyle} />
-                }
+              {numberOfNights > 0 && (
+                <>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5, borderBottom: 1, borderColor: 'action.hover' }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium' }}>מספר לילות</Typography>
+                    <Typography variant="body2" color="text.primary" sx={{ fontWeight: 'bold' }}>{numberOfNights}</Typography>
+                  </Box>
 
-                const isBooked = isDateBooked(date)
-                const isStart = startDate && date.toDateString() === startDate.toDateString()
-                const isEnd = endDate && date.toDateString() === endDate.toDateString()
-                const isInRange = isDateInRange(date)
-                const today = new Date()
-                const isPast = date < today && !isStart && !isEnd
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5, borderBottom: 1, borderColor: 'action.hover' }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium' }}>סה"כ תשלום</Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+                      ₪{totalPrice.toLocaleString()}
+                    </Typography>
+                  </Box>
+                </>
+              )}
 
-                return (
-                  <button
-                    key={date.toISOString()}
-                    onClick={() => handleDateClick(date)}
-                    disabled={isBooked || isPast}
-                    style={{
-                      ...dayButtonStyle,
-                      ...(isBooked && bookedStyle),
-                      ...(isPast && pastStyle),
-                      ...(isStart && selectedStyle),
-                      ...(isEnd && selectedStyle),
-                      ...(isInRange && rangeStyle),
-                      cursor: isBooked || isPast ? 'not-allowed' : 'pointer'
-                    }}
-                    type="button"
-                  >
-                    {date.getDate()}
-                  </button>
-                )
-              })}
-            </div>
+              {error && (
+                <Typography variant="body2" sx={{ bgcolor: 'error.light', color: 'error.dark', p: 1.5, borderRadius: 1.5, mt: 2, fontWeight: 'medium' }}>
+                  {error}
+                </Typography>
+              )}
 
-            <div style={legendStyle}>
-              <div style={legendItemStyle}>
-                <div style={{ ...legendColorStyle, backgroundColor: '#10b981' }}></div>
-                <span>זמין</span>
-              </div>
-              <div style={legendItemStyle}>
-                <div style={{ ...legendColorStyle, backgroundColor: '#ef4444' }}></div>
-                <span>תפוס</span>
-              </div>
-              <div style={legendItemStyle}>
-                <div style={{ ...legendColorStyle, backgroundColor: '#3b82f6' }}></div>
-                <span>נבחר</span>
-              </div>
-            </div>
-          </div>
-        </div>
+              {/* כפתורי פעולה */}
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mt: 3 }}>
+                <Button
+                  variant="contained"
+                  color="success"
+                  size="large"
+                  fullWidth
+                  onClick={handleBooking}
+                  disabled={!startDate || !endDate || loading}
+                  startIcon={!loading && <CalendarMonthIcon />}
+                  sx={{ py: 1.5, borderRadius: 2, fontWeight: 'bold', boxShadow: 'none', gap: 1, '& .MuiButton-startIcon': { m: 0 } }}
+                >
+                  {loading ? 'בעיבוד...' : 'אשר הזמנה'}
+                </Button>
 
-        <div style={rightColumnStyle}>
-          <div style={bookingSummaryStyle}>
-            <h2 style={summaryTitleStyle}>סיכום הזמנה</h2>
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  fullWidth
+                  onClick={() => {
+                    setStartDate(null)
+                    setEndDate(null)
+                  }}
+                  sx={{ py: 1.2, borderRadius: 2, fontWeight: 'medium' }}
+                >
+                  נקה בחירה
+                </Button>
+              </Box>
+            </Paper>
 
-            <div style={summaryRowStyle}>
-              <span style={labelStyle}>שם הדירה</span>
-              <span style={valueStyle}>{apartment.name}</span>
-            </div>
+            {/* כרטיס מידע / מדיניות ביטולים */}
+            <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, bgcolor: '#eff6ff', borderColor: '#bfdbfe', display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Typography variant="subtitle2" sx={{ color: '#1e40af', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <InfoIcon fontSize="small" /> כללי ביטול
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#1e40af', lineHeight: 1.6 }}>
+                • ניתן לבטל את ההזמנה עד 7 ימים לפני תאריך ההגעה וקבלת השיבוט המלא.
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#1e40af', lineHeight: 1.6 }}>
+                • בביטול בפחות מ-7 ימים, יחויב 50% מהתשלום.
+              </Typography>
+            </Paper>
 
-            <div style={summaryRowStyle}>
-              <span style={labelStyle}>תאריך התחלה</span>
-              <span style={valueStyle}>
-                {startDate ? startDate.toLocaleDateString('he-IL') : 'לא נבחר'}
-              </span>
-            </div>
+          </Box>
+        </Grid>
 
-            <div style={summaryRowStyle}>
-              <span style={labelStyle}>תאריך סיום</span>
-              <span style={valueStyle}>
-                {endDate ? endDate.toLocaleDateString('he-IL') : 'לא נבחר'}
-              </span>
-            </div>
-
-            <div style={summaryRowStyle}>
-              <span style={labelStyle}>מחיר ללילה</span>
-              <span style={valueStyle}>₪{apartment.price}</span>
-            </div>
-
-            {numberOfNights > 0 && (
-              <>
-                <div style={summaryRowStyle}>
-                  <span style={labelStyle}>מספר לילות</span>
-                  <span style={valueStyle}>{numberOfNights}</span>
-                </div>
-
-                <div style={summaryRowStyle}>
-                  <span style={labelStyle}>סה"כ תשלום</span>
-                  <span style={{ ...valueStyle, fontSize: '24px', fontWeight: 'bold', color: '#10b981' }}>
-                    ₪{totalPrice.toLocaleString()}
-                  </span>
-                </div>
-              </>
-            )}
-
-            {error && <div style={errorStyle}>{error}</div>}
-
-            <button
-              onClick={handleBooking}
-              disabled={!startDate || !endDate || loading}
-              style={{
-                ...bookingButtonStyle,
-                opacity: !startDate || !endDate || loading ? 0.5 : 1,
-                cursor: !startDate || !endDate || loading ? 'not-allowed' : 'pointer'
-              }}
-              type="button"
-            >
-              {loading ? 'בעיבוד...' : 'אשר הזמנה'}
-            </button>
-
-            <button
-              onClick={() => {
-                setStartDate(null)
-                setEndDate(null)
-              }}
-              style={resetButtonStyle}
-              type="button"
-            >
-              נקה בחירה
-            </button>
-          </div>
-
-          <div style={infoCardStyle}>
-            <h3 style={{ marginTop: 0, marginBottom: '12px', color: '#374151' }}>
-              📋 כללי ביטול
-            </h3>
-            <p style={infoTextStyle}>
-              ניתן לבטל את ההזמנה עד 7 ימים לפני תאריך ההגעה וקבלת השיבוט המלא.
-            </p>
-            <p style={infoTextStyle}>
-              בביטול בפחות מ-7 ימים, יחויב 50% מהתשלום.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+      </Grid>
+    </Box>
   )
-}
-
-const containerStyle: React.CSSProperties = {
-  minHeight: '100vh',
-  backgroundColor: '#f9fafb',
-  padding: '20px',
-  direction: 'rtl'
-}
-
-const backButtonStyle: React.CSSProperties = {
-  padding: '8px 16px',
-  marginBottom: '20px',
-  backgroundColor: '#f3f4f6',
-  border: '1px solid #d1d5db',
-  borderRadius: '6px',
-  cursor: 'pointer',
-  fontSize: '14px',
-  fontWeight: '500',
-  color: '#374151',
-  transition: 'all 0.2s'
-}
-
-const contentStyle: any = {
-  maxWidth: '1200px',
-  margin: '0 auto',
-  display: 'grid',
-  gridTemplateColumns: '1fr 1fr',
-  gap: '30px',
-  '@media (max-width: 768px)': {
-    gridTemplateColumns: '1fr'
-  }
-}
-
-const leftColumnStyle: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '20px'
-}
-
-const titleStyle: React.CSSProperties = {
-  fontSize: '28px',
-  fontWeight: 'bold',
-  color: '#1f2937',
-  margin: 0,
-  marginBottom: '8px'
-}
-
-const apartmentNameStyle: React.CSSProperties = {
-  fontSize: '16px',
-  color: '#6b7280',
-  margin: 0,
-  marginBottom: '20px'
-}
-
-const calendarContainerStyle: React.CSSProperties = {
-  backgroundColor: 'white',
-  borderRadius: '12px',
-  padding: '24px',
-  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-  border: '1px solid #e5e7eb'
-}
-
-const calendarHeaderStyle: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '20px'
-}
-
-const navButtonStyle: React.CSSProperties = {
-  background: 'none',
-  border: 'none',
-  fontSize: '24px',
-  cursor: 'pointer',
-  color: '#6b7280',
-  padding: '4px 8px',
-  transition: 'color 0.2s'
-}
-
-const weekDaysStyle: React.CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(7, 1fr)',
-  gap: '8px',
-  marginBottom: '12px'
-}
-
-const weekDayStyle: React.CSSProperties = {
-  textAlign: 'center',
-  fontWeight: '600',
-  fontSize: '12px',
-  color: '#6b7280',
-  padding: '8px'
-}
-
-const daysGridStyle: React.CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(7, 1fr)',
-  gap: '8px',
-  marginBottom: '20px'
-}
-
-const dayButtonStyle: React.CSSProperties = {
-  padding: '12px',
-  border: '1px solid #e5e7eb',
-  borderRadius: '6px',
-  fontSize: '14px',
-  fontWeight: '500',
-  backgroundColor: '#f9fafb',
-  color: '#1f2937',
-  cursor: 'pointer',
-  transition: 'all 0.2s'
-}
-
-const bookedStyle: React.CSSProperties = {
-  backgroundColor: '#fee2e2',
-  borderColor: '#fecaca',
-  color: '#991b1b',
-  opacity: 0.6
-}
-
-const pastStyle: React.CSSProperties = {
-  backgroundColor: '#f3f4f6',
-  color: '#9ca3af',
-  opacity: 0.5
-}
-
-const selectedStyle: React.CSSProperties = {
-  backgroundColor: '#3b82f6',
-  borderColor: '#1d4ed8',
-  color: 'white',
-  fontWeight: 'bold'
-}
-
-const rangeStyle: React.CSSProperties = {
-  backgroundColor: '#dbeafe',
-  borderColor: '#93c5fd',
-  color: '#1e40af'
-}
-
-const emptyDayStyle: React.CSSProperties = {}
-
-const legendStyle: React.CSSProperties = {
-  display: 'flex',
-  gap: '20px',
-  justifyContent: 'center',
-  paddingTop: '16px',
-  borderTop: '1px solid #e5e7eb'
-}
-
-const legendItemStyle: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '8px',
-  fontSize: '13px',
-  color: '#6b7280'
-}
-
-const legendColorStyle: React.CSSProperties = {
-  width: '16px',
-  height: '16px',
-  borderRadius: '4px'
-}
-
-const rightColumnStyle: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '20px'
-}
-
-const bookingSummaryStyle: React.CSSProperties = {
-  backgroundColor: 'white',
-  borderRadius: '12px',
-  padding: '24px',
-  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-  border: '1px solid #e5e7eb'
-}
-
-const summaryTitleStyle: React.CSSProperties = {
-  fontSize: '20px',
-  fontWeight: 'bold',
-  color: '#1f2937',
-  margin: '0 0 20px 0',
-  paddingBottom: '16px',
-  borderBottom: '2px solid #f3f4f6'
-}
-
-const summaryRowStyle: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '16px',
-  padding: '12px 0',
-  borderBottom: '1px solid #f3f4f6'
-}
-
-const labelStyle: React.CSSProperties = {
-  fontSize: '14px',
-  fontWeight: '500',
-  color: '#6b7280'
-}
-
-const valueStyle: React.CSSProperties = {
-  fontSize: '14px',
-  fontWeight: '600',
-  color: '#1f2937'
-}
-
-const errorStyle: React.CSSProperties = {
-  backgroundColor: '#fee2e2',
-  color: '#991b1b',
-  padding: '12px',
-  borderRadius: '6px',
-  fontSize: '14px',
-  marginBottom: '12px'
-}
-
-const bookingButtonStyle: React.CSSProperties = {
-  backgroundColor: '#10b981',
-  color: 'white',
-  border: 'none',
-  padding: '14px 20px',
-  borderRadius: '8px',
-  fontSize: '16px',
-  fontWeight: '600',
-  cursor: 'pointer',
-  marginBottom: '12px',
-  transition: 'background-color 0.2s'
-}
-
-const resetButtonStyle: React.CSSProperties = {
-  backgroundColor: '#f3f4f6',
-  color: '#374151',
-  border: '1px solid #d1d5db',
-  padding: '12px 20px',
-  borderRadius: '8px',
-  fontSize: '14px',
-  fontWeight: '500',
-  cursor: 'pointer',
-  transition: 'background-color 0.2s'
-}
-
-const infoCardStyle: React.CSSProperties = {
-  backgroundColor: '#eff6ff',
-  borderRadius: '12px',
-  padding: '16px',
-  border: '1px solid #bfdbfe'
-}
-
-const infoTextStyle: React.CSSProperties = {
-  fontSize: '13px',
-  color: '#1e40af',
-  margin: '8px 0',
-  lineHeight: '1.5'
-}
-
-const loaderStyle: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  minHeight: '100vh',
-  fontSize: '18px',
-  color: '#6b7280'
 }

@@ -2,8 +2,12 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { fetchAllBookings } from '../store/bookingSlice'
+import type { Booking } from '../store/bookingSlice'
 import type { Apartment } from '../types/apartment.types'
-import { AdminApartments } from './UserDashboard'
+import { AdminApartments } from '../components/dashboard/ApartmentsTab'
+
+import { Box, Card, CardContent, Chip, CircularProgress, Divider, Paper, Typography } from '@mui/material'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
@@ -33,7 +37,6 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (user?.role === 'Admin') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchAllApartmentsForAdmin()
       dispatch(fetchAllBookings())
     } else {
@@ -61,26 +64,42 @@ export default function AdminDashboard() {
 
   if (user?.role !== 'Admin') {
     return (
-      <div style={pageStyle}>
-        <h1 style={titleStyle}>אין הרשאה</h1>
-        <p style={messageStyle}>לוח הבקרה מיועד למנהל בלבד.</p>
-      </div>
+      <Box sx={{ maxWidth: 900, mx: 'auto', px: 3, py: 10, textAlign: 'center', direction: 'rtl' }}>
+        <Typography variant="h4" sx={{ fontWeight: 900, color: 'error.main', mb: 1 }}>
+          אין הרשאה
+        </Typography>
+        <Typography color="text.secondary">לוח הבקרה מיועד למנהל בלבד.</Typography>
+      </Box>
     )
   }
 
   return (
-    <div style={pageStyle}>
-      <header style={headerStyle}>
-        <div>
-          <p style={eyebrowStyle}>לוח מנהל</p>
-          <h1 style={titleStyle}>ניהול הדירות במערכת</h1>
-        </div>
-      </header>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, md: 4 }, py: 5, textAlign: 'right', direction: 'rtl' }}>
+      <Box sx={{ pb: 3, mb: 4, borderBottom: 1, borderColor: 'divider' }}>
+        <Typography
+          variant="h1"
+          sx={{
+            color: 'error.dark',
+            fontWeight: 950,
+            fontSize: { xs: 32, md: 40 },
+            lineHeight: 0.95,
+            mb: 1
+          }}
+        >
+          לוח מנהל
+        </Typography>
+        <Typography variant="h5" component="p" sx={{ fontWeight: 800, color: 'text.primary' }}>
+          ניהול הדירות במערכת
+        </Typography>
+      </Box>
 
       {loading ? (
-        <p style={messageStyle}>טוען דירות...</p>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, py: 8 }}>
+          <CircularProgress size={26} />
+          <Typography color="text.secondary" sx={{ fontWeight: 700 }}>טוען דירות...</Typography>
+        </Box>
       ) : (
-        <>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
           <AdminApartments
             apartments={allSystemApartments}
             userId={user?._id || ''}
@@ -88,84 +107,141 @@ export default function AdminDashboard() {
             onDelete={handleDelete}
             onOpen={(id) => navigate(`/apartment/${id}`)}
           />
-          <section style={{ marginTop: '36px' }}>
-            <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#111827', marginBottom: '18px' }}>כל ההזמנות במערכת</h2>
+
+          <Box component="section">
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, mb: 2.5, flexWrap: 'wrap' }}>
+              <Typography variant="h5" component="h2" sx={{ fontWeight: 900, color: 'text.primary' }}>
+                כל ההזמנות במערכת
+              </Typography>
+              <Chip label={`${allBookings.length} הזמנות`} color="primary" variant="outlined" sx={{ fontWeight: 800, borderRadius: 999 }} />
+            </Box>
+            
             {allBookings.length === 0 ? (
-              <div style={{ padding: '20px', borderRadius: '16px', background: '#f8fafc', color: '#475569' }}>אין הזמנות להצגה כרגע.</div>
+              <Paper variant="outlined" sx={{ p: 4, textAlign: 'center', borderRadius: 3, bgcolor: '#f8fafc' }}>
+                <Typography color="text.secondary" sx={{ fontWeight: 700 }}>
+                אין הזמנות להצגה כרגע.
+                </Typography>
+              </Paper>
             ) : (
-              <div style={{ display: 'grid', gap: '18px' }}>
-                {allBookings.map((booking: any) => (
-                  <div key={booking._id} style={{ border: '1px solid #e2e8f0', borderRadius: '18px', padding: '20px', background: '#fff' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginBottom: '14px', flexWrap: 'wrap' }}>
-                      <div>
-                        <h3 style={{ margin: 0, fontSize: '20px', color: '#111827' }}>{booking.apartmentId?.name || 'דירה'}</h3>
-                        <p style={{ margin: '8px 0 0', color: '#475569' }}>אורח: {booking.customerId?.name || 'לא ידוע'}</p>
-                      </div>
-                      <div style={{ padding: '8px 14px', borderRadius: '999px', fontSize: '14px', fontWeight: 700, color: '#fff', backgroundColor: booking.status === 'Approved' ? '#22c55e' : booking.status === 'Pending Approval' ? '#f59e0b' : '#ef4444' }}>
-                        {booking.status}
-                      </div>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px', color: '#475569' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span>🗓️ התחלה</span>
-                        <span>{new Date(booking.startDate).toLocaleDateString('he-IL')}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span>🗓️ סיום</span>
-                        <span>{new Date(booking.endDate).toLocaleDateString('he-IL')}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span>💰 סה"כ</span>
-                        <span style={{ fontWeight: 700, color: '#10b981' }}>₪{booking.totalPrice.toLocaleString()}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span>📍 דירה</span>
-                        <span>{booking.apartmentId?.address || 'לא זמין'}</span>
-                      </div>
-                    </div>
-                  </div>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {allBookings.map((booking: Booking) => (
+                  <AdminBookingCard key={booking._id} booking={booking} />
                 ))}
-              </div>
+              </Box>
             )}
-          </section>
-        </>
+          </Box>
+        </Box>
       )}
-    </div>
+    </Box>
   )
 }
 
-const pageStyle: React.CSSProperties = {
-  padding: '32px 24px 60px',
-  maxWidth: '1220px',
-  margin: '0 auto',
-  direction: 'rtl',
-  textAlign: 'right'
+function AdminBookingCard({ booking }: { booking: Booking }) {
+  const statusStyle = getBookingStatusStyle(booking.status)
+
+  return (
+    <Card
+      variant="outlined"
+      sx={{
+        borderRadius: 3,
+        overflow: 'hidden',
+        bgcolor: 'background.paper',
+        boxShadow: '0 8px 18px rgba(15, 23, 42, 0.05)',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          boxShadow: '0 12px 26px rgba(15, 23, 42, 0.09)'
+        }
+      }}
+    >
+      <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '8px 1fr', md: '8px minmax(220px, 0.75fr) minmax(0, 1.9fr) auto' },
+            minHeight: { md: 86 }
+          }}
+        >
+          <Box sx={{ bgcolor: statusStyle.color }} />
+          <Box sx={{ px: 1.75, py: 1.25, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 900, color: 'text.primary', lineHeight: 1.2, mb: 0.25 }}>
+              {booking.apartmentId?.name || 'דירה'}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
+              אורח: {booking.customerId?.name || 'לא ידוע'}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.25, fontWeight: 600 }}>
+              {booking.customerId?.email || 'אין אימייל'}
+            </Typography>
+            <Chip
+              label={statusStyle.label}
+              size="small"
+              sx={{
+                alignSelf: 'flex-start',
+                mt: 0.75,
+                height: 22,
+                bgcolor: statusStyle.bg,
+                color: statusStyle.color,
+                fontWeight: 900,
+                borderRadius: 999
+              }}
+            />
+          </Box>
+
+          <Box sx={{ px: { xs: 1.75, md: 1.25 }, py: { xs: 1.25, md: 1.25 }, pt: { xs: 0, md: 1.25 }, gridColumn: { xs: '2', md: 'auto' } }}>
+            <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+              <Divider sx={{ mb: 1 }} />
+            </Box>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' }, gap: 0.75 }}>
+              <InfoCell label="התחלה" value={new Date(booking.startDate).toLocaleDateString('he-IL')} />
+              <InfoCell label="סיום" value={new Date(booking.endDate).toLocaleDateString('he-IL')} />
+              <InfoCell label='סה"כ לתשלום' value={`₪${booking.totalPrice.toLocaleString('he-IL')}`} strong />
+              <InfoCell label="כתובת" value={booking.apartmentId?.address || 'לא זמין'} />
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', pl: 1.75, pr: 1.25, gridColumn: { xs: '2', md: 'auto' }, pb: { xs: 1.25, md: 0 } }}>
+            <CheckCircleIcon sx={{ fontSize: 26, color: statusStyle.color }} />
+          </Box>
+        </Box>
+      </CardContent>
+    </Card>
+  )
 }
 
-const headerStyle: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  gap: '20px',
-  marginBottom: '24px',
-  flexWrap: 'wrap'
+function InfoCell({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
+  return (
+    <Box
+      sx={{
+        minHeight: 34,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 1,
+        bgcolor: '#f8fafc',
+        borderRadius: 1.5,
+        px: 1.25,
+        py: 0.75,
+        border: '1px solid #eef2f7'
+      }}
+    >
+      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 800, flexShrink: 0 }}>
+        {label}
+      </Typography>
+      <Typography variant="caption" sx={{ fontWeight: strong ? 900 : 700, color: strong ? 'success.dark' : 'text.primary', textAlign: 'left' }}>
+        {value}
+      </Typography>
+    </Box>
+  )
 }
 
-const eyebrowStyle: React.CSSProperties = {
-  margin: '0 0 6px',
-  color: '#991b1b',
-  fontWeight: 700,
-  fontSize: '14px'
-}
+function getBookingStatusStyle(status: Booking['status']) {
+  if (status === 'Approved') {
+    return { label: 'אושרה', color: '#16a34a', bg: 'rgba(22, 163, 74, 0.1)' }
+  }
 
-const titleStyle: React.CSSProperties = {
-  margin: 0,
-  color: '#111827',
-  fontSize: '32px',
-  fontWeight: 800
-}
+  if (status === 'Canceled') {
+    return { label: 'בוטלה', color: '#dc2626', bg: 'rgba(220, 38, 38, 0.1)' }
+  }
 
-const messageStyle: React.CSSProperties = {
-  color: '#475569',
-  fontSize: '16px'
+  return { label: 'מחכה לאישור', color: '#d97706', bg: 'rgba(217, 119, 6, 0.12)' }
 }

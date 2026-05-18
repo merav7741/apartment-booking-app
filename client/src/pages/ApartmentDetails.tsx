@@ -1,5 +1,9 @@
-import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { Box, Button, CircularProgress, Divider, Paper, Typography } from '@mui/material'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import DownloadIcon from '@mui/icons-material/Download'
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import { useAppSelector } from '../store/hooks'
 import type { Apartment } from '../types/apartment.types'
 import ReviewsSection from '../components/ReviewsSection'
@@ -8,50 +12,67 @@ import OwnerProfileCard from '../components/OwnerProfileCard'
 import AmenitiesGrid from '../components/AmenitiesGrid'
 
 export default function ApartmentDetails() {
-  const { id } = useParams<{ id: string }>();
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
-  const navigate = useNavigate();
-  const [apartment, setApartment] = useState<Apartment | null>(null);
-  const [activeImage, setActiveImage] = useState(0);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => { fetchApartment(); }, [id]);
+  const { id } = useParams<{ id: string }>()
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth)
+  const navigate = useNavigate()
+  const [apartment, setApartment] = useState<Apartment | null>(null)
+  const [activeImage, setActiveImage] = useState(0)
+  const [loading, setLoading] = useState(true)
 
   const fetchApartment = async () => {
+    if (!id) return
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${id}`);
-      const data = await response.json();
-      setApartment(data);
-      setActiveImage(0);
-    } finally { setLoading(false); }
-  };
+      setLoading(true)
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${id}`)
 
+      if (!response.ok) {
+        setApartment(null)
+        return
+      }
 
+      const data = await response.json()
+      setApartment(data)
+      setActiveImage(0)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  const ownerInfo = typeof apartment?.ownerId === 'object' ? apartment.ownerId : null;
-  const ownerName = ownerInfo?.fullName || ownerInfo?.name || 'בעל/ת הנכס';
+  useEffect(() => {
+    fetchApartment()
+  }, [id])
+
+  const getImageUrl = (src: string) => (
+    src.startsWith('http') ? src : `${import.meta.env.VITE_API_BASE_URL}/${src}`
+  )
+
+  const ownerInfo = typeof apartment?.ownerId === 'object' ? apartment.ownerId : null
+  const ownerName = ownerInfo?.fullName || ownerInfo?.name || 'בעל/ת הנכס'
+  const imageUrls = apartment?.image?.map(getImageUrl) ?? []
+  const apartmentLocation = apartment?.city || apartment?.location || apartment?.address || 'לא צוין'
+  const apartmentPrice = apartment?.price ?? apartment?.pricePerNight
+
   const detailItems = [
-    { icon: '🛏️', label: 'חדרים', value: apartment?.bedrooms },
-    { icon: '📍', label: 'מיקום', value: apartment?.city || apartment?.location || apartment?.address },
-    { icon: '💸', label: 'מחיר ללילה', value: apartment ? `₪${apartment.price}` : '' },
-    { icon: '🏡', label: 'כתובת', value: apartment?.address }
-  ];
-
-  const getImageUrl = (src: string) => src.startsWith('http') ? src : `${import.meta.env.VITE_API_BASE_URL}/${src}`;
+    { icon: '🛏️', label: 'חדרים', value: apartment?.bedrooms ?? 'לא צוין' },
+    { icon: '📍', label: 'מיקום', value: apartmentLocation },
+    { icon: '💸', label: 'מחיר ללילה', value: apartmentPrice ? `₪${apartmentPrice}` : 'לא צוין' },
+    { icon: '🏡', label: 'כתובת', value: apartment?.address || 'לא צוינה' },
+  ]
 
   const downloadApartmentDetails = () => {
-    if (!apartment) return;
+    if (!apartment) return
 
     const details = [
       `שם הנכס: ${apartment.name}`,
       `עיר: ${apartment.city || 'לא צוינה'}`,
       `כתובת: ${apartment.address || 'לא צוינה'}`,
-      `מחיר ללילה: ₪${apartment.price}`,
+      `מחיר ללילה: ₪${apartmentPrice}`,
       `חדרים: ${apartment.bedrooms}`,
       `תיאור: ${apartment.description || 'אין תיאור זמין.'}`,
-      `
-    קישורים לתמונות:`,
-      ...(imageUrls.length > 0 ? imageUrls : ['אין תמונות זמינות.'])
+      '',
+      'קישורים לתמונות:',
+      ...(imageUrls.length > 0 ? imageUrls : ['אין תמונות זמינות.']),
     ].join('\n')
 
     const blob = new Blob([details], { type: 'text/plain;charset=utf-8' })
@@ -64,107 +85,137 @@ export default function ApartmentDetails() {
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
   }
-  const imageUrls = apartment?.image?.map(getImageUrl) ?? [];
 
   const prevImage = () => {
-    if (!imageUrls.length) return;
-    setActiveImage((current) => (current - 1 + imageUrls.length) % imageUrls.length);
-  };
+    if (!imageUrls.length) return
+    setActiveImage((current) => (current - 1 + imageUrls.length) % imageUrls.length)
+  }
 
   const nextImage = () => {
-    if (!imageUrls.length) return;
-    setActiveImage((current) => (current + 1) % imageUrls.length);
-  };
+    if (!imageUrls.length) return
+    setActiveImage((current) => (current + 1) % imageUrls.length)
+  }
 
-  if (loading) return <div style={loaderStyle}>טוען חוויה...</div>;
-  if (!apartment) return <div style={loaderStyle}>הדירה לא נמצאה</div>;
+  if (loading) {
+    return (
+      <Box sx={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, direction: 'rtl' }}>
+        <CircularProgress size={28} />
+        <Typography color="text.secondary" sx={{ fontWeight: 700 }}>טוען חוויה...</Typography>
+      </Box>
+    )
+  }
+
+  if (!apartment) {
+    return (
+      <Box sx={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', direction: 'rtl' }}>
+        <Typography variant="h5" color="text.secondary" sx={{ fontWeight: 800 }}>הדירה לא נמצאה</Typography>
+      </Box>
+    )
+  }
 
   return (
-    <div style={containerStyle}>
-      <button type="button" onClick={() => navigate(-1)} style={backButtonStyle}>← חזרה</button>
-      <div style={headerSectionStyle}>
-        <h1 style={{ fontSize: '32px', marginBottom: '10px' }}>{apartment.name}</h1>
-        <p style={{ color: '#6b7280' }}>📍 {apartment.location} • {apartment.address}</p>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, md: 3 }, py: 5, direction: 'rtl' }}>
+      <Button
+        type="button"
+        variant="outlined"
+        color="inherit"
+        startIcon={<ArrowBackIcon sx={{ transform: 'rotate(180deg)' }} />}
+        onClick={() => navigate(-1)}
+        sx={{ mb: 3, borderRadius: 2, fontWeight: 800, gap: 1, '& .MuiButton-startIcon': { m: 0 } }}
+      >
+        חזרה
+      </Button>
 
-        <h3 style={subTitleStyle}>תיאור הנכס</h3>
-        <p style={descriptionStyle}>{apartment.description || "אין תיאור זמין לדירה זו."}</p>
-      </div>
+      <Box sx={{ mb: 3, pb: 3, borderBottom: 1, borderColor: 'divider' }}>
+        <Typography variant="h3" component="h1" sx={{ fontWeight: 900, fontSize: { xs: 32, md: 42 }, mb: 1 }}>
+          {apartment.name}
+        </Typography>
+        <Typography color="text.secondary" sx={{ fontWeight: 600 }}>
+          📍 {apartmentLocation} • {apartment.address}
+        </Typography>
 
-      <div style={mainGridStyle}>
-        <div style={leftColumnStyle}>
-          <ImageCarousel
-            imageUrls={imageUrls}
-            activeIndex={activeImage}
-            onPrev={prevImage}
-            onNext={nextImage}
-            onSelect={setActiveImage}
-          />
+        <Typography variant="h6" sx={{ fontWeight: 900, mt: 3, mb: 1 }}>
+          תיאור הנכס
+        </Typography>
+        <Typography color="text.secondary" sx={{ lineHeight: 1.8, fontSize: 17 }}>
+          {apartment.description || 'אין תיאור זמין לדירה זו.'}
+        </Typography>
+      </Box>
 
-          <div style={detailCardStyle}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.75fr 1fr' }, gap: { xs: 3, md: 5 } }}>
+        <Box>
+          <ImageCarousel imageUrls={imageUrls} activeIndex={activeImage} onPrev={prevImage} onNext={nextImage} onSelect={setActiveImage} />
+
+          <Paper variant="outlined" sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 1.5, p: 2.5, borderRadius: 3, boxShadow: '0 8px 24px rgba(15,23,42,0.06)', mb: 3 }}>
             {detailItems.map((item) => (
-              <div key={item.label} style={detailItemStyle}>
-                <span style={detailIconStyle}>{item.icon}</span>
-                <div>
-                  <div style={detailLabelStyle}>{item.label}</div>
-                  <div style={detailValueStyle}>{item.value}</div>
-                </div>
-              </div>
+              <Box key={item.label} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, p: 1.5, bgcolor: '#f8fafc', borderRadius: 2 }}>
+                <Typography sx={{ fontSize: 22 }}>{item.icon}</Typography>
+                <Box>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 700, mb: 0.5 }}>
+                    {item.label}
+                  </Typography>
+                  <Typography sx={{ fontWeight: 900, color: 'text.primary' }}>{item.value}</Typography>
+                </Box>
+              </Box>
             ))}
-          </div>
+          </Paper>
 
-          <h3 style={subTitleStyle}>מתקנים ושירותים</h3>
+          <Typography variant="h6" sx={{ fontWeight: 900, mb: 2 }}>מתקנים ושירותים</Typography>
           <AmenitiesGrid characteristics={apartment.characteristics} />
+        </Box>
 
-        </div>
-
-        <div style={rightColumnStyle}>
+        <Box>
           <OwnerProfileCard ownerName={ownerName} />
-          <button onClick={downloadApartmentDetails} style={downloadBtnStyle}>📥 הורד מפרט</button>
+          <Button
+            type="button"
+            fullWidth
+            variant="outlined"
+            startIcon={<DownloadIcon />}
+            onClick={downloadApartmentDetails}
+            sx={{ my: 2, py: 1.4, borderRadius: 2.5, fontWeight: 800, gap: 1, '& .MuiButton-startIcon': { m: 0 } }}
+          >
+            הורד מפרט
+          </Button>
 
-          <div style={bookingCardStyle}>
-            <div style={{ marginBottom: '20px' }}>
-              <span style={{ fontSize: '28px', fontWeight: 'bold' }}>₪{apartment.price}</span>
-              <span style={{ color: '#6b7280' }}> / לילה</span>
-            </div>
+          <Paper variant="outlined" sx={{ position: { md: 'sticky' }, top: 100, p: 3, borderRadius: 3, boxShadow: '0 20px 40px rgba(15,23,42,0.08)' }}>
+            <Box sx={{ mb: 2 }}>
+              <Typography component="span" sx={{ fontSize: 30, fontWeight: 900 }}>₪{apartmentPrice}</Typography>
+              <Typography component="span" color="text.secondary"> / לילה</Typography>
+            </Box>
+            <Divider sx={{ mb: 2.5 }} />
 
             {!isAuthenticated ? (
-              <button onClick={() => navigate('/login')} style={primaryBtnStyle}>התחבר להזמנה</button>
+              <Button type="button" fullWidth variant="contained" onClick={() => navigate('/login')} sx={{ py: 1.7, borderRadius: 2.5, fontWeight: 900 }}>
+                התחבר להזמנה
+              </Button>
             ) : (
               <>
-                <button 
+                <Button
+                  type="button"
+                  fullWidth
+                  variant="contained"
+                  startIcon={<CalendarMonthIcon />}
                   onClick={() => navigate(`/booking/${id}`)}
-                  style={primaryBtnStyle}
+                  sx={{ py: 1.7, borderRadius: 2.5, fontWeight: 900, gap: 1, '& .MuiButton-startIcon': { m: 0 } }}
                 >
-                  🗓️ ספק הזמנה
-                </button>
-                <p style={{ marginTop: '16px', fontSize: '13px', color: '#6b7280', marginBottom: '0' }}>
+                  בצע הזמנה
+                </Button>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 2, lineHeight: 1.6 }}>
                   לחץ על הכפתור כדי לבחור תאריכים ולהזמין את הדירה
-                </p>
+                </Typography>
               </>
             )}
-          </div>
-        </div>
-      </div>
+          </Paper>
+        </Box>
+      </Box>
 
-      <ReviewsSection reviews={apartment.reviews || []} userId={user?._id || ''} userName={user?.name || ''} apartmentId={id!} onReviewAdded={fetchApartment} />
-    </div>
+      <ReviewsSection
+        reviews={apartment.reviews || []}
+        userId={user?._id || ''}
+        userName={user?.name || ''}
+        apartmentId={id!}
+        onReviewAdded={fetchApartment}
+      />
+    </Box>
   )
 }
-
-const containerStyle = { maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', direction: 'rtl' as const };
-const mainGridStyle = { display: 'grid', gridTemplateColumns: '1.8fr 1fr', gap: '50px' };
-const headerSectionStyle = { marginBottom: '30px', borderBottom: '1px solid #f3f4f6', paddingBottom: '20px' };
-const detailCardStyle = { display: 'grid', gap: '14px', padding: '22px', backgroundColor: 'white', borderRadius: '24px', border: '1px solid #e5e7eb', boxShadow: '0 8px 24px rgba(15,23,42,0.06)', marginBottom: '30px' };
-const detailItemStyle = { display: 'flex', alignItems: 'flex-start', gap: '14px', padding: '14px', backgroundColor: '#f8fafc', borderRadius: '18px' };
-const detailIconStyle = { fontSize: '22px', marginTop: '2px' };
-const detailLabelStyle = { color: '#6b7280', fontSize: '14px', marginBottom: '6px' };
-const detailValueStyle = { fontSize: '16px', fontWeight: '700', color: '#111827' };
-const bookingCardStyle = { position: 'sticky' as const, top: '100px', padding: '30px', borderRadius: '24px', border: '1px solid #e5e7eb', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', backgroundColor: 'white' };
-const primaryBtnStyle = { width: '100%', padding: '16px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '12px', fontSize: '18px', fontWeight: 'bold' as const, cursor: 'pointer', transition: '0.3s' };
-const backButtonStyle = { marginBottom: '20px', border: '1px solid #d1d5db', borderRadius: '12px', backgroundColor: 'white', color: '#1f2937', padding: '12px 18px', cursor: 'pointer', fontWeight: '700', boxShadow: '0 6px 18px rgba(15,23,42,0.08)' };
-const downloadBtnStyle = { width: '100%', marginBottom: '18px', padding: '14px 18px', border: '1px solid #c7d2fe', borderRadius: '16px', backgroundColor: '#eff6ff', color: '#1d4ed8', fontWeight: 700 as const, cursor: 'pointer', transition: 'all 0.2s ease' };
-const subTitleStyle = { fontSize: '22px', fontWeight: 'bold', marginBottom: '15px' };
-const descriptionStyle = { lineHeight: '1.8', color: '#374151', fontSize: '17px' };
-const loaderStyle = { textAlign: 'center' as const, padding: '100px', fontSize: '20px', color: '#6b7280' };
-const leftColumnStyle = {};
-const rightColumnStyle = {};

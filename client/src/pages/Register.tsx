@@ -1,8 +1,21 @@
+import { useEffect } from 'react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { registerUser, clearError } from '../store/authSlice'
-import { useEffect } from 'react'
+
+// MUI Core Imports
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  Grid, 
+  TextField, 
+  MenuItem, 
+  Paper,
+  Alert,
+  Link
+} from '@mui/material'
 
 type RegisterFormData = {
   fullName: string; email: string; password: string; confirmPassword: string;
@@ -36,108 +49,183 @@ export default function Register() {
   }
 
   return (
-    <div style={pageWrapper}>
-      <div style={cardStyle}>
-        <h1 style={titleStyle}>ליצור חשבון חדש</h1>
-        <p style={subtitleStyle}>הצטרפו לקהילת הנדל"ן המובילה</p>
+    <Box 
+      sx={{ 
+        minHeight: '90vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)', 
+        p: 2, 
+        direction: 'rtl' 
+      }}
+    >
+      <Paper 
+        elevation={0}
+        sx={{ 
+          width: '100%', 
+          maxWidth: 450, 
+          bgcolor: 'background.paper', 
+          p: { xs: 3, sm: 5 }, 
+          borderRadius: 5, 
+          boxShadow: '0 15px 35px rgba(0,0,0,0.1)', 
+          textAlign: 'center' 
+        }}
+      >
+        {/* כותרת */}
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'text.primary', mb: 1 }}>
+          ליצור חשבון חדש
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 4 }}>
+          הצטרפו לקהילת הנדל"ן המובילה
+        </Typography>
 
-        {error && <div style={errorAlertStyle}>{error}</div>}
+        {/* שגיאות מהשרת */}
+        {error && (
+          <Alert severity="error" variant="outlined" sx={{ mb: 3, borderRadius: 2, textAlign: 'right' }}>
+            {error}
+          </Alert>
+        )}
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div style={inputGroup}>
-            <label style={labelStyle}>שם מלא</label>
-            <input type="text" style={inputStyle(!!errors.fullName)} placeholder="ישראל ישראלי"
-              {...register('fullName', { required: 'שם מלא חובה', minLength: 2 })} />
-            {errors.fullName && <span style={errorMessage}>{errors.fullName.message}</span>}
-          </div>
+        {/* טופס */}
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+          
+          {/* שם מלא */}
+          <TextField
+            fullWidth
+            label="שם מלא"
+            placeholder="ישראל ישראלי"
+            variant="outlined"
+            error={!!errors.fullName}
+            helperText={errors.fullName?.message}
+            {...register('fullName', { required: 'שם מלא חובה', minLength: { value: 2, message: 'שם קצר מדי' } })}
+            slotProps={{ input: { sx: { borderRadius: 2.5 } } }}
+          />
 
-          <div style={rowGrid}>
-            <div style={inputGroup}>
-              <label style={labelStyle}>אימייל</label>
-              <input type="email" style={inputStyle(!!errors.email)} placeholder="name@company.com"
-                {...register('email', { required: 'אימייל חובה' })} />
-            </div>
-            <div style={inputGroup}>
-              <label style={labelStyle}>טלפון</label>
-              <input type="text" style={inputStyle(!!errors.phone)} placeholder="05XXXXXXXX"
-                {...register('phone', { required: 'טלפון חובה' })} />
-            </div>
-          </div>
+          <Grid container spacing={2}>
+            {/* אימייל */}
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth
+                label="אימייל"
+                type="email"
+                placeholder="name@company.com"
+                variant="outlined"
+                error={!!errors.email}
+                helperText={errors.email?.message}
+                {...register('email', { required: 'אימייל חובה' })}
+                slotProps={{ input: { sx: { borderRadius: 2.5 } } }}
+              />
+            </Grid>
+            {/* טלפון */}
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth
+                label="טלפון"
+                placeholder="05XXXXXXXX"
+                variant="outlined"
+                error={!!errors.phone}
+                helperText={errors.phone?.message}
+                {...register('phone', { required: 'טלפון חובה' })}
+                slotProps={{ input: { sx: { borderRadius: 2.5 } } }}
+              />
+            </Grid>
+          </Grid>
 
-          <div style={rowGrid}>
-            <div style={inputGroup}>
-              <label style={labelStyle}>סיסמה</label>
-              <input type="password" style={inputStyle(!!errors.password)} placeholder="••••••••"
-                {...register('password', { required: 'סיסמה חובה', minLength: 6 })} />
-            </div>
-            <div style={inputGroup}>
-              <label style={labelStyle}>אימות סיסמה</label>
-              <input type="password" style={inputStyle(!!errors.confirmPassword)} placeholder="••••••••"
+          <Grid container spacing={2}>
+            {/* סיסמה */}
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth
+                label="סיסמה"
+                type="password"
+                placeholder="••••••••"
+                variant="outlined"
+                error={!!errors.password}
+                helperText={errors.password?.message}
+                {...register('password', { required: 'סיסמה חובה', minLength: { value: 6, message: 'לפחות 6 תווים' } })}
+                slotProps={{ input: { sx: { borderRadius: 2.5 } } }}
+              />
+            </Grid>
+            {/* אימות סיסמה */}
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth
+                label="אימות סיסמה"
+                type="password"
+                placeholder="••••••••"
+                variant="outlined"
+                error={!!errors.confirmPassword}
+                helperText={errors.confirmPassword?.message}
                 {...register('confirmPassword', { 
                   required: 'אימות חובה', 
-                  validate: v => v === password || 'לא תואם' 
-                })} />
-            </div>
-          </div>
+                  validate: v => v === password || 'הסיסמאות לא תואמות' 
+                })}
+                slotProps={{ input: { sx: { borderRadius: 2.5 } } }}
+              />
+            </Grid>
+          </Grid>
 
-          <div style={inputGroup}>
-            <label style={labelStyle}>סוג חשבון</label>
-            <select {...register('role')} style={selectStyle}>
-              <option value="Subscriber">מנוי (מחפש דירה / מפרסם)</option>
-              <option value="Admin">מנהל מערכת</option>
-            </select>
-          </div>
+          {/* סוג חשבון */}
+          <TextField
+            select
+            fullWidth
+            label="סוג חשבון"
+            variant="outlined"
+            defaultValue="Subscriber"
+            {...register('role')}
+            slotProps={{ input: { sx: { borderRadius: 2.5, textAlign: 'right' } } }}
+          >
+            <MenuItem value="Subscriber">מנוי (מחפש דירה / מפרסם)</MenuItem>
+            <MenuItem value="Admin">מנהל מערכת</MenuItem>
+          </TextField>
 
+          {/* קוד מנהל - מוצג רק אם נבחר אדמין */}
           {role === 'Admin' && (
-            <div style={inputGroup}>
-              <label style={labelStyle}>קוד מנהל מאובטח</label>
-              <input type="password" style={inputStyle(true)} placeholder="Admin Token" {...register('adminCode')} />
-            </div>
+            <TextField
+              fullWidth
+              label="קוד מנהל מאובטח"
+              type="password"
+              placeholder="Admin Token"
+              variant="outlined"
+              {...register('adminCode')}
+              slotProps={{ input: { sx: { borderRadius: 2.5 } } }}
+            />
           )}
 
-          <button type="submit" disabled={loading} style={submitBtnStyle}>
+          {/* כפתור הרשמה */}
+          <Button
+            fullWidth
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={loading}
+            sx={{ 
+              py: 1.5, 
+              borderRadius: 2.5, 
+              fontSize: '16px', 
+              fontWeight: 'bold', 
+              mt: 1,
+              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)'
+            }}
+          >
             {loading ? 'יוצר חשבון...' : 'להרשמה'}
-          </button>
-        </form>
+          </Button>
+        </Box>
 
-        <div style={footerStyle}>
-          כבר רשומים? <span onClick={() => navigate('/login')} style={linkAction}>התחברו כאן</span>
-        </div>
-      </div>
-    </div>
+        {/* פוטר */}
+        <Typography variant="body2" sx={{ color: 'text.secondary', mt: 4 }}>
+          כבר רשומים?{' '}
+          <Link 
+            component="span" 
+            onClick={() => navigate('/login')} 
+            sx={{ color: 'primary.main', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' }}
+          >
+            התחברו כאן
+          </Link>
+        </Typography>
+
+      </Paper>
+    </Box>
   )
 }
-const pageWrapper: React.CSSProperties = {
-  minHeight: '90vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-  background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)', padding: '20px', direction: 'rtl'
-};
-
-const cardStyle: React.CSSProperties = {
-  width: '100%', maxWidth: '450px', backgroundColor: 'white', padding: '40px',
-  borderRadius: '20px', boxShadow: '0 15px 35px rgba(0,0,0,0.1)', textAlign: 'center'
-};
-
-const titleStyle = { fontSize: '28px', fontWeight: 'bold', color: '#1a202c', marginBottom: '8px' };
-const subtitleStyle = { color: '#718096', marginBottom: '30px', fontSize: '15px' };
-
-const inputGroup = { textAlign: 'right' as const, marginBottom: '18px' };
-const labelStyle = { display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '600', color: '#4a5568' };
-
-const inputStyle = (isError: boolean): React.CSSProperties => ({
-  width: '100%', padding: '12px 16px', borderRadius: '10px', border: `1px solid ${isError ? '#e53e3e' : '#e2e8f0'}`,
-  fontSize: '15px', transition: '0.2s', outline: 'none', backgroundColor: '#f8fafc'
-});
-
-const selectStyle = { ...inputStyle(false), cursor: 'pointer' };
-
-const submitBtnStyle: React.CSSProperties = {
-  width: '100%', padding: '14px', backgroundColor: '#3182ce', color: 'white',
-  border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 'bold',
-  cursor: 'pointer', transition: '0.3s', marginTop: '10px', boxShadow: '0 4px 6px rgba(49, 130, 206, 0.2)'
-};
-
-const footerStyle = { marginTop: '25px', color: '#718096', fontSize: '14px' };
-const linkAction = { color: '#3182ce', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' };
-const errorMessage = { color: '#e53e3e', fontSize: '12px', marginTop: '4px' };
-const errorAlertStyle = { backgroundColor: '#fff5f5', color: '#c53030', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '14px', border: '1px solid #feb2b2' };
-const rowGrid = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' };
