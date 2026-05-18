@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Box, Button, CircularProgress, Divider, Paper, Typography } from '@mui/material'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import DownloadIcon from '@mui/icons-material/Download'
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
+import { 
+  ArrowBack as ArrowBackIcon, 
+  Download as DownloadIcon, 
+  CalendarMonth as CalendarMonthIcon 
+} from '@mui/icons-material';
 import { useAppSelector } from '../store/hooks'
 import type { Apartment } from '../types/apartment.types'
 import ReviewsSection from '../components/ReviewsSection'

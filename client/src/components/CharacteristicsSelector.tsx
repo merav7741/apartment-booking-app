@@ -9,7 +9,7 @@ import {
   Checkbox, 
   Box 
 } from '@mui/material';
-import { AMENITY_TRANSLATIONS } from '../store/amenities';
+import { AMENITY_TRANSLATIONS } from '../types/amenities';
 
 const CHARACTERISTICS_DATA = {
   "נוחות בסיסית": ['wifi', 'ac', 'heating', 'elevator', 'parking'],
