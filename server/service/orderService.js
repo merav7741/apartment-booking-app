@@ -12,9 +12,6 @@ const validateUserIds = async (customerId, landlordID) => {
     if (!isValidObjectId(landlordID)) {
         throw new Error('Invalid landlordID')
     }
-    if (customerId.toString() === landlordID.toString()) {
-        throw new Error('customerId and landlordID must be different users')
-    }
 
     const [customer, landlord] = await Promise.all([
         User.findById(customerId),

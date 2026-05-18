@@ -1,3 +1,4 @@
+
 import { Box, Typography, Alert, CircularProgress } from '@mui/material'
 import ApartmentWithActions from '../apartment/ApartmentWithActions'
 import type { Apartment } from '../../types/apartment.types'

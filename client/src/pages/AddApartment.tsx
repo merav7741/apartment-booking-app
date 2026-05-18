@@ -26,7 +26,7 @@ export default function AddApartment() {
   const [images, setImages] = useState<string[]>([])
   const [characteristics, setCharacteristics] = useState<Record<string, boolean>>({})
   
-  // --- השינוי ההכרחי: ניהול ערך תיבת הטקסט של הקישור ---
+  //השינוי ההכרחי: ניהול ערך תיבת הטקסט של הקישור 
   const [imageUrlInput, setImageUrlInput] = useState<string>('')
 
   const { register, handleSubmit, formState: { errors } } = useForm<ApartmentFormData>({
@@ -35,7 +35,6 @@ export default function AddApartment() {
       bedrooms: 1
     }
   })
-
   if (!isAuthenticated || !token) {
     navigate('/login')
     return null
@@ -81,7 +80,6 @@ export default function AddApartment() {
     }
   }
 
-  // --- תיקון הפונקציה לשימוש ב-State ושינוי הטיפוס החוזה של MUI ---
   const handleImageKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== 'Enter') return
 

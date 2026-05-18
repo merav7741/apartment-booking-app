@@ -3,16 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { createBooking, fetchBookedDates } from '../store/bookingSlice'
 import type { Apartment } from '../types/apartment.types'
-
-// MUI Core Imports
-import { Box, Typography, Button, Grid, CircularProgress, Paper } from '@mui/material'
-
-// MUI Icons Imports
+import { Box, Typography, Button, CircularProgress, Paper, IconButton, Chip } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
-import InfoIcon from '@mui/icons-material/Info'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
+import { useBookingCalendar } from '../hooks/useBookingCalendar'
 
 export default function BookingPage() {
   const { apartmentId } = useParams<{ apartmentId: string }>()
@@ -21,13 +17,9 @@ export default function BookingPage() {
 
   const { isAuthenticated } = useAppSelector((state) => state.auth)
   const { bookedDates, loading, error } = useAppSelector((state) => state.bookings)
-
   const [apartment, setApartment] = useState<Apartment | null>(null)
-  const [startDate, setStartDate] = useState<Date | null>(null)
-  const [endDate, setEndDate] = useState<Date | null>(null)
-  const [numberOfNights, setNumberOfNights] = useState(0)
-  const [totalPrice, setTotalPrice] = useState(0)
-  const [currentMonth, setCurrentMonth] = useState(new Date())
+
+  const calendar = useBookingCalendar(apartment?.price || 0, bookedDates)
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -53,344 +45,258 @@ export default function BookingPage() {
     dispatch(fetchBookedDates(apartmentId))
   }, [apartmentId, isAuthenticated, dispatch, navigate])
 
-  useEffect(() => {
-    if (startDate && endDate) {
-      const nights = Math.ceil(
-        (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-      )
-      setNumberOfNights(nights)
-      setTotalPrice(nights * (apartment?.price || 0))
-    }
-  }, [startDate, endDate, apartment?.price])
-
-  const isDateBooked = (date: Date) => {
-    return bookedDates.some((booking) => {
-      const start = new Date(booking.start)
-      const end = new Date(booking.end)
-      return date >= start && date <= end
-    })
-  }
-
-  const isDateInRange = (date: Date) => {
-    if (!startDate || !endDate) return false
-    return date > startDate && date < endDate
-  }
-
-  const handleDateClick = (date: Date) => {
-    if (isDateBooked(date)) return
-
-    if (!startDate) {
-      setStartDate(date)
-      setEndDate(null)
-    } else if (!endDate) {
-      if (date > startDate) {
-        setEndDate(date)
-      } else {
-        setStartDate(date)
-        setEndDate(null)
-      }
-    } else {
-      setStartDate(date)
-      setEndDate(null)
-    }
-  }
-
-  const handleBooking = async () => {
-    if (!startDate || !endDate || !apartmentId) {
-      alert('אנא בחר תאריכים')
-      return
-    }
-
-    const result = await dispatch(
-      createBooking({
-        apartmentId,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString()
-      })
-    )
-
-    if (createBooking.fulfilled.match(result)) {
-      alert('הזמנה נוצרה בהצלחה! בהמתנה לאישור בעל הנכס.')
-      navigate('/dashboard')
-    }
-  }
-
-  const renderCalendar = () => {
-    const year = currentMonth.getFullYear()
-    const month = currentMonth.getMonth()
-    const firstDay = new Date(year, month, 1)
-    const lastDay = new Date(year, month + 1, 0)
-    const daysInMonth = lastDay.getDate()
-    const startingDayOfWeek = firstDay.getDay()
-
-    const days = []
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(null)
-    }
-    for (let i = 1; i <= daysInMonth; i++) {
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    const firstDay = new Date(year, month, 1).getDay()
+    const totalDays = new Date(year, month + 1, 0).getDate()
+    
+    const days: (Date | null)[] = Array(firstDay).fill(null)
+    for (let i = 1; i <= totalDays; i++) {
       days.push(new Date(year, month, i))
     }
-
     return days
   }
 
-  const days = renderCalendar()
-  const monthName = currentMonth.toLocaleDateString('he-IL', {
-    month: 'long',
-    year: 'numeric'
-  })
+  const changeMonth = (offset: number) => {
+    const next = new Date(calendar.currentMonth)
+    next.setMonth(next.getMonth() + offset)
+    calendar.setCurrentMonth(next)
+  }
 
-  if (!apartment) {
+  const handleBooking = async () => {
+    if (!calendar.startDate || !calendar.endDate || !apartmentId) return
+
+    try {
+      await dispatch(createBooking({
+        apartmentId,
+        startDate: calendar.startDate.toISOString(),
+        endDate: calendar.endDate.toISOString()
+      })).unwrap()
+
+      alert('ההזמנה בוצעה בהצלחה!')
+      navigate('/dashboard')
+    } catch (err) {
+      alert('שגיאה בביצוע ההזמנה')
+    }
+  }
+
+  if (loading && !apartment) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', flexDirection: 'column', gap: 2 }}>
-        <CircularProgress color="inherit" />
-        <Typography variant="body1" color="text.secondary">טוען פרטי דירה...</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress />
       </Box>
     )
   }
 
-  if (!isAuthenticated) return null
+  if (!apartment) {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography color="error">הדירה לא נמצאה או שאינה זמינה.</Typography>
+      </Box>
+    )
+  }
+
+  const days = getDaysInMonth(calendar.currentMonth)
+  const weekdays = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש']
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', p: 3, direction: 'rtl' }}>
-      
-      {/* כפתור חזרה */}
-      <Button
-        variant="outlined"
-        color="inherit"
-        startIcon={<ArrowBackIcon sx={{ transform: 'rotate(180deg)' }} />}
-        onClick={() => navigate(-1)}
-        sx={{ mb: 3, borderRadius: 2, fontWeight: 'medium', textTransform: 'none', gap: 1, '& .MuiButton-startIcon': { m: 0 } }}
-      >
-        חזרה
-      </Button>
+    <Box sx={{ maxWidth: 900, mx: 'auto', p: 3, direction: 'rtl' }}>
+      {/* כותרת עליונה */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary' }}>
+          הזמנת חופשה ב{apartment.name}
+        </Typography>
+        <Button 
+          variant="outlined" 
+          color="inherit" 
+          startIcon={<ArrowBackIcon sx={{ transform: 'rotate(180deg)' }} />}
+          onClick={() => navigate(-1)}
+          sx={{ px: 3, py: 1.2, borderRadius: 2, fontWeight: 700, gap: 1, '& .MuiButton-startIcon': { m: 0 } }}
+        >
+          חזרה
+        </Button>
+      </Box>
 
-      {/* גריד תוכן ראשי */}
-      <Grid container spacing={4} sx={{ maxWidth: '1200px', mx: 'auto' }}>
-        
-        {/* עמודה שמאלית - לוח שנה */}
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-            <Box>
-              <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'text.primary', mb: 1 }}>
-                בחר תאריכים להזמנה
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                {apartment.name}
-              </Typography>
-            </Box>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, gap: 4 }}>
+        {/* לוח השנה */}
+        <Paper elevation={3} sx={{ p: 4, borderRadius: 3, bgcolor: '#fafafa' }}>
+          <Typography variant="h6" sx={{ fontWeight: 800, mb: 3, textAlign: 'center' }}>
+            בחר תאריכי השהייה
+          </Typography>
+          
+          {/* ניווט חודשים */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <IconButton 
+              onClick={() => changeMonth(1)} 
+              sx={{ bgcolor: 'primary.main', color: 'white', '&:hover': { bgcolor: 'primary.dark' } }}
+            >
+              <ArrowForwardIosIcon fontSize="small" />
+            </IconButton>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
+              {calendar.currentMonth.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' })}
+            </Typography>
+            <IconButton 
+              onClick={() => changeMonth(-1)}
+              sx={{ bgcolor: 'primary.main', color: 'white', '&:hover': { bgcolor: 'primary.dark' } }}
+            >
+              <ArrowBackIosNewIcon fontSize="small" />
+            </IconButton>
+          </Box>
 
-            {/* קוביית לוח שנה */}
-            <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, bgcolor: 'background.paper' }}>
+          {/* ימי השבוע */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1, mb: 2 }}>
+            {weekdays.map((day) => (
+              <Box key={day} sx={{ textAlign: 'center', py: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 800, color: 'text.secondary' }}>
+                  {day}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+
+          {/* ימי החודש */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1.5 }}>
+            {days.map((date, index) => {
+              if (!date) return <Box key={`empty-${index}`} sx={{ height: 45 }} />
+
+              const isBooked = calendar.isDateBooked(date)
+              const isSelectedStart = calendar.startDate?.toDateString() === date.toDateString()
+              const isSelectedEnd = calendar.endDate?.toDateString() === date.toDateString()
+              const isInRange = calendar.isDateInRange(date)
+              const isPast = date < new Date(new Date().setHours(0,0,0,0))
+
+              let bg = '#e8f5e8' // ירוק בהיר - פנוי
+              let color = '#2e7d32' // ירוק כהה
+              let borderColor = '#4caf50'
               
-              {/* כותרת לוח השנה והניווט */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              if (isBooked || isPast) {
+                bg = '#ffebee' // אדום בהיר - תפוס
+                color = '#c62828' // אדום כהה
+                borderColor = '#f44336'
+              } else if (isSelectedStart || isSelectedEnd) {
+                bg = '#1976d2'
+                color = 'white'
+                borderColor = '#1565c0'
+              } else if (isInRange) {
+                bg = '#bbdefb'
+                color = '#1565c0'
+                borderColor = '#2196f3'
+              }
+
+              return (
                 <Button
-                  color="inherit"
-                  onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-                  sx={{ minWidth: 'auto', p: 1 }}
-                >
-                  <ArrowForwardIosIcon fontSize="small" />
-                </Button>
-                <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold', width: 150, textAlign: 'center' }}>
-                  {monthName}
-                </Typography>
-                <Button
-                  color="inherit"
-                  onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-                  sx={{ minWidth: 'auto', p: 1 }}
-                >
-                  <ArrowBackIosNewIcon fontSize="small" />
-                </Button>
-              </Box>
-
-              {/* ימי השבוע */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1, mb: 1.5 }}>
-                {['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'].map((day) => (
-                  <Typography key={day} variant="caption" sx={{ textAlign: 'center', fontWeight: 'bold', color: 'text.secondary', p: 1 }}>
-                    {day}
-                  </Typography>
-                ))}
-              </Box>
-
-              {/* גריד הימים */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1, mb: 3 }}>
-                {days.map((date, idx) => {
-                  if (!date) {
-                    return <Box key={`empty-${idx}`} />
-                  }
-
-                  const isBooked = isDateBooked(date)
-                  const isStart = startDate && date.toDateString() === startDate.toDateString()
-                  const isEnd = endDate && date.toDateString() === endDate.toDateString()
-                  const isInRange = isDateInRange(date)
-                  const today = new Date()
-                  const isPast = date < today && !isStart && !isEnd
-
-                  // קביעת צבעים וסגנונות מבוססי סטייט
-                  let btnBg = 'action.hover'
-                  let btnColor = 'text.primary'
-                  let btnBorder = '1px solid'
-                  let btnBorderColor = 'divider'
-
-                  if (isBooked) {
-                    btnBg = 'error.light'
-                    btnColor = 'error.dark'
-                    btnBorderColor = 'error.light'
-                  } else if (isPast) {
-                    btnBg = 'action.disabledBackground'
-                    btnColor = 'text.disabled'
-                  } else if (isStart || isEnd) {
-                    btnBg = 'primary.main'
-                    btnColor = 'primary.contrastText'
-                    btnBorderColor = 'primary.dark'
-                  } else if (isInRange) {
-                    btnBg = 'info.light'
-                    btnColor = 'info.dark'
-                    btnBorderColor = 'info.main'
-                  }
-
-                  return (
-                    <Button
-                      key={date.toISOString()}
-                      disabled={isBooked || isPast}
-                      onClick={() => handleDateClick(date)}
-                      sx={{
-                        p: 1.5,
-                        minWidth: 'auto',
-                        aspectRatio: '1/1',
-                        border: btnBorder,
-                        borderColor: btnBorderColor,
-                        borderRadius: 2,
-                        fontSize: '14px',
-                        fontWeight: isStart || isEnd ? 'bold' : 'medium',
-                        bgcolor: btnBg,
-                        color: btnColor,
-                        opacity: isBooked || isPast ? 0.5 : 1,
-                        '&:hover': {
-                          bgcolor: isBooked || isPast ? btnBg : 'primary.light',
-                          color: isBooked || isPast ? btnColor : 'primary.contrastText'
-                        }
-                      }}
-                    >
-                      {date.getDate()}
-                    </Button>
-                  )
-                })}
-              </Box>
-
-              {/* מקרא לוח השנה */}
-              <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center', pt: 2, borderTop: 1, borderColor: 'divider' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ width: 16, height: 16, borderRadius: 1, bgcolor: 'action.hover', border: 1, borderColor: 'divider' }} />
-                  <Typography variant="caption" color="text.secondary">זמין</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ width: 16, height: 16, borderRadius: 1, bgcolor: 'error.light' }} />
-                  <Typography variant="caption" color="text.secondary">תפוס</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ width: 16, height: 16, borderRadius: 1, bgcolor: 'primary.main' }} />
-                  <Typography variant="caption" color="text.secondary">נבחר</Typography>
-                </Box>
-              </Box>
-
-            </Paper>
-          </Box>
-        </Grid>
-
-        {/* עמודה ימנית - סיכום הזמנה ומידע */}
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            
-            {/* כרטיס סיכום */}
-            <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, bgcolor: 'background.paper' }}>
-              <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold', color: 'text.primary', pb: 2, mb: 2, borderBottom: 2, borderColor: 'action.hover' }}>
-                סיכום הזמנה
-              </Typography>
-
-              {/* שורות סיכום דינמיות */}
-              {[
-                { label: 'שם הדירה', value: apartment.name, highlight: false },
-                { label: 'תאריך התחלה', value: startDate ? startDate.toLocaleDateString('he-IL') : 'לא נבחר', highlight: false },
-                { label: 'תאריך סיום', value: endDate ? endDate.toLocaleDateString('he-IL') : 'לא נבחר', highlight: false },
-                { label: 'מחיר ללילה', value: `₪${apartment.price}`, highlight: false }
-              ].map((row) => (
-                <Box key={row.label} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5, borderBottom: 1, borderColor: 'action.hover' }}>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium' }}>{row.label}</Typography>
-                  <Typography variant="body2" color="text.primary" sx={{ fontWeight: 'bold' }}>{row.value}</Typography>
-                </Box>
-              ))}
-
-              {numberOfNights > 0 && (
-                <>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5, borderBottom: 1, borderColor: 'action.hover' }}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium' }}>מספר לילות</Typography>
-                    <Typography variant="body2" color="text.primary" sx={{ fontWeight: 'bold' }}>{numberOfNights}</Typography>
-                  </Box>
-
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5, borderBottom: 1, borderColor: 'action.hover' }}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium' }}>סה"כ תשלום</Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'success.main' }}>
-                      ₪{totalPrice.toLocaleString()}
-                    </Typography>
-                  </Box>
-                </>
-              )}
-
-              {error && (
-                <Typography variant="body2" sx={{ bgcolor: 'error.light', color: 'error.dark', p: 1.5, borderRadius: 1.5, mt: 2, fontWeight: 'medium' }}>
-                  {error}
-                </Typography>
-              )}
-
-              {/* כפתורי פעולה */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mt: 3 }}>
-                <Button
-                  variant="contained"
-                  color="success"
-                  size="large"
+                  key={date.toISOString()}
                   fullWidth
-                  onClick={handleBooking}
-                  disabled={!startDate || !endDate || loading}
-                  startIcon={!loading && <CalendarMonthIcon />}
-                  sx={{ py: 1.5, borderRadius: 2, fontWeight: 'bold', boxShadow: 'none', gap: 1, '& .MuiButton-startIcon': { m: 0 } }}
-                >
-                  {loading ? 'בעיבוד...' : 'אשר הזמנה'}
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  color="inherit"
-                  fullWidth
-                  onClick={() => {
-                    setStartDate(null)
-                    setEndDate(null)
+                  disabled={isBooked || isPast}
+                  onClick={() => calendar.handleDateClick(date)}
+                  sx={{
+                    minWidth: 0,
+                    height: 45,
+                    borderRadius: 2,
+                    bgcolor: bg,
+                    color: color,
+                    border: `2px solid ${borderColor}`,
+                    fontWeight: (isSelectedStart || isSelectedEnd) ? 900 : 600,
+                    fontSize: '14px',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      transform: isBooked || isPast ? 'none' : 'scale(1.05)',
+                      boxShadow: isBooked || isPast ? 'none' : '0 4px 12px rgba(0,0,0,0.15)'
+                    },
+                    '&:disabled': {
+                      bgcolor: bg,
+                      color: color,
+                      opacity: 0.7
+                    }
                   }}
-                  sx={{ py: 1.2, borderRadius: 2, fontWeight: 'medium' }}
                 >
-                  נקה בחירה
+                  {date.getDate()}
                 </Button>
-              </Box>
-            </Paper>
-
-            {/* כרטיס מידע / מדיניות ביטולים */}
-            <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, bgcolor: '#eff6ff', borderColor: '#bfdbfe', display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Typography variant="subtitle2" sx={{ color: '#1e40af', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                <InfoIcon fontSize="small" /> כללי ביטול
-              </Typography>
-              <Typography variant="caption" sx={{ color: '#1e40af', lineHeight: 1.6 }}>
-                • ניתן לבטל את ההזמנה עד 7 ימים לפני תאריך ההגעה וקבלת השיבוט המלא.
-              </Typography>
-              <Typography variant="caption" sx={{ color: '#1e40af', lineHeight: 1.6 }}>
-                • בביטול בפחות מ-7 ימים, יחויב 50% מהתשלום.
-              </Typography>
-            </Paper>
-
+              )
+            })}
           </Box>
-        </Grid>
 
-      </Grid>
+          {/* מקרא */}
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mt: 3, flexWrap: 'wrap' }}>
+            <Chip 
+              label="פנוי" 
+              sx={{ bgcolor: '#e8f5e8', color: '#2e7d32', fontWeight: 700, px: 1 }}
+            />
+            <Chip 
+              label="תפוס" 
+              sx={{ bgcolor: '#ffebee', color: '#c62828', fontWeight: 700, px: 1 }}
+            />
+            <Chip 
+              label="נבחר" 
+              sx={{ bgcolor: '#1976d2', color: 'white', fontWeight: 700, px: 1 }}
+            />
+          </Box>
+        </Paper>
+        
+        {/* פאנל סיכום */}
+        <Paper elevation={3} sx={{ p: 4, borderRadius: 3, height: 'fit-content', bgcolor: '#f8f9fa' }}>
+          <Typography variant="h6" sx={{ fontWeight: 800, mb: 3, color: 'primary.main' }}>
+            סיכום ההזמנה
+          </Typography>
+          
+          {calendar.startDate && calendar.endDate ? (
+            <Box sx={{ mb: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                <Typography variant="body1" sx={{ fontWeight: 600 }}>כניסה:</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                  {calendar.startDate.toLocaleDateString('he-IL')}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                <Typography variant="body1" sx={{ fontWeight: 600 }}>יציאה:</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                  {calendar.endDate.toLocaleDateString('he-IL')}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                <Typography variant="body1" sx={{ fontWeight: 600 }}>לילות:</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                  {calendar.numberOfNights}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, pt: 2, borderTop: '2px solid #e0e0e0' }}>
+                <Typography variant="h6" sx={{ fontWeight: 800 }}>סה"כ:</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 900, color: 'success.main' }}>
+                  ₪{calendar.totalPrice.toLocaleString()}
+                </Typography>
+              </Box>
+            </Box>
+          ) : (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: 'center', fontStyle: 'italic' }}>
+              בחר תאריכי כניסה ויציאה
+            </Typography>
+          )}
+          
+          <Button 
+            variant="contained" 
+            color="primary" 
+            fullWidth
+            disabled={!calendar.startDate || !calendar.endDate}
+            onClick={handleBooking}
+            startIcon={<CalendarMonthIcon />}
+            sx={{ 
+              py: 2, 
+              borderRadius: 2.5, 
+              fontWeight: 800, 
+              fontSize: '16px',
+              gap: 1,
+              '& .MuiButton-startIcon': { m: 0 },
+              boxShadow: '0 6px 20px rgba(25, 118, 210, 0.3)',
+              '&:hover': {
+                boxShadow: '0 8px 25px rgba(25, 118, 210, 0.4)'
+              }
+            }}
+          >
+            אשר ובצע הזמנה
+          </Button>
+        </Paper>
+      </Box>
     </Box>
   )
 }

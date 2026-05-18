@@ -9,6 +9,8 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
 import type { Booking } from '../../store/bookingSlice'
 
+import { DetailRow, getStatusColor, getStatusLabel } from './dashboardUtils'
+
 interface BookingsTabProps {
   bookings: Booking[]
   onStatusChange: (bookingId: string, status: Booking['status']) => void
@@ -85,35 +87,4 @@ export default function BookingsTab({ bookings, onStatusChange }: BookingsTabPro
       )}
     </Box>
   )
-}
-
-function DetailRow({ icon, label, value, isPrice }: { icon: React.ReactNode; label: string; value?: string | number; isPrice?: boolean }) {
-  return (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', gap: 2 }}>
-      <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: 'inherit' }}>
-        {icon} {label}
-      </Typography>
-      <Typography variant="body2" sx={{ fontWeight: isPrice ? 800 : 600, color: isPrice ? 'success.main' : 'text.primary', fontSize: 'inherit', textAlign: 'left' }}>
-        {value || 'לא ידוע'}
-      </Typography>
-    </Box>
-  )
-}
-
-function getStatusColor(status: string): string {
-  switch (status) {
-    case 'Approved': return '#10b981'
-    case 'Pending Approval': return '#f59e0b'
-    case 'Canceled': return '#ef4444'
-    default: return '#6b7280'
-  }
-}
-
-function getStatusLabel(status: string): string {
-  switch (status) {
-    case 'Approved': return 'מאושר'
-    case 'Pending Approval': return 'בהמתנה'
-    case 'Canceled': return 'בוטל'
-    default: return status
-  }
 }

@@ -23,7 +23,6 @@ export default function ApartmentDetails() {
 
   const fetchApartment = async () => {
     if (!id) return
-
     try {
       setLoading(true)
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${id}`)
