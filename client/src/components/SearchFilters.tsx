@@ -13,8 +13,7 @@ import {
   Grid 
 } from '@mui/material';
 
-import SearchIcon from '@mui/icons-material/Search';
-import TuneIcon from '@mui/icons-material/Tune';
+import { Search as SearchIcon, Tune as TuneIcon } from '@mui/icons-material';
 
 const AMENITY_LABELS: Record<string, string> = {
   wifi: 'וואי-פיי', ac: 'מזגן', heating: 'חימום', elevator: 'מעלית', parking: 'חניה',
