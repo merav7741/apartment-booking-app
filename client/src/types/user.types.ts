@@ -3,7 +3,7 @@ export interface User {
   name: string
   email: string
   phone: string
-  role:  'Subscriber' | 'Admin'  //'Guest'
+  role:  'Subscriber' | 'Admin' 
 }
 
 export interface AuthState {
