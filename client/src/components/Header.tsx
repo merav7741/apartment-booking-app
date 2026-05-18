@@ -132,7 +132,8 @@ const Header = () => {
                 avatar={<Avatar sx={{ bgcolor: 'primary.main' }}>{user?.name?.[0]}</Avatar>}
                 label={user?.name}
                 variant="outlined"
-                color="primary"
+                 color="primary"
+
               />
               <Button
                 onClick={handleLogout}

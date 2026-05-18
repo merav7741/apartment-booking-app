@@ -39,7 +39,7 @@ export default function ApartmentCard({ apartment, onClick }: ApartmentCardProps
           <CardMedia component="img" height="220" image={finalImageUrl} alt={apartment.name} sx={{ objectFit: 'cover' }} />
         ) : (
           <Box sx={{ height: 220, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', bgcolor: 'grey.100', color: 'text.disabled', gap: 1 }}>
-            <Typography fontSize={40}>🖼️</Typography>
+            <Typography sx={{ fontSize: 40 }}>🖼️</Typography>
             <Typography variant="body2">אין תמונה</Typography>
           </Box>
         )}
@@ -50,7 +50,7 @@ export default function ApartmentCard({ apartment, onClick }: ApartmentCardProps
       </Box>
 
       <CardContent sx={{ direction: 'rtl', p: 2, '&:last-child': { pb: 2 } }}>
-        <Typography variant="h6" fontWeight={700} color="text.primary" gutterBottom>
+        <Typography variant="h6" color="text.primary" gutterBottom sx={{ fontWeight: 700 }}>
           {apartment.name}
         </Typography>
 
@@ -62,7 +62,7 @@ export default function ApartmentCard({ apartment, onClick }: ApartmentCardProps
           <Typography variant="body2" color="text.secondary">
             🛏️ {apartment.bedrooms} חדרים
           </Typography>
-          <Typography variant="body2" color="primary" fontWeight={600}>
+          <Typography variant="body2" color="primary" sx={{ fontWeight: 600 }}>
             פרטים נוספים ←
           </Typography>
         </Box>

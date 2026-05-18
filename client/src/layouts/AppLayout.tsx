@@ -3,7 +3,7 @@ import Header from '../components/Header'
 
 const AppLayout = () => {
   return (
-    <div className="app-layout">
+    <div>
       <Header />
       <Outlet />
     </div>

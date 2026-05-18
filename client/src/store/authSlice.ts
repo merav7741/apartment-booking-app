@@ -20,7 +20,6 @@ const loadAuthFromStorage = (): Pick<AuthState, 'user' | 'token' | 'isAuthentica
   return { user: null, token: null, isAuthenticated: false }
 }
 
-
 export const loginUser = createAsyncThunk<AuthResponse, LoginCredentials>(
   'auth/login',
   async (credentials, {rejectWithValue }) => {

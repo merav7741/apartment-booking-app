@@ -3,7 +3,11 @@ import { Box, Typography, Paper, Select, MenuItem, TextField, Button, Divider } 
 import type { Review } from '../types/apartment.types'
 
 interface ReviewsSectionProps {
-  reviews: Review[]; userId: string; userName: string; apartmentId: string; onReviewAdded: () => void;
+  reviews: Review[];
+   userId: string; 
+   userName: string; 
+   apartmentId: string; 
+   onReviewAdded: () => void;
 }
 
 export default function ReviewsSection({ reviews, userId, userName, apartmentId, onReviewAdded }: ReviewsSectionProps) {

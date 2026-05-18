@@ -5,7 +5,7 @@ type OwnerProfileCardProps = {
 }
 
 export default function OwnerProfileCard({ ownerName }: OwnerProfileCardProps) {
-  const ownerInitial = ownerName?.trim()?.[0]?.toUpperCase() || 'ב'
+  const ownerInitial = ownerName?.trim()?.[0]?.toUpperCase() 
 
   return (
     <Paper elevation={1} sx={{ display: 'flex', alignItems: 'center', gap: 2.5, p: 3, mb: 3, borderRadius: 6, border: 1, borderColor: 'divider' }}>
