@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchMyApartments } from '../store/apartmentSlice';
 
+import { AMENITY_TRANSLATIONS } from '../types/amenities';
+
 // MUI Core Imports
 import { 
   Box, 
@@ -24,15 +26,8 @@ import AddIcon from '@mui/icons-material/Add';
 import CancelIcon from '@mui/icons-material/Cancel';
 import SaveIcon from '@mui/icons-material/Save';
 
-const ALL_CHARACTERISTICS = [
-  'wifi', 'ac', 'heating', 'elevator', 'parking', 'kitchen', 'microwave',
-  'fridge', 'dishwasher', 'coffee_machine', 'garden', 'balcony', 'pool',
-  'jacuzzi', 'nearbyAttractions', 'nearbySynagogue', 'gym', 'sauna',
-  'security', 'cleaning_service', 'wheelchair_accessible', 'baby_crib',
-  'high_chair', 'pets_allowed', 'sea_view', 'mountain_view', 'city_view',
-  'fireplace', 'workspace'
-];
-
+// ⬅️ המערך מייצר את עצמו אוטומטית מתוך המפתחות של המילון המרכזי שלך
+const ALL_CHARACTERISTICS = Object.keys(AMENITY_TRANSLATIONS);
 const LOCATIONS = ['Center', 'North', 'South', 'East', 'West'];
 
 export default function EditApartment() {
@@ -143,7 +138,7 @@ export default function EditApartment() {
       <Paper variant="outlined" sx={{ p: 4, borderRadius: 3, bgcolor: 'background.paper' }}>
         
         {/* כותרת הדף */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'between', pb: 2, mb: 4, borderBottom: 1, borderColor: 'divider' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 2, mb: 4, borderBottom: 1, borderColor: 'divider' }}>
           <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold', color: 'text.primary', flexGrow: 1 }}>
             עריכת דירה: {formData.name}
           </Typography>
@@ -236,7 +231,7 @@ export default function EditApartment() {
             </Box>
           </Paper>
 
-          {/* ניהול מאפיינים */}
+          {/* ניהול מאפיינים מתורגמים */}
           <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, bgcolor: 'action.hover' }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1.5, color: 'text.primary' }}>
               מאפיינים ושירותים
@@ -253,8 +248,9 @@ export default function EditApartment() {
                       />
                     }
                     label={
-                      <Typography variant="caption" sx={{ textTransform: 'capitalize', color: 'text.primary' }}>
-                        {char.replace('_', ' ')}
+                      <Typography variant="caption" sx={{ fontWeight: 500, color: 'text.primary' }}>
+                        {/* ⬅️ כאן אנו משתמשים במילון המיובא כדי להציג עברית נקייה ליוזר */}
+                        {AMENITY_TRANSLATIONS[char]} 
                       </Typography>
                     }
                   />

@@ -17,7 +17,7 @@ import {
   Paper
 } from '@mui/material';
 
-// @ts-ignore
+
 import { FindInPage as FindInPageIcon } from '@mui/icons-material';
 
 const hasFiveStarRating = (apartment: Apartment) =>
