@@ -1,10 +1,10 @@
+
 import { Box, Button, Card } from '@mui/material'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
-import ApartmentCard from './ApartmentCard' // מאחר שהם באותה תיקייה עכשיו, זה רק ./
+import ApartmentCard from './ApartmentCard' 
 import type { Apartment } from '../../types/apartment.types'
 
-// הגדרת ה-Props של הקומפוננטה
 interface ApartmentWithActionsProps {
   apartment: Apartment
   onEdit: (id: string) => void
@@ -13,7 +13,6 @@ interface ApartmentWithActionsProps {
   ownerLabel?: string
 }
 
-// הקומפוננטה עצמה - שימי לב שהוספנו export default בתחילה
 export default function ApartmentWithActions({ apartment, onEdit, onDelete, onOpen, ownerLabel }: ApartmentWithActionsProps) {
   return (
     <Card variant="outlined" sx={{ position: 'relative', borderRadius: 3, display: 'flex', flexDirection: 'column', overflow: 'visible' }}>

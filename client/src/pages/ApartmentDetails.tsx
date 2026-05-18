@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Box, Button, CircularProgress, Divider, Paper, Typography } from '@mui/material'
-import { 
-  ArrowBack as ArrowBackIcon, 
-  Download as DownloadIcon, 
-  CalendarMonth as CalendarMonthIcon 
+import { Box, Button, CircularProgress, Divider, Paper, Typography, Rating, Chip } from '@mui/material'
+import {
+  ArrowBack as ArrowBackIcon,
+  Download as DownloadIcon,
+  CalendarMonth as CalendarMonthIcon,
+  LocationOn as LocationOnIcon
 } from '@mui/icons-material';
 import { useAppSelector } from '../store/hooks'
 import type { Apartment } from '../types/apartment.types'
 import ReviewsSection from '../components/ReviewsSection'
 import ImageCarousel from '../components/ImageCarousel'
-import OwnerProfileCard from '../components/OwnerProfileCard'
+import OwnerProfileCard from '../components/apartment/OwnerProfileCard'
 import AmenitiesGrid from '../components/apartment/AmenitiesGrid'
 
 export default function ApartmentDetails() {
@@ -115,6 +116,10 @@ export default function ApartmentDetails() {
     )
   }
 
+  const averageRating = apartment.reviews && apartment.reviews.length > 0
+    ? apartment.reviews.reduce((acc, rev) => acc + rev.rating, 0) / apartment.reviews.length
+    : 5;
+
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, md: 3 }, py: 5, direction: 'rtl' }}>
       <Button
@@ -128,22 +133,83 @@ export default function ApartmentDetails() {
         חזרה
       </Button>
 
-      <Box sx={{ mb: 3, pb: 3, borderBottom: 1, borderColor: 'divider' }}>
-        <Typography variant="h3" component="h1" sx={{ fontWeight: 900, fontSize: { xs: 32, md: 42 }, mb: 1 }}>
-          {apartment.name}
-        </Typography>
-        <Typography color="text.secondary" sx={{ fontWeight: 600 }}>
-          📍 {apartmentLocation} • {apartment.address}
-        </Typography>
+      {/* החלק העליון החדש והמעוצב - גרסה מתוקנת ומיושרת לימין */}
+      <Box sx={{ mb: 4, pb: 3, borderBottom: '1px dashed', borderColor: 'divider' }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' }, 
+          justifyContent: 'space-between', 
+          alignItems: 'flex-start', 
+          gap: 3 
+        }}>
+          
+          {/* צד ימין: כותרת, מיקום ותיאור הנכס מיושרים פיקס לימין */}
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'right' }}>
+            <Typography variant="h3" component="h1" sx={{ fontWeight: 900, fontSize: { xs: 28, sm: 36, md: 42 }, mb: 1.5, color: 'text.primary' }}>
+              {apartment.name}
+            </Typography>
+            
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 3 }}>
+              <Chip 
+                icon={<LocationOnIcon sx={{ fontSize: '16px !important' }} />} 
+                label={apartmentLocation} 
+                size="small" 
+                color="primary" 
+                sx={{ fontWeight: 700, borderRadius: '6px' }} 
+              />
+              <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500 }}>
+                {apartment.address}
+              </Typography>
+            </Box>
 
-        <Typography variant="h6" sx={{ fontWeight: 900, mt: 3, mb: 1 }}>
-          תיאור הנכס
-        </Typography>
-        <Typography color="text.secondary" sx={{ lineHeight: 1.8, fontSize: 17 }}>
-          {apartment.description || 'אין תיאור זמין לדירה זו.'}
-        </Typography>
+            {/* תיאור הנכס - עכשיו הוא חלק אינטגרלי מהצד הימני ומיושר מושלם */}
+            <Box sx={{ width: '100%', maxWidth: '800px' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 900, mb: 0.5, color: 'text.primary', fontSize: 18 }}>
+                תיאור הנכס
+              </Typography>
+              <Typography color="text.secondary" sx={{ lineHeight: 1.8, fontSize: 16 }}>
+                {apartment.description || 'אין תיאור זמין לדירה זו.'}
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* צד שמאל: קופסת הדירוג המעוצבת */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1.5, 
+            bgcolor: '#f8fafc', 
+            p: '10px 16px', 
+            borderRadius: 3, 
+            border: '1px solid #e2e8f0',
+            alignSelf: { xs: 'stretch', sm: 'auto' },
+            justifyContent: 'center',
+            mt: { xs: 0, sm: 1 }
+          }}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1, color: 'text.primary' }}>
+                {averageRating.toFixed(1)}
+              </Typography>
+            </Box>
+            <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+              <Rating
+                value={averageRating}
+                readOnly
+                precision={0.5}
+                size="small"
+                sx={{ mb: 0.2 }}
+              />
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 700, fontSize: 12 }}>
+                {apartment.reviews?.length || 0} חוות דעת
+              </Typography>
+            </Box>
+          </Box>
+
+        </Box>
       </Box>
 
+      {/* שאר חלקי העמוד (תמונות, גריד, וכרטיס בעלים) */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.75fr 1fr' }, gap: { xs: 3, md: 5 } }}>
         <Box>
           <ImageCarousel imageUrls={imageUrls} activeIndex={activeImage} onPrev={prevImage} onNext={nextImage} onSelect={setActiveImage} />
