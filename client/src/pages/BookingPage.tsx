@@ -74,7 +74,7 @@ export default function BookingPage() {
         endDate: calendar.endDate.toISOString()
       })).unwrap()
 
-      alert('ההזמנה בוצעה בהצלחה!')
+      alert('ביצוע ההזמנה בהצלחה!, ההזמנה נשלחה לאישור המארח')
       navigate('/dashboard')
     } catch (err) {
       alert('שגיאה בביצוע ההזמנה')
