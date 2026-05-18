@@ -133,7 +133,6 @@ export default function ApartmentDetails() {
         חזרה
       </Button>
 
-      {/* החלק העליון החדש והמעוצב - גרסה מתוקנת ומיושרת לימין */}
       <Box sx={{ mb: 4, pb: 3, borderBottom: '1px dashed', borderColor: 'divider' }}>
         <Box sx={{ 
           display: 'flex', 
@@ -143,7 +142,6 @@ export default function ApartmentDetails() {
           gap: 3 
         }}>
           
-          {/* צד ימין: כותרת, מיקום ותיאור הנכס מיושרים פיקס לימין */}
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'right' }}>
             <Typography variant="h3" component="h1" sx={{ fontWeight: 900, fontSize: { xs: 28, sm: 36, md: 42 }, mb: 1.5, color: 'text.primary' }}>
               {apartment.name}
@@ -173,7 +171,6 @@ export default function ApartmentDetails() {
             </Box>
           </Box>
 
-          {/* צד שמאל: קופסת הדירוג המעוצבת */}
           <Box sx={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -209,7 +206,6 @@ export default function ApartmentDetails() {
         </Box>
       </Box>
 
-      {/* שאר חלקי העמוד (תמונות, גריד, וכרטיס בעלים) */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.75fr 1fr' }, gap: { xs: 3, md: 5 } }}>
         <Box>
           <ImageCarousel imageUrls={imageUrls} activeIndex={activeImage} onPrev={prevImage} onNext={nextImage} onSelect={setActiveImage} />

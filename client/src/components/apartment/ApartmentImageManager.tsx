@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Box, Typography, Button, TextField, IconButton } from '@mui/material'
-import DeleteIcon from '@mui/icons-material/Delete'
+import { Delete as DeleteIcon } from '@mui/icons-material';
+
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
 
 interface ApartmentImageManagerProps {
@@ -11,15 +12,13 @@ interface ApartmentImageManagerProps {
 export default function ApartmentImageManager({ images, onChange }: ApartmentImageManagerProps) {
   const [imageUrl, setImageUrl] = useState('')
 
-  // הוספת תמונה חדשה למערך
   const handleAddImage = () => {
     if (!imageUrl.trim()) return
     const updatedImages = [...images, imageUrl.trim()]
     onChange(updatedImages)
-    setImageUrl('') // איפוס השדה
+    setImageUrl('') 
   }
 
-  // מחיקת תמונה מהמערך לפי אינדקס
   const handleDeleteImage = (indexToRemove: number) => {
     const updatedImages = images.filter((_, index) => index !== indexToRemove)
     onChange(updatedImages)
@@ -31,7 +30,6 @@ export default function ApartmentImageManager({ images, onChange }: ApartmentIma
         ניהול תמונות הנכס ({images.length})
       </Typography>
 
-      {/* שדה קלט להוספת תמונה חדשה */}
       <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
         <TextField
           fullWidth
@@ -52,7 +50,6 @@ export default function ApartmentImageManager({ images, onChange }: ApartmentIma
         </Button>
       </Box>
 
-      {/* תצוגה מקדימה של התמונות הקיימות - Flex Grid חסין שגיאות */}
       {images.length === 0 ? (
         <Typography variant="body2" color="text.disabled" sx={{ fontStyle: 'italic' }}>
           טרם הועלו תמונות לנכס זה.
@@ -78,12 +75,10 @@ export default function ApartmentImageManager({ images, onChange }: ApartmentIma
                 alt={`Apartment preview ${index + 1}`}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 onError={(e) => {
-                  // טיפול במצב שבו הלינק שבור
                   (e.target as HTMLImageElement).src = 'https://via.placeholder.com/120x90?text=Error'
                 }}
               />
               
-              {/* כפתור מחיקה צף */}
               <IconButton
                 className="delete-btn"
                 onClick={() => handleDeleteImage(index)}

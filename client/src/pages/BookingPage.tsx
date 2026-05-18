@@ -3,18 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { createBooking, fetchBookedDates } from '../store/bookingSlice'
 import type { Apartment } from '../types/apartment.types'
+import { useBookingCalendar } from '../hooks/useBookingCalendar' 
 
-// MUI Core Imports
 import { Box, Typography, Button, CircularProgress, Paper, IconButton } from '@mui/material'
-
-// MUI Icons Imports
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
-
-// ייבוא ה-Hook החדש
-import { useBookingCalendar } from '../hooks/useBookingCalendar' 
 
 export default function BookingPage() {
   const { apartmentId } = useParams<{ apartmentId: string }>()
@@ -74,7 +69,6 @@ export default function BookingPage() {
     if (!calendar.startDate || !calendar.endDate || !apartmentId) return
 
     try {
-      // ✅ תיקון: שולחים רק את מה שסוג הנתונים (Type) של createBooking באמת מצפה לו
       await dispatch(createBooking({
         apartmentId,
         startDate: calendar.startDate.toISOString(),
@@ -125,7 +119,6 @@ export default function BookingPage() {
           </Button>
         </Box>
 
-        {/* לוח השנה הויזואלי */}
         <Box sx={{ maxWidth: 450, mx: 'auto', mb: 4 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <IconButton onClick={() => changeMonth(1)} color="primary">
@@ -139,7 +132,6 @@ export default function BookingPage() {
             </IconButton>
           </Box>
 
-          {/* ✅ הוחלף מ-Grid ל-Box Grid חסין שגיאות עבור ימי השבוע */}
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1, mb: 1, textAlign: 'center' }}>
             {weekdays.map((day) => (
               <Typography key={day} variant="caption" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>
@@ -148,7 +140,6 @@ export default function BookingPage() {
             ))}
           </Box>
 
-          {/* ✅ הוחלף מ-Grid ל-Box Grid חסין שגיאות עבור ימי החודש */}
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1 }}>
             {days.map((date, index) => {
               if (!date) return <Box key={`empty-${index}`} />
@@ -194,7 +185,6 @@ export default function BookingPage() {
           </Box>
         </Box>
         
-        {/* סיכום וכפתור הזמנה */}
         <Box sx={{ mt: 4, pt: 2, borderTop: 1, borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Box>
             <Typography variant="body1">סה"כ לילות: <strong>{calendar.numberOfNights}</strong></Typography>
