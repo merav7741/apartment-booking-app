@@ -19,6 +19,8 @@ export const fetchAllApartments = createAsyncThunk<Apartment[]>(
   }
 )
 
+
+
 export const fetchMyApartments = createAsyncThunk<Apartment[], void, { state: RootState }>(
   'apartments/fetchMy',
   async (_, { getState, rejectWithValue }) => {

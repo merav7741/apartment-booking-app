@@ -12,7 +12,7 @@ export default function ApartmentCard({ apartment, onClick }: ApartmentCardProps
     if (possibleImages && Array.isArray(possibleImages) && possibleImages.length > 0) {
       const firstImg = possibleImages[0];
       if (firstImg.startsWith('http')) return firstImg;
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5500';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL; //|| 'http://localhost:5500';
       return `${baseUrl}/${firstImg.replace(/\\/g, '/')}`;
     }
     return null;
@@ -24,7 +24,7 @@ export default function ApartmentCard({ apartment, onClick }: ApartmentCardProps
     <Card
       onClick={() => onClick(apartment._id)}
       sx={{
-        cursor: 'pointer',
+        cursor: 'pointer',                   
         transition: 'all 0.3s ease',
         height: '100%',
         borderRadius: 4,

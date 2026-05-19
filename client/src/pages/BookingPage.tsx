@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
-import { createBooking, fetchBookedDates } from '../store/bookingSlice'
+import { createBooking, fetchBookedDates, fetchMyBookings } from '../store/bookingSlice'
 import type { Apartment } from '../types/apartment.types'
 import { Box, Typography, Button, CircularProgress, Paper, IconButton, Chip } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
@@ -74,8 +74,10 @@ export default function BookingPage() {
         endDate: calendar.endDate.toISOString()
       })).unwrap()
 
+      await dispatch(fetchMyBookings()).unwrap()
+
       alert('ביצוע ההזמנה בהצלחה!, ההזמנה נשלחה לאישור המארח')
-      navigate('/dashboard')
+      navigate('/dashboard', { state: { activeTab: 'myBookings' } })
     } catch (err) {
       alert('שגיאה בביצוע ההזמנה')
     }

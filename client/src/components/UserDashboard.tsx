@@ -27,7 +27,8 @@ export default function UserDashboard() {
   const { user, isAuthenticated, token } = useAppSelector((state) => state.auth)
   const { incomingBookings, myBookings } = useAppSelector((state) => state.bookings)
 
-  const [activeTab, setActiveTab] = useState<DashboardTab>('apartments')
+  const initialTab = (location.state as { activeTab?: DashboardTab })?.activeTab ?? 'apartments'
+  const [activeTab, setActiveTab] = useState<DashboardTab>(initialTab)
   
   const pendingCount = incomingBookings.filter((b) => b.status === 'Pending Approval').length
   const publishedCount = myApartments.length

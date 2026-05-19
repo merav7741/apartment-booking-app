@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ApartmentCard from "../components/apartment/ApartmentCard";
-<<<<<<< HEAD
+
 import SearchFilters from "../components/apartment/SearchFilters";
-=======
-import SearchFilters from "../components/apartment/SearchFilters"; 
->>>>>>> 13058aa093f705c8b61c4e621d5a3bbba5cc093b
+
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchAllApartments } from '../store/apartmentSlice';
 import type { Apartment } from '../types/apartment.types';
@@ -40,7 +38,7 @@ export default function Home() {
   const apartmentsSectionRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
 
-  const currentView = searchParams.get('view') === 'all' ? 'all' : 'recommended';
+  const currentView = searchParams.get('view') || 'all';
 
   useEffect(() => {
     dispatch(fetchAllApartments());
@@ -71,7 +69,11 @@ export default function Home() {
       ].some((value) => value?.toLowerCase().includes(search));
 
       const matchesCity = selectedCity === 'all' || apt.city === selectedCity;
-      const matchesPrice = typeof apt.price === 'number' ? apt.price <= maxPrice : true;
+      const matchesPrice = typeof apt.price === 'number'
+      ? maxPrice === 10000
+        ? true
+        : apt.price <= maxPrice
+      : true;
       const matchesBedrooms = selectedBedrooms === null
         ? true
         : selectedBedrooms === 4
