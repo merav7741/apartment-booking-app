@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ApartmentCard from "../components/apartment/ApartmentCard";
-import SearchFilters from "../components/apartment/SearchFilters"; // היבוא של הקומפוננטה החדשה
+import SearchFilters from "../components/apartment/SearchFilters"; 
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchAllApartments } from '../store/apartmentSlice';
 import type { Apartment } from '../types/apartment.types';
 
-// MUI Core Imports
 import { 
   Box, 
   Typography, 

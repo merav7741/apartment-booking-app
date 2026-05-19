@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchMyApartments } from '../store/apartmentSlice';
+import { useForm, type SubmitHandler } from 'react-hook-form';
 
 import { AMENITY_TRANSLATIONS } from '../types/amenities';
 
-// MUI Core Imports
 import { 
   Box, 
   Typography, 
@@ -20,7 +20,6 @@ import {
   IconButton
 } from '@mui/material';
 
-// MUI Icons Imports
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -36,54 +35,63 @@ export default function EditApartment() {
   const dispatch = useAppDispatch();
 
   const { user } = useAppSelector((state) => state.auth);
-  const [formData, setFormData] = useState<any>(null);
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  const { register, handleSubmit, setValue, watch, reset } = useForm<any>({
+    defaultValues: {
+      name: '',
+      price: 0,
+      city: '',
+      address: '',
+      bedrooms: 0,
+      location: '',
+      description: '',
+      image: [],
+      characteristics: []
+    }
+  });
+
+  const formData = watch();
 
   useEffect(() => {
     const fetchApartment = async () => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${id}`)
         const data = await response.json()
-        setFormData({ ...data, characteristics: data.characteristics || [] })
+        reset({ ...data, characteristics: data.characteristics || [] })
+        setIsLoading(false)
       } catch (err) {
         console.error('Error fetching apartment:', err)
+        setIsLoading(false)
       }
     }
     fetchApartment()
-  }, [id])
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: (name === 'price' || name === 'bedrooms' || name === 'pricePerNight') ? Number(value) : value
-    });
-  };
+  }, [id, reset])
 
   const handleCharChange = (char: string) => {
-    setFormData((previousFormData: any) => {
-      const currentChars = previousFormData?.characteristics || [];
-      const updatedChars = currentChars.includes(char)
-        ? currentChars.filter((c: string) => c !== char)
-        : [...currentChars, char];
-      return { ...previousFormData, characteristics: updatedChars };
-    });
+    const currentChars = formData?.characteristics || [];
+    const updatedChars = currentChars.includes(char)
+      ? currentChars.filter((c: string) => c !== char)
+      : [...currentChars, char];
+    setValue('characteristics', updatedChars);
   };
 
   const addImage = () => {
     if (newImageUrl.trim()) {
-      setFormData({ ...formData, image: [...(formData.image || []), newImageUrl] });
+      const currentImages = formData.image || [];
+      setValue('image', [...currentImages, newImageUrl]);
       setNewImageUrl('');
     }
   };
 
   const removeImage = (index: number) => {
-    const updatedImages = formData.image.filter((_: any, i: number) => i !== index);
-    setFormData({ ...formData, image: updatedImages });
+    const currentImages = formData.image || [];
+    const updatedImages = currentImages.filter((_: any, i: number) => i !== index);
+    setValue('image', updatedImages);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit: SubmitHandler<any> = async (data) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/apartments/${id}`, {
         method: 'PUT',
@@ -91,7 +99,7 @@ export default function EditApartment() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(data)
       });
 
       if (response.ok) {
@@ -125,7 +133,7 @@ export default function EditApartment() {
     }
   };
 
-  if (!formData) {
+  if (isLoading) {
     return (
       <Typography variant="h6" align="center" sx={{ mt: 6, color: 'text.secondary' }}>
         טוען נתונים...
@@ -148,33 +156,31 @@ export default function EditApartment() {
         </Box>
 
         {/* טופס */}
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           
           {/* שדות קלט ראשיים בגריד */}
           <Grid container spacing={2.5}>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField fullWidth label="שם הדירה" name="name" value={formData.name} onChange={handleChange} variant="outlined" />
+              <TextField fullWidth label="שם הדירה" {...register('name')} variant="outlined" />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField fullWidth label="מחיר ללילה" name="price" type="number" value={formData.price} onChange={handleChange} variant="outlined" />
+              <TextField fullWidth label="מחיר ללילה" {...register('price', { valueAsNumber: true })} type="number" variant="outlined" />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField fullWidth label="עיר" name="city" value={formData.city} onChange={handleChange} variant="outlined" />
+              <TextField fullWidth label="עיר" {...register('city')} variant="outlined" />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField fullWidth label="כתובת" name="address" value={formData.address} onChange={handleChange} variant="outlined" />
+              <TextField fullWidth label="כתובת" {...register('address')} variant="outlined" />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField fullWidth label="חדרי שינה" name="bedrooms" type="number" value={formData.bedrooms} onChange={handleChange} variant="outlined" />
+              <TextField fullWidth label="חדרי שינה" {...register('bedrooms', { valueAsNumber: true })} type="number" variant="outlined" />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 select
                 label="אזור"
-                name="location"
-                value={formData.location || ''}
-                onChange={handleChange}
+                {...register('location')}
                 variant="outlined"
               >
                 {LOCATIONS.map((loc) => (
@@ -187,7 +193,7 @@ export default function EditApartment() {
           </Grid>
 
           {/* שדה תיאור */}
-          <TextField fullWidth multiline rows={3} label="תיאור" name="description" value={formData.description} onChange={handleChange} variant="outlined" />
+          <TextField fullWidth multiline rows={3} label="תיאור" {...register('description')} variant="outlined" />
 
           {/* ניהול תמונות */}
           <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, bgcolor: 'action.hover' }}>
