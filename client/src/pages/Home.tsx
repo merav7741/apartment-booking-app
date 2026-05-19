@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ApartmentCard from "../components/apartment/ApartmentCard";
+<<<<<<< HEAD
 import SearchFilters from "../components/apartment/SearchFilters";
+=======
+import SearchFilters from "../components/apartment/SearchFilters"; 
+>>>>>>> 13058aa093f705c8b61c4e621d5a3bbba5cc093b
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchAllApartments } from '../store/apartmentSlice';
 import type { Apartment } from '../types/apartment.types';

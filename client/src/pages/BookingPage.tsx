@@ -16,7 +16,7 @@ export default function BookingPage() {
   const dispatch = useAppDispatch()
 
   const { isAuthenticated } = useAppSelector((state) => state.auth)
-  const { bookedDates, loading, error } = useAppSelector((state) => state.bookings)
+  const { bookedDates, loading } = useAppSelector((state) => state.bookings)
   const [apartment, setApartment] = useState<Apartment | null>(null)
 
   const calendar = useBookingCalendar(apartment?.price || 0, bookedDates)
